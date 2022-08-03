@@ -40,92 +40,107 @@
     <div class="container" id="page">
         <h1>StoryWeb: turn stories into research data</h1>
 
-        <h2>What societal challenge does your prototype address?</h2>
         <p>
-            The project aims to improve knowledge management in journalism. Because in
-            addition to interested citizens, there are also many groups that consume
-            news for professional reasons, e.g. researchers from business and science
-            and other journalists. They read the texts primarily to understand
-            connections that have already been uncovered.
+            StoryWeb will extract structured actor networks from journalistic
+            texts and analyze them. Essential relationships between the people
+            and organizations mentioned usable as a knowledge graph. In this
+            way, complex stories turn into structured datasets for future
+            research.
         </p>
+
+        <h2>Why do this?</h2>
         <p>
             Investigative journalism is often about networks of actors: Which
-            companies, associations and politicians are connected to each other, which
-            mafia structures operate across national borders or which cliques and family
-            structures are involved influence the allocation of posts. The article as a
-            form of presentation is a hurdle: In order to remain readable (and to minimize
-            the link to the competition), the journalist often has to omit the
-            background story and references to other texts and stories.
+            companies, institutions and politicians are connected to each other,
+            which mafia structures operate across national borders or which cliques
+            and family structures control the allocation of posts. The article
+            as a form of presentation is a hurdle: In order to remain readable,
+            stories often omit essential background and references to other texts
+            and stories.
         </p>
         <p>
-            The project therefore opens up a different approach. The most important
-            connections of an actor to other characters and events should be summarized
-            at a glance in order to facilitate both the introduction and the in-depth
-            analysis of individual connections. Information from relevant, structured
-            data sources can also be integrated and provide additional details for
-            specialists.
-        </p>
-        <p>
-            The project wants to extract structured actor networks from journalistic
-            texts and analyze them. It is intended to make essential relationships
-            between the people and organizations mentioned usable as quantitative
-            data. In this way, complex stories can be connected as data sets for
-            future research.
+            We want to <strong>improve knowledge management in journalism</strong>. While the general
+            public is an important consumer of media reporting, there are also many
+            groups that consume news for professional reasons, e.g. business analysts,
+            researchers  and other journalists. They read the texts primarily to
+            understand connections that have already been uncovered.
         </p>
         <p>
             StoryWeb will systematically structure research knowledge and find
-            connections between different stories and the work of different journalists
-            and media houses.
+            connections between different stories and the work of different journalists.
+            Important stories and relationships associared with a character
+            will be summarized. This can be used both to an initial overview of a set
+            of stories, but also for in-depth analysis of individuals and organizations.
+            Information from relevant, structured data sources like
+            <a href="https://www.opensanctions.org">OpenSanctions</a> will be linked up
+            to provide additional details for specialists.
         </p>
-        <h2>How do you tackle the problem?</h2>
+    
+        <h2>How will this work?</h2>
         <p>
-            First of all, individual media offers should be specifically selected whose
-            reporting is suitable for the extraction of actor networks.
+            In a first step, we want to build partnerships with a small selection of
+            relevant, investigative media whose reporting is most suitable for
+            extracting story graphs.
         </p>
         <p>
-            The implementation is to take place as a Python program that downloads
-            articles from media sites, then extracts the article text and metadata, and
-            identifies relevant names through various named entity extractors.
+            We'll download articles from such media sites, extract article text and
+            metadata, and annotate relevant person and company names through various
+            named entity extractors.
         </p>
         <p>
-            The actors mentioned should be disambiguated on the basis of joint naming
-            with others. Through simple analyses, the text should also provide clues
+            The entities mentioned should be disambiguated and merged between stories.
+            Through simple analyses, the text should also provide clues
             as to the nature of the relationships among the identified actors. These
             relationships are finally classified into a category system through manual
-            feedback. An automated classification should be trained in this way.
+            feedback. Automated classification can be developed as we collect a corpus
+            of training data.
         </p>
         <p>
-            As part of the project, exemplary networks of actors are to be extracted
-            for suitable research complexes, cleaned up and then published on an
-            interactive website with detailed naming of sources.
+            As part of the project, a small number of example story graphs will be built,
+            each focussed on an economic or political scandal in recent history.
         </p>
         <p>
-            It should be tested to enter relationships between actors with existing
-            Wikidata items including source information in the Wikidata database.
+            We also want to explore uploading some of the resulting relationship
+            information to Wikidata.
         </p>
         
-        <h2>Who is your tool aimed at?</h2>
+        <h2>Who is this for?</h2>
         <p>
-            The project generates research material and presents it on an interactive
-            website that can be integrated into the workflows of various user groups.
+            The project generates research material that can be integrated into
+            the reasearch workflows of various user groups:
         </p>
         <p>
-            Journalists who receive a systematic picture of the work of their
-            colleagues and other media and can therefore start research faster or
-            find connections between previously separate stories. I have access to
-            a professional network of journalists who can use the tool and
-            provide feedback.
+            <strong>Journalists</strong> who receive a systematic picture of
+            the work of their colleagues and will more easily find connections
+            between previously separate stories.
         </p>
         <p>
-            There are also service providers, for example in the areas of finance,
-            law, real estate or the art trade, who want to know whether there is
-            negative media coverage of one of their customers.
+            <strong>Businesses</strong> also want to understand the activities
+            of a particular company or person in depth, and keep an eye on whether
+            there is negative media coverage regarding one of their customers.
         </p>
 
         <h2>References</h2>
-        <p>
-            
-        </p>
+        <ul>
+            <li>
+                <a href="https://github.com/opensanctions/storyweb">Source code</a>
+            </li>
+            <li>
+                <a href="https://structureofnews.wordpress.com/structured-journalism/">Structured Journalism</a>
+            </li>
+            <li>
+                <a href="https://blogs.lse.ac.uk/polis/2022/06/07/meet-the-journalismai-fellows-of-2022/">Bad Will Hunting</a>
+            </li>
+            <li>
+                <a href="https://medialab.sciencespo.fr/en/tools/hyphe/">Sciences Po Media Lab: Hyphe</a>
+            </li>
+            <li>
+                <a href="https://github.com/adbar/trafilatura">trafilatura</a>
+            </li>
+            <li>
+                <a href="https://github.com/roomylee/awesome-relation-extraction">Awesome Relation Extraction</a>
+            </li>
+        </ul>
 
         <h2>Contact</h2>
         <p>
