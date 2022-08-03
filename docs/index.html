@@ -1,2 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<h1>StoryWeb for the rescue</h1>
+    <title>StoryWeb: turn stories into research data</title>
+    <meta name="description" content="Extract people, companies and their relationships from journalistic reporting.">
+    <meta name="author" content="Friedrich Lindenberg">
+
+    <meta property="og:title" content="StoryWeb: turn stories into research data">
+    <meta property="og:type" content="website">
+    <meta property="og:description" content="Extract people, companies and their relationships from journalistic reporting.">
+    
+    <link rel="icon" href="//www.opensanctions.org/favicon.ico">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+    <style>
+        #page {
+            max-width: 700px;
+            font-size: 1.2em;
+            margin-top: 2em;
+            line-height: 1.5;
+        }
+
+        h1 {
+            font-size: 1.8em;
+            font-weight: 500;
+            margin-bottom: 1em;
+        }
+
+        h2 {
+            font-size: 1.3em;
+            font-weight: 500;
+            margin-bottom: 0.8em;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container" id="page">
+        <h1>StoryWeb: turn stories into research data</h1>
+
+        <h2>What societal challenge does your prototype address?</h2>
+        <p>
+            The project aims to improve knowledge management in journalism. Because in
+            addition to interested citizens, there are also many groups that consume
+            news for professional reasons, e.g. researchers from business and science
+            and other journalists. They read the texts primarily to understand
+            connections that have already been uncovered.
+        </p>
+        <p>
+            Investigative journalism is often about networks of actors: Which
+            companies, associations and politicians are connected to each other, which
+            mafia structures operate across national borders or which cliques and family
+            structures are involved influence the allocation of posts. The article as a
+            form of presentation is a hurdle: In order to remain readable (and to minimize
+            the link to the competition), the journalist often has to omit the
+            background story and references to other texts and stories.
+        </p>
+        <p>
+            The project therefore opens up a different approach. The most important
+            connections of an actor to other characters and events should be summarized
+            at a glance in order to facilitate both the introduction and the in-depth
+            analysis of individual connections. Information from relevant, structured
+            data sources can also be integrated and provide additional details for
+            specialists.
+        </p>
+        <p>
+            The project wants to extract structured actor networks from journalistic
+            texts and analyze them. It is intended to make essential relationships
+            between the people and organizations mentioned usable as quantitative
+            data. In this way, complex stories can be connected as data sets for
+            future research.
+        </p>
+        <p>
+            StoryWeb will systematically structure research knowledge and find
+            connections between different stories and the work of different journalists
+            and media houses.
+        </p>
+        <h2>How do you tackle the problem?</h2>
+        <p>
+            First of all, individual media offers should be specifically selected whose
+            reporting is suitable for the extraction of actor networks.
+        </p>
+        <p>
+            The implementation is to take place as a Python program that downloads
+            articles from media sites, then extracts the article text and metadata, and
+            identifies relevant names through various named entity extractors.
+        </p>
+        <p>
+            The actors mentioned should be disambiguated on the basis of joint naming
+            with others. Through simple analyses, the text should also provide clues
+            as to the nature of the relationships among the identified actors. These
+            relationships are finally classified into a category system through manual
+            feedback. An automated classification should be trained in this way.
+        </p>
+        <p>
+            As part of the project, exemplary networks of actors are to be extracted
+            for suitable research complexes, cleaned up and then published on an
+            interactive website with detailed naming of sources.
+        </p>
+        <p>
+            It should be tested to enter relationships between actors with existing
+            Wikidata items including source information in the Wikidata database.
+        </p>
+        
+        <h2>Who is your tool aimed at?</h2>
+        <p>
+            The project generates research material and presents it on an interactive
+            website that can be integrated into the workflows of various user groups.
+        </p>
+        <p>
+            Journalists who receive a systematic picture of the work of their
+            colleagues and other media and can therefore start research faster or
+            find connections between previously separate stories. I have access to
+            a professional network of journalists who can use the tool and
+            provide feedback.
+        </p>
+        <p>
+            There are also service providers, for example in the areas of finance,
+            law, real estate or the art trade, who want to know whether there is
+            negative media coverage of one of their customers.
+        </p>
+
+        <h2>References</h2>
+        <p>
+            
+        </p>
+
+        <h2>Contact</h2>
+        <p>
+            Feel free to reach out to us at <code>friedrich@opensanctions.org</code>.
+        </p>
+        
+        <h2>Funding</h2>
+        <p>
+            This project receives financial support from the German Federal Ministry
+            for Education and Research (Bundesministerium für Bildung und Forschung,
+            BMBF) under the grant identifier <code>01IS22S42</code>. The full
+            responsibility for the content of this publication remains with its authors.
+        </p>
+        <a href="https://www.softwaresysteme.pt-dlr.de/de/software-sprint.php">
+            <img src="https://www.opensanctions.org/static/logo-bmbf.svg" width="200px" />
+        </a>
+        <a href="https://prototypefund.de/">
+            <img src="https://www.opensanctions.org/static/logo-ptf.svg" width="200px" />
+        </a>
+    </div>
+</body>
+</html>
