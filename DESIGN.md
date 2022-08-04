@@ -39,9 +39,8 @@ Loop of this:
 
 * Pick a particularly namey-looking tag that occurs a lot.
 * Show it to a user and prompt them to decide:
-    a. This is a new entity's name, make a new ID (shortuuid)
-    b. This is another surface form of an existing entity, show top 5 search results
-    c. If it is a surface form, ask them to decide if it's a strong or weak alias 
+    1. This is a new entity's name, make a new ID (shortuuid)
+    2. This is another surface form of an existing entity, show top 5 search results (if it is a surface form, ask them to decide if it's a strong or weak alias)
 * Focus the user process on the (new) entity
     * Show co-occurring other tags, including place and date tags
     * Maybe: show the sentence in which the tag is used in relation to an alias of the entity
