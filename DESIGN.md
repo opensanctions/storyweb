@@ -22,15 +22,15 @@ We want to go from a corpus of media reports to a knowledge graph for a specific
 
 Get everything into a massive SQL table a la:
 
-`article_url`, `sentence_no`, `tag_type`, `tag_label`, `tag_normalised`
+* `article_url`, `sentence_no`, `tag_type`, `tag_label`, `tag_normalised`
 
 e.g.:
 
-`https://rise.md/...`,`6`,`PER`,`Vladimir Plahotniuc`,`vladimir-plahotniuc`
-`https://rise.md/...`,`16`,`PER`,`Vlad Plahotniuc`,`vlad-plahotniuc`
-`https://istories.ru/...`,`1`,`PER`,`Владимир Плахотнюк`,`vladimir-plahotnuk`
-`https://istories.ru/...`,`5`,`PER`,`Плахотнюк`,`plahotnuk`
-`https://istories.ru/...`,`17`,`PER`,`Владимир Плахотнюк`,`vladimir-plahotnuk`
+* `https://rise.md/...`,`6`,`PER`,`Vladimir Plahotniuc`,`vladimir-plahotniuc`
+* `https://rise.md/...`,`16`,`PER`,`Vlad Plahotniuc`,`vlad-plahotniuc`
+* `https://istories.ru/...`,`1`,`PER`,`Владимир Плахотнюк`,`vladimir-plahotnuk`
+* `https://istories.ru/...`,`5`,`PER`,`Плахотнюк`,`plahotnuk`
+* `https://istories.ru/...`,`17`,`PER`,`Владимир Плахотнюк`,`vladimir-plahotnuk`
 
 
 # Step 4: Build an entity loom
