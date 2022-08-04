@@ -54,8 +54,8 @@ Resulting table:
 
 where role is one of:
 
-* `alias`
-* `weak_alias`
+* `alias` (e.g. `Vladimir Plahotniuc`)
+* `weak_alias` (e.g. `Plahotniuc's`, `the Oligarch`)
 * `context` (e.g. `Moldova` for Plahotniuc)
 * `related` (e.g. `Democratic Party` for Plahotniuc)
 * `unrelated` (e.g. `European Union` for Plahotniuc)
