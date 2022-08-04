@@ -3,11 +3,14 @@
 
 We want to go from a corpus of media reports to a knowledge graph for a specific set of journalistic stories (called it a `Scandal` for now, I guess `StoryLine` also works).
 
+
 ## Step 1: Crawling the reporting
 
 * Contact a bunch of GIJN member orgs to see if I may. Maybe offer a formalised quid pro quo deal ("I can parse your stories, you get story graph data")
 * Build a news crawler in async Python, store everything to a SQL database that allows for incremental crawls.
 * Output articles with metadata (https://schema.org/Article) as a JSONL file.
+    * Requires identifying which pages contain articles
+    * Requires extracting article metadata and body (e.g. via `newspaper`, `trafilatura`)
 
 
 ## Step 2: Extract named entities
@@ -28,6 +31,8 @@ e.g.:
 
 * `https://rise.md/...`,`6`,`PER`,`Vladimir Plahotniuc`,`vladimir-plahotniuc`
 * `https://rise.md/...`,`16`,`PER`,`Vlad Plahotniuc`,`vlad-plahotniuc`
+* `https://rise.md/...`,`4`,`LOC`,`Moldova`,`md`
+* `https://rise.md/...`,`4`,`ORG`,`Democratic Party`,`democratic-party`
 * `https://istories.ru/...`,`1`,`PER`,`Владимир Плахотнюк`,`vladimir-plahotnuk`
 * `https://istories.ru/...`,`5`,`PER`,`Плахотнюк`,`plahotnuk`
 * `https://istories.ru/...`,`17`,`PER`,`Владимир Плахотнюк`,`vladimir-plahotnuk`
@@ -76,11 +81,12 @@ Categories (tbd):
 * Family
 * Personal associate
 * Business associate
-* Nemesis (word?)
+* Nemesis, opponent, adversary, antagonist (word?)
 * Owner
 * In control of (Director, etc.)
 * Participant
 * Member/Employee
+* Payment, debt, business relationship
 
 
 ### Can we model events?
