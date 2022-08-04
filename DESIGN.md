@@ -33,18 +33,18 @@ e.g.:
 * `https://istories.ru/...`,`17`,`PER`,`Владимир Плахотнюк`,`vladimir-plahotnuk`
 
 
-# Step 4: Build an entity loom
+## Step 4: Build an entity loom
 
 Loop of this:
 
 * Pick a particularly namey-looking tag that occurs a lot.
 * Show it to a user and prompt them to decide:
     1. This is a new entity's name, make a new ID (shortuuid)
-    2. This is another surface form of an existing entity, show top 5 search results (if it is a surface form, ask them to decide if it's a strong or weak alias)
+    2. This is another surface form of an existing entity, show top 5 search results (ask if it's a strong or weak alias)
 * Focus the user process on the (new) entity
     * Show co-occurring other tags, including place and date tags
-    * Maybe: show the sentence in which the tag is used in relation to an alias of the entity
-    * For each tag prompt the user to say if it's a strong/weak alias, context or related entity or unrelated tag
+    * Maybe: show any sentence in which both the tag and an alias of the entity occur
+    * For each tag, prompt the user to say if it's a strong/weak alias, context or related entity or unrelated tag
     * Allow the user to finish working on this entity and start with a new one
 * Start over.
 
@@ -62,12 +62,12 @@ where role is one of:
 
 This process can probably later be partially automated, eg. if one of the related labels already is part of an existing entity, or by doing string similarity on the aliases.
 
-## How to disambiguate?
+### How to disambiguate?
 
 This doesn't yet allow us to say that there are two separate `Markus Braun` - one maybe an actor mentioned in a gossip piece, the other the CEO of Wirecard. We basically need a way to fork an entity and say: this alias, in this article - make it part of another entity! 
 
 
-# Step 5: Build a relationship loom
+## Step 5: Build a relationship loom
 
 Similar process as above: take two entities from Step 4 that co-occur in multiple articles, show the user any sentences that mention both and then propose to them to classify their relationship (or do it based on a keyword list, and merely double-check directionality). 
 
@@ -83,23 +83,24 @@ Categories (tbd):
 * Member/Employee
 
 
-## Can we model events?
+### Can we model events?
 
 Media reporting is all about events, do we want to reify them? How can we label events, maybe by deriving key words from the headline?
 
 
-# Step 6: Reconcile entities
+## Step 6: Reconcile entities
 
-This can maybe already happen in `nomenklatura`?
+This can maybe already happen in `nomenklatura`:
 
 * https://github.com/opensanctions/nomenklatura/blob/master/README.md
 
 
-# Step 7: Visualise, profit! 
+## Step 7: Visualise, profit! 
 
+* What can we compute on the output using NetworkX?
 * https://sayari-analytics.github.io/trellis/
 
 
-# Credits
+## Credits
 
 * Thanks to [Heleen](https://twitter.com/heleenemanuel) and [Johan](https://johanschuijt.nl/) :) 
