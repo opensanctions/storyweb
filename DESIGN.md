@@ -40,7 +40,7 @@ e.g.:
 
 ## Step 4: Build an entity loom
 
-Loop of this:
+The core of an interactive graph entity identity building tool could be an interactive loop like this: 
 
 * Pick a particularly namey-looking tag that occurs a lot.
 * Show it to a user and prompt them to decide:
@@ -57,7 +57,7 @@ Resulting table:
 
 `entity_id`, `tag_type`, `tag_label`, `tag_normalised`, `role`
 
-where role is one of:
+where `role` is one of:
 
 * `alias` (e.g. `Vladimir Plahotniuc`)
 * `weak_alias` (e.g. `Plahotniuc's`, `the Oligarch`)
@@ -71,6 +71,9 @@ This process can probably later be partially automated, eg. if one of the relate
 
 This doesn't yet allow us to say that there are two separate `Markus Braun` - one maybe an actor mentioned in a gossip piece, the other the CEO of Wirecard. We basically need a way to fork an entity and say: this alias, in this article - make it part of another entity! 
 
+### Clustering
+
+What I'm describing here is really a clustering process. Need to do some research on what scikit-learn-level machine learning for clustering looks like and how well it might apply.
 
 ## Step 5: Build a relationship loom
 
