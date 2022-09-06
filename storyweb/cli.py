@@ -5,6 +5,7 @@ from pathlib import Path
 from functools import wraps
 
 from storyweb.crawl import CrawlConfig
+from storyweb.crawl.crawler import Crawler
 from storyweb.db import create_db
 
 
@@ -33,7 +34,8 @@ def cli() -> None:
 async def crawl(config: Path) -> None:
     with open(config, "r") as fh:
         config_ = CrawlConfig.parse_raw(fh.read())
-    print(config_.dict())
+    crawler = Crawler(config_)
+    await crawler.run()
 
 
 @cli.command("init", help="Initialize the database")

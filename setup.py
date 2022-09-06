@@ -23,6 +23,7 @@ setup(
     install_requires=[
         "sqlalchemy[asyncio]",
         "aiosqlite",
+        "aiohttp",
         "asyncpg",
         "pydantic",
         "pydantic_yaml",
