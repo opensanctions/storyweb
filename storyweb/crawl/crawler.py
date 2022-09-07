@@ -1,10 +1,12 @@
 import asyncio
 import logging
+from asyncio import Queue
+from asyncio import Task as AsyncTask
 from typing import List, Set
 from aiohttp import ClientSession
 from storyweb.crawl.config import CrawlConfig
 from storyweb.crawl.site import Site
-from storyweb.crawl.page import Page
+from storyweb.crawl.task import Task
 
 log = logging.getLogger(__name__)
 
@@ -13,7 +15,7 @@ class Crawler(object):
     def __init__(self, config: CrawlConfig) -> None:
         self.config = config
         self.sites = [Site(self, c) for c in config.sites]
-        self.queue = asyncio.Queue[Page]()
+        self.queue = Queue[Task]()
         self.seen: Set[str] = set()
 
     async def worker(self, session: ClientSession):

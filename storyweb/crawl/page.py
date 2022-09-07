@@ -1,32 +1,69 @@
-from urllib.parse import urljoin
-from lxml import html
-from typing import TYPE_CHECKING
-from aiohttp import ClientSession
+from datetime import datetime
+from operator import or_
+from typing import Optional
+from pydantic import BaseModel
+from aiohttp import ClientResponse
+from sqlalchemy import or_
+from sqlalchemy.future import select
 
-if TYPE_CHECKING:
-    from storyweb.crawl.site import Site
+from storyweb.db.util import Conn, page_table, upsert
+
+MAX_CONTENT: int = 1024 * 1024 * 20
 
 
-class Page(object):
-    def __init__(self, site: "Site", url: str) -> None:
-        self.site = site
-        self.url = url
+class Page(BaseModel):
+    url: str
+    original_url: str
+    method: str = "GET"
+    ok: bool = False
+    status: Optional[int] = None
+    timestamp: datetime
+    # headers: Optional[str] = None
+    content_type: Optional[str] = None
+    charset: Optional[str] = None
+    content: Optional[bytes] = None
 
-    async def enqueue(self, url: str) -> None:
-        page = Page(self.site, url)
-        await self.site.crawler.queue.put(page)
+    class Config:
+        arbitrary_types_allowed = True
 
-    async def crawl(self, http: ClientSession) -> None:
-        async with http.get(self.url) as response:
-            print(self.site, self.url, response.status)
+    @classmethod
+    def from_response(cls, original_url: str, resp: ClientResponse) -> "Page":
+        # resp.headers.it
+        return cls(
+            url=str(resp.url),
+            original_url=original_url,
+            method=resp.method,
+            ok=resp.ok,
+            status=resp.status,
+            # headers=CIMultiDict(resp.headers.items()),
+            content_type=resp.content_type,
+            charset=resp.charset,
+            timestamp=datetime.utcnow(),
+        )
 
-            text = await response.read()
-            doc = html.fromstring(text)
-            # article = trafilatura.bare_extraction(doc)
-            # print(article)
-            for link in doc.findall(".//a"):
-                next_url = link.get("href")
-                if next_url is None:
-                    continue
-                next_url = urljoin(self.url, next_url)
-                await self.enqueue(next_url)
+    @classmethod
+    async def find(cls, url: str, conn: Conn) -> Optional["Page"]:
+        stmt = select(page_table)
+        clause = or_(
+            page_table.c.url == url,
+            page_table.c.original_url == url,
+        )
+        stmt = stmt.where(clause)
+        resp = await conn.execute(stmt)
+        row = resp.fetchone()
+        if row is None:
+            return None
+        return cls.parse_obj(row)
+
+    async def save(self, conn: Conn) -> None:
+        istmt = upsert(page_table).values([self.dict()])
+        values = dict(
+            ok=istmt.excluded.ok,
+            status=istmt.excluded.status,
+            content_type=istmt.excluded.content_type,
+            charset=istmt.excluded.charset,
+            content=istmt.excluded.content,
+            timestamp=istmt.excluded.timestamp,
+        )
+        stmt = istmt.on_conflict_do_update(index_elements=["url"], set_=values)
+        await conn.execute(stmt)
