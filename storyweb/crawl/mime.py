@@ -65,13 +65,14 @@ ASSETS = [
     "application/opensearchdescription+xml",
 ]
 
-GROUPS = {
+MIME_GROUPS = {
     "web": WEB,
     "images": IMAGES,
     "media": MEDIA,
     "documents": DOCUMENTS,
     "archives": ARCHIVES,
     "assets": ASSETS,
+    "nonweb": ASSETS + ARCHIVES + DOCUMENTS + MEDIA + IMAGES,
 }
 
 KNOWN = WEB + IMAGES + MEDIA + DOCUMENTS + ARCHIVES + ASSETS

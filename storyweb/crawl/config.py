@@ -2,14 +2,14 @@ from typing import List, Optional, Set
 from pydantic import BaseModel
 from pydantic_yaml import YamlModel
 
-from storyweb.crawl.ruledantic import Rules
+from storyweb.crawl.rule import Rules
 
 
 class SiteConfig(BaseModel):
     name: str
     urls: Set[str]
-    include: Optional[Rules]
-    exclude: Optional[Rules]
+    crawl: Optional[Rules]
+    parse: Optional[Rules]
 
 
 class CrawlConfig(YamlModel):

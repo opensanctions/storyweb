@@ -2,13 +2,14 @@ sites:
   - name: occrp
     urls:
       - https://occrp.org
-    include:
+    crawl:
       and:
         - or:
             - domain: reportingproject.net
             - domain: occrp.org
         - not:
             or:
+              - mime_group: nonweb
               - domain: vis.occrp.org
               - domain: aleph.occrp.org
               - domain: id.occrp.org

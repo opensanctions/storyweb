@@ -1,167 +1,177 @@
 import re
-from urllib.parse import urlparse
 from pantomime import normalize_mimetype
-from lxml import html
+from functools import cached_property
+from typing import Any, List, Literal, Optional, Union
+from urllib.parse import urlparse
+from pydantic import BaseModel, Field
+from storyweb.crawl.mime import MIME_GROUPS
 
-from storyweb.crawl.mime import GROUPS
-
-
-class Rule(object):
-    def __init__(self, value):
-        self.value = value
-
-    def configure(self):
-        pass
-
-    def apply(self, res):
-        raise NotImplementedError
-
-    def to_dict(self):
-        return self.value
-
-    @staticmethod
-    def get_rule(spec):
-        if not isinstance(spec, dict):
-            raise Exception("Not a valid rule: %r" % spec)
-        if len(spec) > 1:
-            raise Exception("Ambiguous rules: %r" % spec)
-        for rule_name, value in spec.items():
-            rule_cls = RULES.get(rule_name)
-            if rule_cls is None:
-                raise Exception("Unknown rule: %s" % rule_name)
-            rule = rule_cls(value)
-            rule.configure()
-            return rule
-        raise Exception("Empty rule: %s" % spec)
+from storyweb.crawl.page import Page
 
 
-class ListRule(Rule):
-    """An abstract type of rules that contain a set of other rules."""
+class BaseRule(BaseModel):
+    class Config:
+        # arbitrary_types_allowed = True
+        keep_untouched = (cached_property,)
 
-    def configure(self):
-        if not isinstance(self.value, (list, set, tuple)):
-            raise Exception("Not a list: %r", self.value)
-
-    @property
-    def children(self):
-        for rule in self.value:
-            yield self.get_rule(rule)
+    def check(self, url: str, page: Optional[Page]) -> Optional[bool]:
+        return None
 
 
-class OrRule(ListRule):
-    """Any nested rule must apply."""
+class MatchRule(BaseRule):
+    match: Union[Literal["all"], Literal["none"]]
 
-    def apply(self, res):
-        for rule in self.children:
-            if rule.apply(res):
+    def check(self, url: str, page: Optional[Page]) -> Optional[bool]:
+        return self.match == "all"
+
+
+class OrRule(BaseRule):
+    ors: List["Rules"] = Field(..., alias="or")
+
+    def check(self, url: str, page: Optional[Page]) -> Optional[bool]:
+        for rule in self.ors:
+            if rule.check(url, page) is True:
                 return True
         return False
 
 
-class AndRule(ListRule):
-    """All nested rules must apply."""
+class AndRule(BaseRule):
+    ands: List["Rules"] = Field(..., alias="and")
 
-    def apply(self, res):
-        for rule in self.children:
-            if not rule.apply(res):
+    def check(self, url: str, page: Optional[Page]) -> Optional[bool]:
+        for rule in self.ands:
+            if rule.check(url, page) is False:
                 return False
         return True
 
 
-class NotRule(Rule):
-    """Invert a nested rule."""
+class NotRule(BaseRule):
+    not_rule: "Rules" = Field(..., alias="not")
 
-    def configure(self):
-        self.rule = self.get_rule(self.value)
-
-    def apply(self, res):
-        return not self.rule.apply(res)
-
-
-class MatchAllRule(Rule):
-    """Just say yes."""
-
-    def apply(self, res):
-        return True
+    def check(self, url: str, page: Optional[Page]) -> Optional[bool]:
+        result = self.not_rule.check(url, page)
+        if result is None:
+            return None
+        return not result
 
 
-class MimeTypeRule(Rule):
-    def configure(self):
-        self.clean = normalize_mimetype(self.value)
+class UrlBaseRule(BaseRule):
+    def check_url(self, url: str) -> bool:
+        return False
 
-    def apply(self, res):
-        return res.content_type == self.clean
-
-
-class MimeGroupRule(Rule):
-    def apply(self, res):
-        if res.content_type.startswith("%s/" % self.value):
+    def check(self, url: str, page: Optional[Page]) -> Optional[bool]:
+        if self.check_url(url):
             return True
-        return res.content_type in GROUPS.get(self.value, [])
+        if page is not None and page.url is not None and page.url != url:
+            if self.check_url(page.url):
+                return True
+        return False
 
 
-class DomainRule(Rule):
-    """Match all pages from a particular domain."""
+class DomainRule(UrlBaseRule):
+    domain: str
 
-    def clean_domain(self, domain):
+    def clean_domain(self, domain: Optional[str]) -> str:
         if domain is None:
-            return
+            return "nothing.example.com"
         pr = urlparse(domain)
         domain = pr.hostname or pr.path
         domain = domain.strip(".").lower()
         return domain
 
-    def configure(self):
-        if not isinstance(self.value, str):
-            raise Exception("Not a domain: %r", self.value)
-        self.domain = self.clean_domain(self.value)
-        self.sub_domain = ".%s" % self.domain
+    @cached_property
+    def cleaned_domain(self) -> str:
+        return self.clean_domain(self.domain)
 
-    def apply(self, res):
-        hostname = self.clean_domain(res.url)
-        if hostname is None or self.domain is None:
-            return False
-        if hostname == self.domain:
+    def check_url(self, url: str) -> bool:
+        domain = self.clean_domain(url)
+        if domain == self.cleaned_domain:
             return True
-        if hostname.endswith(self.sub_domain):
+        if domain.endswith(f".{self.cleaned_domain}"):
             return True
         return False
 
 
-class UrlPatternRule(Rule):
-    def configure(self):
-        if not isinstance(self.value, str):
-            raise Exception("Not a regex: %r", self.value)
-        self.pattern = re.compile(self.value, re.I | re.U)
+class PatternRule(BaseRule):
+    pattern: str
 
-    def apply(self, res):
-        if self.pattern.match(res.url):
+    @cached_property
+    def rex(self) -> re.Pattern:
+        return re.compile(self.pattern, re.I | re.U)
+
+    def check_url(self, url: str) -> bool:
+        return self.rex.match(url) is not None
+
+
+class PrefixRule(BaseRule):
+    prefix: str
+
+    def check_url(self, url: str) -> bool:
+        return url.startswith(self.prefix)
+
+
+class XpathRule(BaseRule):
+    xpath: str
+
+    def check(self, url: str, page: Optional[Page]) -> Optional[bool]:
+        if page is None:
+            return None
+        if page.doc.xpath(self.xpath) is not None:
             return True
         return False
 
 
-class XpathRule(Rule):
-    def configure(self: object) -> None:
-        if not isinstance(self.value, str):
-            raise Exception("Not an xpath: %r", self.value)
-        self.xpath = self.value
+class ElementRule(BaseRule):
+    element: str
 
-    def apply(self: object, res: object) -> bool:
-        markup = html.fromstring(res.text)
-        if markup.xpath(self.xpath) is not None:
+    def check(self, url: str, page: Optional[Page]) -> Optional[bool]:
+        if page is None:
+            return None
+        if page.doc.find(self.element) is not None:
             return True
         return False
 
 
-RULES = {}
-RULES["or"] = OrRule
-RULES["any"] = OrRule
-RULES["and"] = AndRule
-RULES["all"] = AndRule
-RULES["not"] = NotRule
-RULES["match_all"] = MatchAllRule
-RULES["domain"] = DomainRule
-RULES["mime_type"] = MimeTypeRule
-RULES["mime_group"] = MimeGroupRule
-RULES["pattern"] = UrlPatternRule
-RULES["xpath"] = XpathRule
+class MimeTypeRule(BaseRule):
+    mime_type: str
+
+    @cached_property
+    def mime_type_norm(self) -> str:
+        return normalize_mimetype(self.mime_type)
+
+    def check(self, url: str, page: Optional[Page]) -> Optional[bool]:
+        if page is None:
+            return None
+        content_type = normalize_mimetype(self.mime_type)
+        return content_type == self.mime_type_norm
+
+
+class MimeGroupRule(BaseRule):
+    mime_group: str
+
+    def check(self, url: str, page: Optional[Page]) -> Optional[bool]:
+        if page is None:
+            return None
+        content_type = normalize_mimetype(page.content_type)
+        if content_type.startswith(f"{self.mime_group}/"):
+            return True
+        group = MIME_GROUPS.get(self.mime_group, [])
+        return content_type in group
+
+
+Rules = Union[
+    MatchRule,
+    OrRule,
+    AndRule,
+    NotRule,
+    DomainRule,
+    PatternRule,
+    PrefixRule,
+    XpathRule,
+    ElementRule,
+    MimeTypeRule,
+    MimeGroupRule,
+]
+AndRule.update_forward_refs()
+OrRule.update_forward_refs()
+NotRule.update_forward_refs()

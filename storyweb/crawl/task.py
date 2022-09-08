@@ -38,11 +38,8 @@ class Task(object):
         await self.site.crawler.queue.put(task)
 
     def check_crawl(self, url: str, page: Optional[Page]) -> bool:
-        if self.site.config.include is not None:
-            if not self.site.config.include.check(url, page):
-                return False
-        if self.site.config.exclude is not None:
-            if self.site.config.exclude.check(url, page):
+        if self.site.config.crawl is not None:
+            if self.site.config.crawl.check(url, page) is False:
                 return False
         return True
 
@@ -76,16 +73,16 @@ class Task(object):
 
     async def crawl(self, http: ClientSession) -> None:
         async with engine.begin() as conn:
-            cached = await Page.find(conn, self.url)
-            if cached is not None:
-                log.info("Cache hit: %r", cached.url)
-                await self.handle_page(cached)
-                return
+            if self.url not in self.site.config.urls:
+                cached = await Page.find(conn, self.url)
+                if cached is not None:
+                    # log.info("Cache hit: %r", cached.url)
+                    await self.handle_page(cached)
+                    return
 
             try:
+                log.info("Crawl: %r", self.url)
                 async with http.get(self.url) as response:
-                    # print(self.site, self.url, response.status)
-
                     page = Page.from_response(self.url, response)
                     await self.retrieve_content(page, response)
             except ClientConnectionError as ce:
