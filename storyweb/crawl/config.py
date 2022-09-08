@@ -1,11 +1,15 @@
-from typing import List, Set
+from typing import List, Optional, Set
 from pydantic import BaseModel
 from pydantic_yaml import YamlModel
+
+from storyweb.crawl.ruledantic import Rules
 
 
 class SiteConfig(BaseModel):
     name: str
     urls: Set[str]
+    include: Optional[Rules]
+    exclude: Optional[Rules]
 
 
 class CrawlConfig(YamlModel):
