@@ -4,7 +4,7 @@ from asyncio import Queue
 from asyncio import Task as AsyncTask
 from typing import List, Set
 from aiohttp import ClientSession
-from storyweb.crawl.config import CrawlConfig
+from storyweb.config import CrawlConfig
 from storyweb.crawl.site import Site
 from storyweb.crawl.task import Task
 

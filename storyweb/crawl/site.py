@@ -1,5 +1,5 @@
 from typing import TYPE_CHECKING, Generator
-from storyweb.crawl.config import SiteConfig
+from storyweb.config import SiteConfig
 from storyweb.crawl.task import Task
 
 if TYPE_CHECKING:

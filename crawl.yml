@@ -2,6 +2,9 @@ sites:
   - name: occrp
     urls:
       - https://occrp.org
+      - https://www.occrp.org/en/investigations
+      - https://www.occrp.org/en/daily
+      - https://www.occrp.org/en/blog
     crawl:
       and:
         - or:
@@ -12,5 +15,33 @@ sites:
               - mime_group: nonweb
               - domain: vis.occrp.org
               - domain: aleph.occrp.org
+              - domain: admin.occrp.org
               - domain: id.occrp.org
               - domain: cdn.occrp.org
+    parse:
+      or:
+        - element: .//article//li[@class="authors"]
+        - element: .//aside[@class="byline"]
+        - element: .//section[@class="blog"]
+        - element: .//div[@class="occrp-story"]
+  - name: icij
+    urls:
+      - https://icij.org
+    crawl:
+      and:
+        - or:
+            - domain: icij.orgg
+    #     - not:
+    #         or:
+    #           - mime_group: nonweb
+    #           - domain: vis.occrp.org
+    #           - domain: aleph.occrp.org
+    #           - domain: admin.occrp.org
+    #           - domain: id.occrp.org
+    #           - domain: cdn.occrp.org
+    # parse:
+    #   or:
+    #     - element: .//article//li[@class="authors"]
+    #     - element: .//aside[@class="byline"]
+    #     - element: .//section[@class="blog"]
+    #     - element: .//div[@class="occrp-story"]

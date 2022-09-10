@@ -6,7 +6,7 @@ from urllib.parse import urlparse
 from pydantic import BaseModel, Field
 from storyweb.crawl.mime import MIME_GROUPS
 
-from storyweb.crawl.page import Page
+from storyweb.db.page import Page
 
 
 class BaseRule(BaseModel):
@@ -114,7 +114,7 @@ class XpathRule(BaseRule):
     xpath: str
 
     def check(self, url: str, page: Optional[Page]) -> Optional[bool]:
-        if page is None:
+        if page is None or not page.retrieved:
             return None
         if page.doc.xpath(self.xpath) is not None:
             return True
@@ -125,7 +125,7 @@ class ElementRule(BaseRule):
     element: str
 
     def check(self, url: str, page: Optional[Page]) -> Optional[bool]:
-        if page is None:
+        if page is None or not page.retrieved:
             return None
         if page.doc.find(self.element) is not None:
             return True

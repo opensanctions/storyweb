@@ -40,10 +40,12 @@ async def create_db():
 page_table = Table(
     "page",
     meta,
+    Column("site", Unicode(1024)),
     Column("url", Unicode(8192), primary_key=True),
     Column("original_url", Unicode(8192), index=True),
     Column("method", Unicode(16)),
     Column("ok", Boolean),
+    Column("parse", Boolean),
     Column("status", Integer),
     Column("timestamp", DateTime, nullable=False),
     Column("headers", Unicode()),

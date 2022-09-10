@@ -1,3 +1,3 @@
-from storyweb.crawl.config import CrawlConfig
+from storyweb.config import CrawlConfig
 
 __all__ = ["CrawlConfig"]
