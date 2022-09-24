@@ -11,7 +11,6 @@ from storyweb.db.page import Page
 
 class BaseRule(BaseModel):
     class Config:
-        # arbitrary_types_allowed = True
         keep_untouched = (cached_property,)
 
     def check(self, url: str, page: Optional[Page]) -> Optional[bool]:

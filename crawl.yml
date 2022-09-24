@@ -24,24 +24,64 @@ sites:
         - element: .//aside[@class="byline"]
         - element: .//section[@class="blog"]
         - element: .//div[@class="occrp-story"]
-  - name: icij
+  # - name: icij
+  #   urls:
+  #     - https://www.icij.org/
+  #     - https://www.icij.org/inside-icij/
+  #   crawl:
+  #     and:
+  #       - or:
+  #           - domain: icij.org
+  #       - not:
+  #           or:
+  #             - domain: offshoreleaks.icij.org
+  #             - domain: medicaldevices.icij.org
+  #   parse:
+  #     or:
+  #       - element: .//time[@class="post-published"]
+
+  # - name: dossier_center
+  #   urls:
+  #     - https://dossier.center/
+  #     - https://dossier.center/investigations/
+  #     - https://dossier.center/persons/
+  #     - https://fsb.dossier.center/
+  #     - https://fsb.dossier.center/content/
+  #   crawl:
+  #     and:
+  #       - or:
+  #           - domain: dossier.center
+  #   parse:
+  #     or:
+  #       - element: .//meta[@content="article"]
+  #       - domain: fsb.dossier.center
+
+  - name: dossier_at
     urls:
-      - https://icij.org
+      - https://www.dossier.at/
+      - https://www.dossier.at/dossiers/aktuelles/
+      - https://www.dossier.at/dossiers/omv/
+      - https://www.dossier.at/dossiers/kronen-zeitung/
     crawl:
       and:
         - or:
-            - domain: icij.orgg
-    #     - not:
-    #         or:
-    #           - mime_group: nonweb
-    #           - domain: vis.occrp.org
-    #           - domain: aleph.occrp.org
-    #           - domain: admin.occrp.org
-    #           - domain: id.occrp.org
-    #           - domain: cdn.occrp.org
-    # parse:
-    #   or:
-    #     - element: .//article//li[@class="authors"]
-    #     - element: .//aside[@class="byline"]
-    #     - element: .//section[@class="blog"]
-    #     - element: .//div[@class="occrp-story"]
+            - domain: www.dossier.at
+        - not:
+            or:
+              - prefix: https://www.dossier.at/asyl/karte
+              - prefix: https://www.dossier.at/fileadmin/
+    parse:
+      or:
+        - element: .//article[@class="article"]
+
+  - name: daphne_foundation
+    urls:
+      - https://www.daphne.foundation/en/
+      - https://www.daphne.foundation/en/news
+    crawl:
+      and:
+        - or:
+            - domain: daphne.foundation
+    parse:
+      or:
+        - element: .//article

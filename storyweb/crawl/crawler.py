@@ -4,6 +4,7 @@ from asyncio import Queue
 from asyncio import Task as AsyncTask
 from typing import List, Set
 from aiohttp import ClientSession
+from aiohttp.client import ClientTimeout
 from storyweb.config import CrawlConfig
 from storyweb.crawl.site import Site
 from storyweb.crawl.task import Task
@@ -25,6 +26,7 @@ class Crawler(object):
 
                 # TODO: use hashes?
                 if page.url in self.seen:
+                    self.queue.task_done()
                     continue
                 self.seen.add(page.url)
 
@@ -42,7 +44,8 @@ class Crawler(object):
                 await self.queue.put(page)
 
         headers = {"User-Agent": self.config.user_agent}
-        async with ClientSession(headers=headers) as session:
+        timeout = ClientTimeout(10)
+        async with ClientSession(headers=headers, timeout=timeout) as session:
             tasks: List[asyncio.Task[None]] = []
             for _ in range(self.config.concurrency):
                 task = asyncio.create_task(self.worker(session))

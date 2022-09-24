@@ -48,7 +48,7 @@ async def parse(config: Path, outpath: Path) -> None:
     with open(config, "r") as fh:
         config_ = CrawlConfig.parse_raw(fh.read())
     parser = Parser(config_)
-    await parser.run()
+    await parser.run(outpath)
 
 
 @cli.command("init", help="Initialize the database")

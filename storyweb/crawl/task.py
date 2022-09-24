@@ -89,14 +89,14 @@ class Task(object):
             if self.url not in self.site.config.urls:
                 cached = await Page.find(conn, self.url)
                 if cached is not None:
-                    # log.info("Cache hit: %r", cached.url)
+                    log.info("Cache hit: %r", cached.url)
                     await self.handle_page(cached)
                     await cached.update_parse(conn)
                     return
 
             try:
-                log.info("Crawl: %r", self.url)
                 async with http.get(self.url) as response:
+                    log.info("Crawl [%d]: %r", response.status, self.url)
                     page = Page.from_response(self.site.config.name, self.url, response)
                     await self.retrieve_content(page, response)
             except ClientConnectionError as ce:
