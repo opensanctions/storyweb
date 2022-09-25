@@ -1,13 +1,12 @@
 import re
 from pantomime import normalize_mimetype
 from functools import cached_property
-from typing import Any, List, Literal, Optional, Union
-from urllib.parse import urlparse
+from typing import List, Literal, Optional, Union
 from pydantic import BaseModel, Field
-from storyweb.crawl.mime import MIME_GROUPS
-from storyweb.crawl.url import URL
 
-from storyweb.db.page import Page
+from mediacrawl.mime import MIME_GROUPS
+from mediacrawl.url import URL
+from mediacrawl.page import Page
 
 
 class BaseRule(BaseModel):

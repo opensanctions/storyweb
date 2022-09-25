@@ -3,13 +3,13 @@ from typing import TYPE_CHECKING, Generator, Optional
 from asyncio.exceptions import TimeoutError
 from aiohttp import ClientSession, ClientResponse
 from aiohttp.client_exceptions import ClientConnectionError, ClientPayloadError
-from storyweb.crawl.url import URL
 
-from storyweb.db.page import Page
-from storyweb.db.util import db_connect
+from mediacrawl.url import URL
+from mediacrawl.page import Page
+from mediacrawl.db import db_connect
 
 if TYPE_CHECKING:
-    from storyweb.crawl.site import Site
+    from mediacrawl.site import Site
 
 MAX_CONTENT: int = 1024 * 1024 * 20
 log = logging.getLogger(__name__)

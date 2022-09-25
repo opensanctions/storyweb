@@ -3,20 +3,18 @@ from asyncio import Semaphore
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 from sqlalchemy import MetaData
-from sqlalchemy.types import JSON
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncConnection
 from sqlalchemy import Table, Column, Integer, DateTime, Unicode, Boolean, LargeBinary
 from sqlalchemy.dialects.postgresql import insert as upsert
-
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncConnection
 
 
 KEY_LEN = 255
 VALUE_LEN = 65535
 Conn = AsyncConnection
 
-# __all__ = ["Conn", "engine_tx", "create_db", "upsert"]
+__all__ = ["Conn", "create_db", "db_connect", "upsert"]
 
-db_uri = os.environ.get("STORYWEB_DATABASE_URL", "sqlite+aiosqlite:///storyweb.db")
+db_uri = os.environ.get("MEDIACRAWL_DATABASE_URL", "sqlite+aiosqlite:///mediacrawl.db")
 db_semaphore = Semaphore(50)
 engine = create_async_engine(db_uri)
 meta = MetaData()

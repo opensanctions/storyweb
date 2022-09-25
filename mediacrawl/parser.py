@@ -9,9 +9,9 @@ from typing import Dict, List, Optional
 from articledata import Article
 from trafilatura import bare_extraction
 
-from storyweb.config import SiteConfig
-from storyweb.db.page import Page
-from storyweb.db.util import engine
+from mediacrawl.config import SiteConfig
+from mediacrawl.page import Page
+from mediacrawl.db import engine
 
 logging.getLogger("trafilatura").setLevel(logging.WARNING)
 log = logging.getLogger(__name__)

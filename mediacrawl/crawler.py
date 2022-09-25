@@ -4,10 +4,10 @@ from asyncio import Queue
 from typing import List, Set
 from aiohttp import ClientSession, TCPConnector
 from aiohttp.client import ClientTimeout
-from storyweb.config import CrawlConfig
-from storyweb.crawl.site import Site
-from storyweb.crawl.task import Task
-from storyweb.crawl.url import URL
+from mediacrawl.config import CrawlConfig
+from mediacrawl.site import Site
+from mediacrawl.task import Task
+from mediacrawl.url import URL
 
 log = logging.getLogger(__name__)
 

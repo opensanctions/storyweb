@@ -8,9 +8,9 @@ from lxml import html
 from sqlalchemy import or_
 from sqlalchemy import update
 from sqlalchemy.future import select
-from storyweb.crawl.url import URL
 
-from storyweb.db.util import Conn, page_table, upsert
+from mediacrawl.url import URL
+from mediacrawl.db import Conn, page_table, upsert
 
 
 class Page(BaseModel):

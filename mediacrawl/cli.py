@@ -5,10 +5,10 @@ import asyncio
 from pathlib import Path
 from functools import wraps
 
-from storyweb.crawl import CrawlConfig
-from storyweb.crawl.crawler import Crawler
-from storyweb.parse import Parser
-from storyweb.db import create_db
+from mediacrawl.config import CrawlConfig
+from mediacrawl.crawler import Crawler
+from mediacrawl.parser import Parser
+from mediacrawl.db import create_db
 
 
 log = logging.getLogger(__name__)
