@@ -1,9 +1,9 @@
-import logging
 import orjson
-from charset_normalizer import from_bytes
-from io import BufferedWriter
+import logging
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from io import BufferedWriter
+from charset_normalizer import from_bytes
+from typing import Dict, List, Optional
 from articledata import Article
 from trafilatura import bare_extraction
 

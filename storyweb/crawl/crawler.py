@@ -1,7 +1,6 @@
 import asyncio
 import logging
 from asyncio import Queue
-from asyncio import Task as AsyncTask
 from typing import List, Set
 from aiohttp import ClientSession, TCPConnector
 from aiohttp.client import ClientTimeout

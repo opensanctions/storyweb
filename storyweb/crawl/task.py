@@ -1,3 +1,4 @@
+import random
 import asyncio
 import logging
 from typing import TYPE_CHECKING, Optional
@@ -93,14 +94,14 @@ class Task(object):
                     await cached.update_parse(conn)
                     return
 
-        await asyncio.sleep(7)
         try:
-            async with http.get(self.url) as response:
-                if response.status > 299:
-                    return
-                log.info("Crawl [%d]: %r", response.status, self.url)
-                page = Page.from_response(self.site.config.name, self.url, response)
-                await self.retrieve_content(page, response)
+            async with self.site.delay_url(self.url):
+                async with http.get(self.url) as response:
+                    if response.status > 299:
+                        return
+                    log.info("Crawl [%d]: %r", response.status, self.url)
+                    page = Page.from_response(self.site.config.name, self.url, response)
+                    await self.retrieve_content(page, response)
         except ClientConnectionError as ce:
             log.error("Error [%r]: %r", self, ce)
             return

@@ -7,6 +7,8 @@ from storyweb.crawl.rule import Rules
 
 class SiteConfig(BaseModel):
     name: str
+    delay: float = 0.0
+    domain_concurrency: int = 10
     urls: Set[str]
     crawl: Optional[Rules]
     parse: Optional[Rules]

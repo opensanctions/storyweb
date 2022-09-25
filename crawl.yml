@@ -24,21 +24,26 @@ sites:
         - element: .//aside[@class="byline"]
         - element: .//section[@class="blog"]
         - element: .//div[@class="occrp-story"]
-  # - name: icij
-  #   urls:
-  #     - https://www.icij.org/
-  #     - https://www.icij.org/inside-icij/
-  #   crawl:
-  #     and:
-  #       - or:
-  #           - domain: icij.org
-  #       - not:
-  #           or:
-  #             - domain: offshoreleaks.icij.org
-  #             - domain: medicaldevices.icij.org
-  #   parse:
-  #     or:
-  #       - element: .//time[@class="post-published"]
+
+  - name: icij
+    urls:
+      - https://www.icij.org/
+      - https://www.icij.org/inside-icij/
+    domain_concurrency: 1
+    delay: 1
+    crawl:
+      and:
+        - or:
+            - domain: icij.org
+        - not:
+            or:
+              - domain: offshoreleaks.icij.org
+              - domain: medicaldevices.icij.org
+              - domain: wwwmaster.icij.org
+              - domain: media.icij.org
+    parse:
+      or:
+        - element: .//time[@class="post-published"]
 
   - name: dossier_center
     urls:
@@ -62,6 +67,8 @@ sites:
       - https://www.dossier.at/dossiers/aktuelles/
       - https://www.dossier.at/dossiers/omv/
       - https://www.dossier.at/dossiers/kronen-zeitung/
+    domain_concurrency: 1
+    delay: 0.5
     crawl:
       and:
         - or:
@@ -69,7 +76,7 @@ sites:
         - not:
             or:
               - prefix: https://www.dossier.at/asyl/karte
-              - prefix: https://www.dossier.at/fileadmin/
+              - prefix: https://www.dossier.at/fileadmin
     parse:
       or:
         - element: .//article[@class="article"]
@@ -89,10 +96,16 @@ sites:
   - name: istories_media
     urls:
       - https://istories.media/
+    domain_concurrency: 1
+    delay: 1
     crawl:
       and:
         - or:
             - domain: istories.media
+        - not:
+            or:
+              - domain: static.istories.media
+              - domain: zarubezhnye-aktivy.istories.media
     parse:
       or:
         - element: .//div[@class="article-info"]

@@ -19,7 +19,7 @@ Conn = AsyncConnection
 db_uri = os.environ.get("STORYWEB_DATABASE_URL", "sqlite+aiosqlite:///storyweb.db")
 engine = create_async_engine(db_uri)
 meta = MetaData()
-sema = Semaphore(30)
+sema = Semaphore(50)
 
 
 async def create_db():
