@@ -3,7 +3,7 @@ import logging
 from asyncio import Queue
 from asyncio import Task as AsyncTask
 from typing import List, Set
-from aiohttp import ClientSession
+from aiohttp import ClientSession, TCPConnector
 from aiohttp.client import ClientTimeout
 from storyweb.config import CrawlConfig
 from storyweb.crawl.site import Site
@@ -38,14 +38,19 @@ class Crawler(object):
         except KeyboardInterrupt:
             pass
 
-    async def run(self):
+    async def run(self, sites: List[str]):
         for site in self.sites:
+            if len(sites) and site.config.name not in sites:
+                continue
             for page in site.seeds():
                 await self.queue.put(page)
 
         headers = {"User-Agent": self.config.user_agent}
         timeout = ClientTimeout(10)
-        async with ClientSession(headers=headers, timeout=timeout) as session:
+        connector = TCPConnector(limit_per_host=5)
+        async with ClientSession(
+            headers=headers, timeout=timeout, connector=connector
+        ) as session:
             tasks: List[asyncio.Task[None]] = []
             for _ in range(self.config.concurrency):
                 task = asyncio.create_task(self.worker(session))

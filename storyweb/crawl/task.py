@@ -1,13 +1,12 @@
+import asyncio
 import logging
-from xml.etree.ElementInclude import include
-from lxml import html
 from typing import TYPE_CHECKING, Optional
 from urllib.parse import urljoin, urlparse
 from aiohttp import ClientSession, ClientResponse
 from aiohttp.client_exceptions import ClientConnectionError, ClientPayloadError
 
 from storyweb.db.page import Page
-from storyweb.db.util import engine
+from storyweb.db.util import db_connect
 
 if TYPE_CHECKING:
     from storyweb.crawl.site import Site
@@ -85,8 +84,8 @@ class Task(object):
         page.content = content
 
     async def crawl(self, http: ClientSession) -> None:
-        async with engine.begin() as conn:
-            if self.url not in self.site.config.urls:
+        if self.url not in self.site.config.urls:
+            async with db_connect() as conn:
                 cached = await Page.find(conn, self.url)
                 if cached is not None:
                     log.info("Cache hit: %r", cached.url)
@@ -94,16 +93,21 @@ class Task(object):
                     await cached.update_parse(conn)
                     return
 
-            try:
-                async with http.get(self.url) as response:
-                    log.info("Crawl [%d]: %r", response.status, self.url)
-                    page = Page.from_response(self.site.config.name, self.url, response)
-                    await self.retrieve_content(page, response)
-            except ClientConnectionError as ce:
-                log.error("Error [%r]: %r", self, ce)
-                return
+        await asyncio.sleep(7)
+        try:
+            async with http.get(self.url) as response:
+                if response.status > 299:
+                    return
+                log.info("Crawl [%d]: %r", response.status, self.url)
+                page = Page.from_response(self.site.config.name, self.url, response)
+                await self.retrieve_content(page, response)
+        except ClientConnectionError as ce:
+            log.error("Error [%r]: %r", self, ce)
+            return
 
-            await self.handle_page(page)
+        await self.handle_page(page)
+
+        async with db_connect() as conn:
             await page.save(conn)
 
     def __repr__(self) -> str:

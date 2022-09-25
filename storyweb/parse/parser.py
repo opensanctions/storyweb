@@ -3,7 +3,7 @@ import orjson
 from charset_normalizer import from_bytes
 from io import BufferedWriter
 from pathlib import Path
-from typing import Dict, Optional, Union
+from typing import Dict, List, Optional, Union
 from articledata import Article
 from trafilatura import bare_extraction
 
@@ -22,6 +22,11 @@ class Parser(object):
     def page_text(self, page: Page) -> Optional[str]:
         if page.content is None:
             return None
+        if len(page.content) < 100:
+            return None
+        if page.content.startswith(b"%PDF-"):
+            return None
+
         if page.charset is not None:
             try:
                 return page.content.decode(page.charset)
@@ -52,9 +57,6 @@ class Parser(object):
         if text is None:
             return None
 
-        if len(text) < 100 or text.startswith("%PDF-"):
-            return None
-
         extract: Dict[str, str] = bare_extraction(
             text, url=page.url, include_comments=False
         )
@@ -71,12 +73,16 @@ class Parser(object):
         return article
         # print(list(extract.keys()))
 
-    async def run(self, outpath: Path):
+    async def run(self, outpath: Path, sites: List[str]):
         outpath.mkdir(parents=True, exist_ok=True)
         handles: Dict[str, BufferedWriter] = {}
         async with engine.begin() as conn:
             async for page in Page.iter_parse(conn):
+                if len(sites) and page.site not in sites:
+                    continue
                 article = await self.parse(page)
+                if article is None:
+                    continue
                 if article.site not in handles:
                     path = outpath.joinpath(f"{article.site}.ijson")
                     handles[article.site] = open(path, "wb")

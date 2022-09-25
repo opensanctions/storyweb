@@ -13,6 +13,6 @@ class SiteConfig(BaseModel):
 
 
 class CrawlConfig(YamlModel):
-    concurrency: int = 10
+    concurrency: int = 100
     user_agent: str = "Mozilla/5.0 (storyweb)"
     sites: List[SiteConfig]

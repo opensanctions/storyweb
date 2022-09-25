@@ -1,5 +1,7 @@
 import os
-from contextlib import contextmanager
+from asyncio import Semaphore
+from contextlib import asynccontextmanager
+from typing import AsyncGenerator
 from sqlalchemy import MetaData
 from sqlalchemy.types import JSON
 from sqlalchemy import Table, Column, Integer, DateTime, Unicode, Boolean, LargeBinary
@@ -17,12 +19,20 @@ Conn = AsyncConnection
 db_uri = os.environ.get("STORYWEB_DATABASE_URL", "sqlite+aiosqlite:///storyweb.db")
 engine = create_async_engine(db_uri)
 meta = MetaData()
+sema = Semaphore(30)
 
 
 async def create_db():
     async with engine.begin() as conn:
         # await conn.run_sync(meta.drop_all)
         await conn.run_sync(meta.create_all)
+
+
+@asynccontextmanager
+async def db_connect() -> AsyncGenerator[Conn, None]:
+    async with sema:
+        async with engine.begin() as conn:
+            yield conn
 
 
 page_table = Table(
