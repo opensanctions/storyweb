@@ -5,6 +5,7 @@ from typing import Any, List, Literal, Optional, Union
 from urllib.parse import urlparse
 from pydantic import BaseModel, Field
 from storyweb.crawl.mime import MIME_GROUPS
+from storyweb.crawl.url import URL
 
 from storyweb.db.page import Page
 
@@ -13,21 +14,21 @@ class BaseRule(BaseModel):
     class Config:
         keep_untouched = (cached_property,)
 
-    def check(self, url: str, page: Optional[Page]) -> Optional[bool]:
+    def check(self, url: URL, page: Optional[Page]) -> Optional[bool]:
         return None
 
 
 class MatchRule(BaseRule):
     match: Union[Literal["all"], Literal["none"]]
 
-    def check(self, url: str, page: Optional[Page]) -> Optional[bool]:
+    def check(self, url: URL, page: Optional[Page]) -> Optional[bool]:
         return self.match == "all"
 
 
 class OrRule(BaseRule):
     ors: List["Rules"] = Field(..., alias="or")
 
-    def check(self, url: str, page: Optional[Page]) -> Optional[bool]:
+    def check(self, url: URL, page: Optional[Page]) -> Optional[bool]:
         for rule in self.ors:
             if rule.check(url, page) is True:
                 return True
@@ -37,7 +38,7 @@ class OrRule(BaseRule):
 class AndRule(BaseRule):
     ands: List["Rules"] = Field(..., alias="and")
 
-    def check(self, url: str, page: Optional[Page]) -> Optional[bool]:
+    def check(self, url: URL, page: Optional[Page]) -> Optional[bool]:
         for rule in self.ands:
             if rule.check(url, page) is False:
                 return False
@@ -47,7 +48,7 @@ class AndRule(BaseRule):
 class NotRule(BaseRule):
     not_rule: "Rules" = Field(..., alias="not")
 
-    def check(self, url: str, page: Optional[Page]) -> Optional[bool]:
+    def check(self, url: URL, page: Optional[Page]) -> Optional[bool]:
         result = self.not_rule.check(url, page)
         if result is None:
             return None
@@ -55,10 +56,10 @@ class NotRule(BaseRule):
 
 
 class UrlBaseRule(BaseRule):
-    def check_url(self, url: str) -> bool:
+    def check_url(self, url: URL) -> bool:
         return False
 
-    def check(self, url: str, page: Optional[Page]) -> Optional[bool]:
+    def check(self, url: URL, page: Optional[Page]) -> Optional[bool]:
         if self.check_url(url):
             return True
         if page is not None and page.url is not None and page.url != url:
@@ -70,23 +71,14 @@ class UrlBaseRule(BaseRule):
 class DomainRule(UrlBaseRule):
     domain: str
 
-    def clean_domain(self, domain: Optional[str]) -> str:
-        if domain is None:
-            return "nothing.example.com"
-        pr = urlparse(domain)
-        domain = pr.hostname or pr.path
-        domain = domain.strip(".").lower()
-        return domain
-
     @cached_property
     def cleaned_domain(self) -> str:
-        return self.clean_domain(self.domain)
+        return self.domain.strip(".").lower()
 
-    def check_url(self, url: str) -> bool:
-        domain = self.clean_domain(url)
-        if domain == self.cleaned_domain:
+    def check_url(self, url: URL) -> bool:
+        if url.domain == self.cleaned_domain:
             return True
-        if domain.endswith(f".{self.cleaned_domain}"):
+        if url.domain.endswith(f".{self.cleaned_domain}"):
             return True
         return False
 
@@ -98,21 +90,21 @@ class PatternRule(BaseRule):
     def rex(self) -> re.Pattern:
         return re.compile(self.pattern, re.I | re.U)
 
-    def check_url(self, url: str) -> bool:
-        return self.rex.match(url) is not None
+    def check_url(self, url: URL) -> bool:
+        return self.rex.match(url.url) is not None
 
 
 class PrefixRule(BaseRule):
     prefix: str
 
-    def check_url(self, url: str) -> bool:
-        return url.startswith(self.prefix)
+    def check_url(self, url: URL) -> bool:
+        return url.url.startswith(self.prefix)
 
 
 class XpathRule(BaseRule):
     xpath: str
 
-    def check(self, url: str, page: Optional[Page]) -> Optional[bool]:
+    def check(self, url: URL, page: Optional[Page]) -> Optional[bool]:
         if page is None or not page.retrieved:
             return None
         if page.doc.xpath(self.xpath) is not None:
@@ -123,7 +115,7 @@ class XpathRule(BaseRule):
 class ElementRule(BaseRule):
     element: str
 
-    def check(self, url: str, page: Optional[Page]) -> Optional[bool]:
+    def check(self, url: URL, page: Optional[Page]) -> Optional[bool]:
         if page is None or not page.retrieved:
             return None
         if page.doc.find(self.element) is not None:
@@ -138,7 +130,7 @@ class MimeTypeRule(BaseRule):
     def mime_type_norm(self) -> str:
         return normalize_mimetype(self.mime)
 
-    def check(self, url: str, page: Optional[Page]) -> Optional[bool]:
+    def check(self, url: URL, page: Optional[Page]) -> Optional[bool]:
         if page is None:
             return None
         content_type = normalize_mimetype(page.content_type)

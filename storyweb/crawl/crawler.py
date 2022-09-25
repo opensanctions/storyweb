@@ -7,6 +7,7 @@ from aiohttp.client import ClientTimeout
 from storyweb.config import CrawlConfig
 from storyweb.crawl.site import Site
 from storyweb.crawl.task import Task
+from storyweb.crawl.url import URL
 
 log = logging.getLogger(__name__)
 
@@ -16,7 +17,7 @@ class Crawler(object):
         self.config = config
         self.sites = [Site(self, c) for c in config.sites]
         self.queue = Queue[Task]()
-        self.seen: Set[str] = set()
+        self.seen: Set[URL] = set()
 
     async def worker(self, session: ClientSession):
         try:

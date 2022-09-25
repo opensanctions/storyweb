@@ -1,10 +1,8 @@
-import random
-import asyncio
 import logging
 from typing import TYPE_CHECKING, Generator, Optional
-from urllib.parse import urljoin, urlparse
 from aiohttp import ClientSession, ClientResponse
 from aiohttp.client_exceptions import ClientConnectionError, ClientPayloadError
+from storyweb.crawl.url import URL
 
 from storyweb.db.page import Page
 from storyweb.db.util import db_connect
@@ -17,19 +15,14 @@ log = logging.getLogger(__name__)
 
 
 class Task(object):
-    def __init__(self, site: "Site", url: str) -> None:
+    def __init__(self, site: "Site", url: URL) -> None:
         self.site = site
         self.url = url
 
-    async def enqueue(self, url: str) -> None:
-        parsed = urlparse(url)
-        if parsed.scheme is None:
+    async def enqueue(self, url: URL) -> None:
+        if url.scheme not in ["http", "https"]:
             return
-        if parsed.scheme.lower() not in ["http", "https"]:
-            return
-        parsed = parsed._replace(fragment="")
-        parsed = parsed._replace(netloc=parsed.netloc.lower())
-        url = parsed.geturl()
+        url = url.clean()
 
         # Check url-based rules only:
         if not self.check_crawl(url, None):
@@ -38,30 +31,30 @@ class Task(object):
         task = Task(self.site, url)
         await self.site.crawler.queue.put(task)
 
-    def check_crawl(self, url: str, page: Optional[Page]) -> bool:
+    def check_crawl(self, url: URL, page: Optional[Page]) -> bool:
         if self.site.config.crawl is not None:
             if self.site.config.crawl.check(url, page) is False:
                 return False
         return True
 
-    def check_parse(self, url: str, page: Optional[Page]) -> bool:
+    def check_parse(self, url: URL, page: Optional[Page]) -> bool:
         if self.site.config.parse is not None:
             if self.site.config.parse.check(url, page) is False:
                 return False
         return True
 
-    def extract_urls(self, page: Page) -> Generator[str, None, None]:
+    def extract_urls(self, page: Page) -> Generator[URL, None, None]:
         for link in page.doc.findall(".//a"):
             next_url = link.get("href")
             if next_url is None:
                 continue
-            yield urljoin(page.url, next_url)
+            yield page.url.join(next_url)
 
         for link in page.doc.findall(".//iframe"):
             next_url = link.get("src")
             if next_url is None:
                 continue
-            yield urljoin(page.url, next_url)
+            yield page.url.join(next_url)
 
     async def handle_page(self, page: Page) -> None:
         page.parse = False
@@ -98,14 +91,14 @@ class Task(object):
             async with db_connect() as conn:
                 cached = await Page.find(conn, self.url)
                 if cached is not None:
-                    log.info("Cache hit: %r", cached.url)
+                    # log.info("Cache hit: %r", cached.url)
                     await self.handle_page(cached)
                     await cached.update_parse(conn)
                     return
 
         async with self.site.delay_url(self.url):
             try:
-                async with http.get(self.url) as response:
+                async with http.get(self.url.url) as response:
                     if response.status > 299:
                         return
                     log.info("Crawl [%d]: %r", response.status, self.url)
