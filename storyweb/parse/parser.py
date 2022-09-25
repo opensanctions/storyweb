@@ -1,7 +1,9 @@
+import logging
 import orjson
+from charset_normalizer import from_bytes
 from io import BufferedWriter
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Optional, Union
 from articledata import Article
 from trafilatura import bare_extraction
 
@@ -9,12 +11,32 @@ from storyweb.config import SiteConfig
 from storyweb.db.page import Page
 from storyweb.db.util import engine
 
+logging.getLogger("trafilatura").setLevel(logging.WARNING)
+log = logging.getLogger(__name__)
+
 
 class Parser(object):
     def __init__(self, config: SiteConfig):
         self.config = config
 
-    async def parse(self, page: Page) -> Article:
+    def page_text(self, page: Page) -> Optional[str]:
+        if page.content is None:
+            return None
+        if page.charset is not None:
+            try:
+                return page.content.decode(page.charset)
+            except UnicodeDecodeError:
+                pass
+        res = from_bytes(page.content)
+        match = res.best()
+        if match is not None and match.encoding is not None:
+            try:
+                return page.content.decode(match.encoding)
+            except UnicodeDecodeError:
+                pass
+        return page.content.decode("utf-8", errors="ignore")
+
+    async def parse(self, page: Page) -> Optional[Article]:
         article = Article(
             id=page.url,
             url=page.url,
@@ -26,7 +48,16 @@ class Parser(object):
             text="",
             extracted_at=page.timestamp.isoformat(),
         )
-        extract: Dict[str, str] = bare_extraction(page.content, url=page.url)
+        text = self.page_text(page)
+        if text is None:
+            return None
+
+        if len(text) < 100 or text.startswith("%PDF-"):
+            return None
+
+        extract: Dict[str, str] = bare_extraction(
+            text, url=page.url, include_comments=False
+        )
         if extract is not None:
             article.title = extract.get("title", article.title)
             article.date = extract.get("date")
@@ -34,6 +65,9 @@ class Parser(object):
             author = extract.get("author")
             if author is not None:
                 article.bylines.append(author)
+
+        # reliable, _, details = cld2.detect(article.text)
+        # print(article.url, reliable, details)
         return article
         # print(list(extract.keys()))
 
