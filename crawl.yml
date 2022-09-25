@@ -58,10 +58,14 @@ sites:
       and:
         - or:
             - domain: dossier.center
+        - not:
+          or:
+            - mime: nonweb
     parse:
-      or:
-        - element: .//meta[@content="article"]
-        - domain: fsb.dossier.center
+      and:
+        - or:
+            - element: .//meta[@content="article"]
+            - domain: fsb.dossier.center
 
   - name: dossier_at
     urls:

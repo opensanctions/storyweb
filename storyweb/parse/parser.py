@@ -1,5 +1,7 @@
 import orjson
 import logging
+import langdetect
+import languagecodes
 from pathlib import Path
 from io import BufferedWriter
 from charset_normalizer import from_bytes
@@ -43,13 +45,13 @@ class Parser(object):
 
     async def parse(self, page: Page) -> Optional[Article]:
         article = Article(
-            id=page.url,
-            url=page.url,
-            title=page.url,
+            id=page.url.id(),
+            url=page.url.url,
+            title=page.url.url,
             site=page.site,
             bylines=[],
-            language="unk",
-            locale="unknown",
+            language="xxx",
+            locale="xx",
             text="",
             extracted_at=page.timestamp.isoformat(),
         )
@@ -58,7 +60,7 @@ class Parser(object):
             return None
 
         extract: Dict[str, str] = bare_extraction(
-            text, url=page.url, include_comments=False
+            text, url=page.url.url, include_comments=False
         )
         if extract is not None:
             article.title = extract.get("title", article.title)
@@ -68,10 +70,14 @@ class Parser(object):
             if author is not None:
                 article.bylines.append(author)
 
-        # reliable, _, details = cld2.detect(article.text)
-        # print(article.url, reliable, details)
+        lang = langdetect.detect(text)
+        if lang is not None:
+            article.locale = lang
+            lang_long = languagecodes.iso_639_alpha3(lang)
+            if lang_long is not None:
+                article.language = lang_long
+
         return article
-        # print(list(extract.keys()))
 
     async def run(self, outpath: Path, sites: List[str]):
         outpath.mkdir(parents=True, exist_ok=True)

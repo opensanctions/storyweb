@@ -122,4 +122,4 @@ class Task(object):
         return f"<Task({self.site!r}, {self.url!r})>"
 
     def __str__(self) -> str:
-        return self.url
+        return self.url.url

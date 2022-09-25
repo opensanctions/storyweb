@@ -1,6 +1,7 @@
+from hashlib import sha1
 from functools import cached_property
 from types import NoneType
-from typing import Any, Callable
+from typing import Any
 from urllib.parse import urljoin, urlparse
 
 
@@ -29,6 +30,16 @@ class URL(object):
         parsed = self.parsed._replace(fragment="")
         parsed = parsed._replace(netloc=parsed.netloc.lower())
         return URL(parsed.geturl())
+
+    def id(self) -> str:
+        parsed = self.parsed._replace(fragment="")
+        parsed = parsed._replace(netloc=parsed.netloc.lower())
+        parsed = parsed._replace(path=parsed.path.rstrip("/"))
+        parsed = parsed._replace(scheme=parsed.scheme.lower())
+        if parsed.scheme == "https":
+            parsed = parsed._replace(scheme="http")
+        norm = parsed.geturl().encode("utf-8")
+        return sha1(norm).hexdigest()
 
     def join(self, text: str) -> "URL":
         return URL(urljoin(self.url, text))
