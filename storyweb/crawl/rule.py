@@ -132,29 +132,21 @@ class ElementRule(BaseRule):
 
 
 class MimeTypeRule(BaseRule):
-    mime_type: str
+    mime: str
 
     @cached_property
     def mime_type_norm(self) -> str:
-        return normalize_mimetype(self.mime_type)
-
-    def check(self, url: str, page: Optional[Page]) -> Optional[bool]:
-        if page is None:
-            return None
-        content_type = normalize_mimetype(self.mime_type)
-        return content_type == self.mime_type_norm
-
-
-class MimeGroupRule(BaseRule):
-    mime_group: str
+        return normalize_mimetype(self.mime)
 
     def check(self, url: str, page: Optional[Page]) -> Optional[bool]:
         if page is None:
             return None
         content_type = normalize_mimetype(page.content_type)
-        if content_type.startswith(f"{self.mime_group}/"):
+        if content_type == self.mime_type_norm:
             return True
-        group = MIME_GROUPS.get(self.mime_group, [])
+        if content_type.startswith(f"{self.mime}/"):
+            return True
+        group = MIME_GROUPS.get(self.mime, [])
         return content_type in group
 
 
@@ -169,7 +161,6 @@ Rules = Union[
     XpathRule,
     ElementRule,
     MimeTypeRule,
-    MimeGroupRule,
 ]
 AndRule.update_forward_refs()
 OrRule.update_forward_refs()

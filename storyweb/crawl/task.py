@@ -1,7 +1,7 @@
 import random
 import asyncio
 import logging
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Generator, Optional
 from urllib.parse import urljoin, urlparse
 from aiohttp import ClientSession, ClientResponse
 from aiohttp.client_exceptions import ClientConnectionError, ClientPayloadError
@@ -50,6 +50,19 @@ class Task(object):
                 return False
         return True
 
+    def extract_urls(self, page: Page) -> Generator[str, None, None]:
+        for link in page.doc.findall(".//a"):
+            next_url = link.get("href")
+            if next_url is None:
+                continue
+            yield urljoin(page.url, next_url)
+
+        for link in page.doc.findall(".//iframe"):
+            next_url = link.get("src")
+            if next_url is None:
+                continue
+            yield urljoin(page.url, next_url)
+
     async def handle_page(self, page: Page) -> None:
         page.parse = False
         if page.content is None or len(page.content) < 100:
@@ -62,11 +75,7 @@ class Task(object):
         if self.check_parse(self.url, page):
             page.parse = True
 
-        for link in page.doc.findall(".//a"):
-            next_url = link.get("href")
-            if next_url is None:
-                continue
-            next_url = urljoin(page.url, next_url)
+        for next_url in self.extract_urls(page):
             await self.enqueue(next_url)
 
     async def retrieve_content(self, page: Page, response: ClientResponse) -> None:
@@ -94,20 +103,19 @@ class Task(object):
                     await cached.update_parse(conn)
                     return
 
-        try:
-            async with self.site.delay_url(self.url):
+        async with self.site.delay_url(self.url):
+            try:
                 async with http.get(self.url) as response:
                     if response.status > 299:
                         return
                     log.info("Crawl [%d]: %r", response.status, self.url)
                     page = Page.from_response(self.site.config.name, self.url, response)
                     await self.retrieve_content(page, response)
-        except ClientConnectionError as ce:
-            log.error("Error [%r]: %r", self, ce)
-            return
+            except ClientConnectionError as ce:
+                log.error("Error [%r]: %r", self, ce)
+                return
 
         await self.handle_page(page)
-
         async with db_connect() as conn:
             await page.save(conn)
 

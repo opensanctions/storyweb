@@ -21,6 +21,8 @@ class Site(object):
         for url in self.config.urls:
             yield Task(self, url)
 
+    # def check_delay(self, url) ->
+
     @asynccontextmanager
     async def delay_url(self, url) -> AsyncGenerator[str, None]:
         parsed = urlparse(url)

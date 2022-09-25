@@ -17,9 +17,9 @@ Conn = AsyncConnection
 # __all__ = ["Conn", "engine_tx", "create_db", "upsert"]
 
 db_uri = os.environ.get("STORYWEB_DATABASE_URL", "sqlite+aiosqlite:///storyweb.db")
+db_semaphore = Semaphore(50)
 engine = create_async_engine(db_uri)
 meta = MetaData()
-sema = Semaphore(50)
 
 
 async def create_db():
@@ -30,7 +30,7 @@ async def create_db():
 
 @asynccontextmanager
 async def db_connect() -> AsyncGenerator[Conn, None]:
-    async with sema:
+    async with db_semaphore:
         async with engine.begin() as conn:
             yield conn
 

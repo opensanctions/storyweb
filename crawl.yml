@@ -12,12 +12,13 @@ sites:
             - domain: occrp.org
         - not:
             or:
-              - mime_group: nonweb
+              - mime: nonweb
               - domain: vis.occrp.org
               - domain: aleph.occrp.org
               - domain: admin.occrp.org
               - domain: id.occrp.org
               - domain: cdn.occrp.org
+              - prefix: https://www.occrp.org/images
     parse:
       or:
         - element: .//article//li[@class="authors"]
@@ -37,6 +38,7 @@ sites:
             - domain: icij.org
         - not:
             or:
+              - mime: nonweb
               - domain: offshoreleaks.icij.org
               - domain: medicaldevices.icij.org
               - domain: wwwmaster.icij.org
@@ -75,6 +77,7 @@ sites:
             - domain: www.dossier.at
         - not:
             or:
+              - mime: nonweb
               - prefix: https://www.dossier.at/asyl/karte
               - prefix: https://www.dossier.at/fileadmin
     parse:
@@ -97,13 +100,14 @@ sites:
     urls:
       - https://istories.media/
     domain_concurrency: 1
-    delay: 1
+    delay: 2
     crawl:
       and:
         - or:
             - domain: istories.media
         - not:
             or:
+              - mime: nonweb
               - domain: static.istories.media
               - domain: zarubezhnye-aktivy.istories.media
     parse:
