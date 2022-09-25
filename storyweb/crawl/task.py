@@ -1,5 +1,6 @@
 import logging
 from typing import TYPE_CHECKING, Generator, Optional
+from asyncio.exceptions import TimeoutError
 from aiohttp import ClientSession, ClientResponse
 from aiohttp.client_exceptions import ClientConnectionError, ClientPayloadError
 from storyweb.crawl.url import URL
@@ -96,6 +97,11 @@ class Task(object):
                     await cached.update_parse(conn)
                     return
 
+        if self.site.is_delay_locked(self.url):
+            # log.info("Putting %r back on the queue", self)
+            await self.site.crawler.queue.put(self)
+            return
+
         async with self.site.delay_url(self.url):
             try:
                 async with http.get(self.url.url) as response:
@@ -104,7 +110,7 @@ class Task(object):
                     log.info("Crawl [%d]: %r", response.status, self.url)
                     page = Page.from_response(self.site.config.name, self.url, response)
                     await self.retrieve_content(page, response)
-            except ClientConnectionError as ce:
+            except (ClientConnectionError, TimeoutError) as ce:
                 log.error("Error [%r]: %r", self, ce)
                 return
 

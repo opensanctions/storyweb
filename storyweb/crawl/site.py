@@ -22,7 +22,10 @@ class Site(object):
         for url in self.config.urls:
             yield Task(self, url)
 
-    # def check_delay(self, url) ->
+    def is_delay_locked(self, url: URL) -> bool:
+        if url.domain in self.semaphores:
+            return self.semaphores[url.domain].locked()
+        return False
 
     @asynccontextmanager
     async def delay_url(self, url: URL) -> AsyncGenerator[URL, None]:
