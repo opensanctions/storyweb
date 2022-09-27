@@ -32,6 +32,8 @@ class Sentence(BaseModel):
     @classmethod
     def save_many(self, conn: Conn, sentences: Iterable["Sentence"]) -> None:
         values = [s.dict() for s in sentences]
+        if not len(values):
+            return
         istmt = upsert(sentence_table).values(values)
         updates = dict(text=istmt.excluded.text)
         keys = ["ref_id", "sequence"]
@@ -56,6 +58,8 @@ class Tag(BaseModel):
     def save_many(cls, conn: Conn, tags: Iterable["Tag"]) -> None:
         by_keys = {(t.ref_id, t.sentence, t.key): t for t in tags}
         values = [t.dict() for t in by_keys.values()]
+        if not len(values):
+            return
         istmt = upsert(tag_table).values(values)
         updates = dict(text=istmt.excluded.text, category=istmt.excluded.category)
         keys = ["ref_id", "sentence", "key"]

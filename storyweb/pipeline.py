@@ -7,7 +7,7 @@ from articledata import Article
 from storyweb.db import engine
 from storyweb.models import Ref, Sentence, Tag
 
-spacy.prefer_gpu()
+# spacy.prefer_gpu()
 
 
 @cache
@@ -21,6 +21,8 @@ def load_nlp():
 
 
 def load_article(article: Article) -> None:
+    if article.id is None:
+        return
     if article.language != "eng":
         return
     nlp = load_nlp()
@@ -40,6 +42,8 @@ def load_article(article: Article) -> None:
                 continue
             # print(ent.label_, ent.text)
             fp = slugify(ent.text)
+            if fp is None:
+                continue
             key = f"{category.lower()}:{fp}"
             tag = Tag(
                 ref_id=ref.id,

@@ -28,7 +28,7 @@ setup(
         "articledata",
         "pantomime",
         "orjson",
-        "spacy[apple]",
+        # "spacy[apple]",
         "languagecodes",
         "click >= 8.0.0, < 8.1.0",
     ],
