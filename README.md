@@ -4,3 +4,11 @@ StoryWeb is a project aimed to extract networks of entities from journalistic re
 
 https://storyweb.opensanctions.org
 
+
+## Install
+
+`spaCy` models: 
+
+```bash
+python -m spacy download en_core_web_trf
+```
