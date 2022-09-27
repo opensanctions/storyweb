@@ -1,8 +1,10 @@
 import spacy
-from typing import List
+from spacy.tokens import Span
+from typing import List, Optional
 from functools import cache
 from normality import slugify
 from articledata import Article
+from storyweb.clean import clean_entity_name
 
 from storyweb.db import engine
 from storyweb.models import Ref, Sentence, Tag
@@ -18,6 +20,27 @@ def load_nlp():
     #     "en_core_web_sm",
     #     disable=["tok2vec", "tagger", "parser", "attribute_ruler", "lemmatizer"],
     # )
+
+
+def make_tag(ref_id: str, seq: int, ent: Span) -> Optional[Tag]:
+    category = ent.label_
+    if category not in ["PERSON", "ORG", "GPE"]:
+        return None
+    text = clean_entity_name(ent.text)
+    fp = slugify(text, sep="-")
+    fp = "-".join(sorted(fp.split("-")))
+    if fp is None:
+        return None
+    if category == "PERSON" and " " not in text:
+        return None
+    key = f"{category.lower()}:{fp}"
+    return Tag(
+        ref_id=ref_id,
+        sentence=seq,
+        key=key,
+        category=category,
+        text=text,
+    )
 
 
 def load_article(article: Article) -> None:
@@ -37,23 +60,10 @@ def load_article(article: Article) -> None:
 
         sent_tags = 0
         for ent in sent.ents:
-            category = ent.label_
-            if category not in ["PERSON", "ORG", "GPE"]:
-                continue
-            # print(ent.label_, ent.text)
-            fp = slugify(ent.text)
-            if fp is None:
-                continue
-            key = f"{category.lower()}:{fp}"
-            tag = Tag(
-                ref_id=ref.id,
-                sentence=seq,
-                key=key,
-                category=category,
-                text=ent.text,
-            )
-            tags.append(tag)
-            sent_tags += 1
+            tag = make_tag(ref.id, seq, ent)
+            if tag is not None:
+                tags.append(tag)
+                sent_tags += 1
 
         if sent_tags > 0:
             sentence = Sentence(ref_id=ref.id, sequence=seq, text=sent.text)
