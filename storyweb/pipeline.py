@@ -28,9 +28,9 @@ def make_tag(ref_id: str, seq: int, ent: Span) -> Optional[Tag]:
         return None
     text = clean_entity_name(ent.text)
     fp = slugify(text, sep="-")
-    fp = "-".join(sorted(fp.split("-")))
     if fp is None:
         return None
+    fp = "-".join(sorted(fp.split("-")))
     if category == "PERSON" and " " not in text:
         return None
     key = f"{category.lower()}:{fp}"
