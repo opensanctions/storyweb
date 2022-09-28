@@ -1,11 +1,9 @@
 import click
 import logging
 from pathlib import Path
-from articledata import Article
-from pydantic import ValidationError
 
 from storyweb.db import create_db
-from storyweb.pipeline import load_article
+from storyweb.pipeline import load_articles
 
 
 log = logging.getLogger(__name__)
@@ -23,14 +21,7 @@ def cli() -> None:
 @cli.command("import", help="Import articles into the DB")
 @click.argument("articles", type=InPath)
 def parse(articles: Path) -> None:
-    with open(articles, "rb") as fh:
-        while line := fh.readline():
-            try:
-                article = Article.parse_raw(line)
-            except ValidationError as ve:
-                log.warn("Article validation [%s]: %s", article.id, ve)
-
-            load_article(article)
+    load_articles(articles)
 
 
 @cli.command("init", help="Initialize the database")

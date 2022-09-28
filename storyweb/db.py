@@ -52,3 +52,12 @@ tag_table = Table(
     Column("category", Unicode(255)),
     Column("text", Unicode),
 )
+
+identity_table = Table(
+    "identity",
+    meta,
+    Column("ref_id", Unicode(255), primary_key=True),
+    Column("key", Unicode(1024), nullable=True, primary_key=True),
+    Column("id", Unicode(255)),
+    Column("canonical_id", Unicode(255)),
+)

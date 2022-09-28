@@ -74,3 +74,20 @@ class Tag(BaseModel):
 
     # def __hash__(self):
     #     return hash(f"{self.ref_id}:{self.sentence}:{self.key}")
+
+
+class Link(BaseModel):
+    pass
+
+    # TYPES:
+    #
+    # * Same
+    # * Observer
+    # * Unrelated
+    # * Indirect
+    # * Owner
+    # * Associate
+    # * Family
+    # * Manager
+    # * Member
+    # *
