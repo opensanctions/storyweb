@@ -1,4 +1,5 @@
 from typing import Iterable, Optional
+from unicodedata import category
 from pydantic import BaseModel
 from sqlalchemy.sql import delete
 
@@ -76,8 +77,19 @@ class Tag(BaseModel):
     #     return hash(f"{self.ref_id}:{self.sentence}:{self.key}")
 
 
+class Identity(BaseModel):
+    ref_id: str
+    key: str
+    category: str
+    id: str
+    cluster_id: str
+
+
 class Link(BaseModel):
-    pass
+    source_id: str
+    source_cluster_id: str
+    target_id: str
+    target_cluster_id: str
 
     # TYPES:
     #
