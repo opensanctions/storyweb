@@ -1,19 +1,71 @@
 from datetime import datetime
 from typing import Iterable, List, Optional
 from uuid import uuid4
-from sqlalchemy.sql import select, delete, func
+from sqlalchemy.sql import select, delete, func, and_
+from storyweb.clean import most_common, pick_name
 
 from storyweb.db import Conn, upsert
 from storyweb.db import ref_table, identity_table, sentence_table, tag_table
-from storyweb.models import Identity, Ref, Sentence, Site, Tag
+from storyweb.models import (
+    Identity,
+    Ref,
+    RefTag,
+    RefTagListingResponse,
+    Sentence,
+    Site,
+    Tag,
+)
 
 
-def get_all_sites(conn: Conn) -> List[Site]:
+def list_sites(conn: Conn) -> List[Site]:
     stmt = select(ref_table.c.site, func.count(ref_table.c.id).label("ref_count"))
     stmt = stmt.group_by(ref_table.c.site)
     stmt = stmt.order_by(ref_table.c.site)
     cursor = conn.execute(stmt)
     return [Site.parse_obj(r) for r in cursor.fetchall()]
+
+
+def list_tags(
+    conn: Conn, sites: List[str] = [], q: Optional[str] = None
+) -> RefTagListingResponse:
+    tag_t = tag_table.alias("t")
+    ref_t = ref_table.alias("r")
+    id_t = identity_table.alias("i")
+    stmt = select(
+        ref_t.c.id.label("ref_id"),
+        ref_t.c.title.label("ref_title"),
+        ref_t.c.url.label("ref_url"),
+        ref_t.c.site.label("ref_site"),
+        tag_t.c.key.label("key"),
+        func.array_agg(tag_t.c.text).label("texts"),
+        func.array_agg(tag_t.c.category).label("categories"),
+        func.count(tag_t.c.sentence).label("count"),
+    )
+    stmt = stmt.join(ref_t, ref_t.c.id == tag_t.c.ref_id)
+    stmt = stmt.outerjoin(
+        id_t, and_(id_t.c.ref_id == tag_t.c.ref_id, id_t.c.key == tag_t.c.key)
+    )
+    stmt = stmt.group_by(ref_t.c.id, tag_t.c.key)
+    stmt = stmt.order_by(func.count(tag_t.c.sentence).desc())
+    stmt = stmt.limit(100)
+    cursor = conn.execute(stmt)
+    response = RefTagListingResponse(limit=100, offset=0, results=[])
+    for row in cursor.fetchall():
+        ref = Ref(
+            id=row["ref_id"],
+            site=row["ref_site"],
+            url=row["ref_url"],
+            title=row["ref_title"],
+        )
+        reftag = RefTag(
+            ref=ref,
+            key=row["key"],
+            count=row["count"],
+            category=most_common(row["categories"]),
+            text=pick_name(row["texts"]),
+        )
+        response.results.append(reftag)
+    return response
 
 
 def create_identity(

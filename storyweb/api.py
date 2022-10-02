@@ -3,7 +3,7 @@ from fastapi import FastAPI, Depends
 from sqlalchemy.sql import select, func
 
 from storyweb.db import engine, Conn
-from storyweb.logic import get_all_sites
+from storyweb.logic import list_sites, list_tags
 from storyweb.models import SiteListingResponse
 
 app = FastAPI(
@@ -22,7 +22,7 @@ def get_conn() -> Generator[Conn, None, None]:
 @app.get("/sites")
 def sites_index(conn: Conn = Depends(get_conn)):
     """List all the source sites from which articles (refs) have been imported."""
-    sites = get_all_sites(conn)
+    sites = list_sites(conn)
     return SiteListingResponse(limit=len(sites), results=sites)
 
 
@@ -30,7 +30,12 @@ def sites_index(conn: Conn = Depends(get_conn)):
 #
 # /tags/?site=xxxx&q=putin
 # {'text', 'texts', 'key', 'ref_id', 'ref_site', 'ref_title', 'ref_url', 'identity_id', 'identity_cluster'}
-#
+@app.get("/tags")
+def tags_index(conn: Conn = Depends(get_conn)):
+    tags = list_tags(conn)
+    return tags
+
+
 # /identities/?q=putin
 # {'cluster_id', 'identity_ids', 'text', 'texts'}
 #

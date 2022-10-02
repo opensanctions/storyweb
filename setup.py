@@ -30,6 +30,7 @@ setup(
         "orjson",
         "fastapi",
         # "spacy[apple]",
+        "python-levenshtein",
         "languagecodes",
         "click >= 8.0.0, < 8.1.0",
     ],

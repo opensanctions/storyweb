@@ -1,4 +1,7 @@
 
+serve:
+	uvicorn --reload storyweb.api:app
+
 data: data/articles.ijson
 
 clean:

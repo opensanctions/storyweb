@@ -24,6 +24,14 @@ class Tag(BaseModel):
     text: str
 
 
+class RefTag(BaseModel):
+    ref: Ref
+    key: str
+    category: str
+    text: str
+    count: Optional[int]
+
+
 class Identity(BaseModel):
     key: str
     ref_id: Optional[str]
@@ -75,3 +83,7 @@ class Site(BaseModel):
 
 class SiteListingResponse(ListingResponse):
     results: List[Site]
+
+
+class RefTagListingResponse(ListingResponse):
+    results: List[RefTag]

@@ -1,4 +1,6 @@
 import re
+import Levenshtein
+from typing import List
 
 PREFIXES_RAW_LIST = [
     "Mr",
@@ -37,3 +39,12 @@ def clean_entity_name(name: str) -> str:
     if match is not None:
         name = match.group("term")
     return name
+
+
+def most_common(texts: List[str]) -> str:
+    # https://stackoverflow.com/questions/1518522/find-the-most-common-element-in-a-list
+    return max(set(texts), key=texts.count)
+
+
+def pick_name(names: List[str]) -> str:
+    return Levenshtein.setmedian(names)
