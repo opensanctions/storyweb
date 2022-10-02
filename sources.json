@@ -1,0 +1,358 @@
+[
+  {
+    "region": "Europe",
+    "country": "AUSTRIA",
+    "name": "DOSSIER",
+    "url": "https://www.dossier.at/"
+  },
+  {
+    "region": "Europe",
+    "country": "BOSNIA & HERZEGOVINA",
+    "name": "Organized Crime and Corruption Reporting Project - OCCRP",
+    "url": "https://www.occrp.org/en"
+  },
+  {
+    "region": "Europe",
+    "country": "BOSNIA & HERZEGOVINA",
+    "name": "THE CENTER FOR INVESTIGATIVE REPORTING IN BOSNIA AND HERZEGOVINA (CIN)",
+    "url": "https://www.cin.ba/",
+    "wp_api": "https://www.cin.ba/wp-json"
+  },
+  {
+    "region": "Europe",
+    "country": "BULGARIA",
+    "name": "BIVOL.BG",
+    "url": "https://bivol.bg/en/",
+    "wp_api": "https://bivol.bg/en/wp-json"
+  },
+  {
+    "region": "Europe",
+    "country": "CZECH REPUBLIC",
+    "name": "INVESTIGACE.CZ",
+    "url": "https://www.investigace.cz/",
+    "wp_api": "https://www.investigace.cz/wp-json"
+  },
+  {
+    "region": "Europe",
+    "country": "HUNGARY",
+    "name": "ATLATSZO.HU",
+    "url": "https://atlatszo.hu/category/english/",
+    "wp_api": "https://atlatszo.hu/wp-json"
+  },
+  {
+    "region": "Europe",
+    "country": "HUNGARY",
+    "name": "DIREKT36",
+    "url": "https://www.direkt36.hu/"
+  },
+  {
+    "region": "Europe",
+    "country": "ITALY",
+    "name": "INVESTIGATIVE REPORTING PROJECT ITALY (IRPI)",
+    "url": "https://irpimedia.irpi.eu/",
+    "wp_api": "https://irpimedia.irpi.eu/wp-json"
+  },
+  {
+    "region": "Europe",
+    "country": "KOSOVO",
+    "name": "BIRN KOSOVO",
+    "url": "https://birn.eu.com/network/birn-kosovo/",
+    "wp_api": "https://birn.eu.com/wp-json"
+  },
+  {
+    "region": "Europe",
+    "country": "LATVIA",
+    "name": "RE:BALTICA",
+    "url": "https://en.rebaltica.lv/",
+    "wp_api": "https://en.rebaltica.lv/wp-json"
+  },
+  {
+    "region": "Europe",
+    "country": "LITHUANIA",
+    "name": "15MIN.LT",
+    "url": "https://www.15min.lt/"
+  },
+  {
+    "region": "Europe",
+    "country": "LITHUANIA",
+    "name": "SIENA.LT",
+    "url": "https://www.siena.lt/"
+  },
+  {
+    "region": "Europe",
+    "country": "MOLDOVA",
+    "name": "Association of Independent TV Journalists",
+    "url": null
+  },
+  {
+    "region": "Europe",
+    "country": "MOLDOVA",
+    "name": "RISE Moldova",
+    "url": "https://www.rise.md/english/"
+  },
+  {
+    "region": "Europe",
+    "country": "MONTENEGRO",
+    "name": "MANS",
+    "url": "https://www.mans.co.me/en/"
+  },
+  {
+    "region": "Europe",
+    "country": "NORTH MACEDONIA",
+    "name": "SCOOP-MACEDONIA",
+    "url": "https://en.scoop.mk/",
+    "wp_api": "https://en.scoop.mk/wp-json"
+  },
+  {
+    "region": "Europe",
+    "country": "NORTH MACEDONIA",
+    "name": "INVESTIGATIVE REPORTING LAB MACEDONIA (IRL-M)",
+    "url": "https://irl.mk/en/",
+    "wp_api": "https://irl.mk/wp-json"
+  },
+  {
+    "region": "Europe",
+    "country": "POLAND",
+    "name": "Fundacja Reporter\u00f3w (Reporters Foundation)",
+    "url": "http://fundacjareporterow.org/en/"
+  },
+  {
+    "region": "Europe",
+    "country": "ROMANIA",
+    "name": "\u00c1TL\u00c1TSZ\u00d3 ERD\u00c9LY",
+    "url": "https://atlatszo.ro/en/",
+    "wp_api": "https://atlatszo.ro/wp-json"
+  },
+  {
+    "region": "Europe",
+    "country": "ROMANIA",
+    "name": "RISE PROJECT",
+    "url": "https://www.riseproject.ro/",
+    "wp_api": "https://www.riseproject.ro/wp-json"
+  },
+  {
+    "region": "Europe",
+    "country": "RUSSIA",
+    "name": "ISTORIES",
+    "url": "http://istories.media/"
+  },
+  {
+    "region": "Europe",
+    "country": "RUSSIA",
+    "name": "NOVAYA GAZETA",
+    "url": "https://en.novayagazeta.ru/"
+  },
+  {
+    "region": "Europe",
+    "country": "SERBIA",
+    "name": "CRIME AND CORRUPTION REPORTING NETWORK (KRIK)",
+    "url": "https://www.krik.rs/",
+    "wp_api": "https://www.krik.rs/wp-json"
+  },
+  {
+    "region": "Europe",
+    "country": "SERBIA",
+    "name": "CENTER FOR INVESTIGATIVE REPORTING IN SERBIA (CINS)",
+    "url": "https://www.cins.rs/",
+    "wp_api": "https://www.cins.rs/wp-json"
+  },
+  {
+    "region": "Europe",
+    "country": "SLOVAKIA",
+    "name": "Investigative Center of Jan Kuciak (Investigat\u00edvne centrum J\u00e1na Kuciaka)",
+    "url": "https://icjk.sk/"
+  },
+  {
+    "region": "Europe",
+    "country": "SLOVENIA",
+    "name": "O\u0161tro",
+    "url": "https://www.ostro.si"
+  },
+  {
+    "region": "Europe",
+    "country": "UKRAINE",
+    "name": "MEDIA DEVELOPMENT FOUNDATION",
+    "url": "https://mdf.org.ua/"
+  },
+  {
+    "region": "Europe",
+    "country": "UKRAINE",
+    "name": "SLIDSTVO.INFO",
+    "url": "https://slidstvo.info/"
+  },
+  {
+    "region": "The Caucasus",
+    "country": "ARMENIA",
+    "name": "HETQ ONLINE",
+    "url": "https://hetq.am/en"
+  },
+  {
+    "region": "The Caucasus",
+    "country": "AZERBAIJAN",
+    "name": "MEYDAN TV",
+    "url": "https://www.meydan.tv/"
+  },
+  {
+    "region": "The Caucasus",
+    "country": "GEORGIA",
+    "name": "JOURNALISTIC DATA PROCESSING CENTRE",
+    "url": null
+  },
+  {
+    "region": "The Caucasus",
+    "country": "GEORGIA",
+    "name": "STUDIO MONITORI",
+    "url": "https://www.monitori.ge/"
+  },
+  {
+    "region": "The Caucasus",
+    "country": "GEORGIA",
+    "name": "IFACT.GE",
+    "url": "https://www.ifact.ge/en/"
+  },
+  {
+    "region": "Central Asia",
+    "country": "KYRGYZSTAN",
+    "name": "Kloop",
+    "url": "https://www.kloop.kg/"
+  },
+  {
+    "region": "Africa",
+    "country": null,
+    "name": "Africa Confidential",
+    "url": "https://www.africa-confidential.com/about-africa-confidential"
+  },
+  {
+    "region": "Africa",
+    "country": "BOTSWANA",
+    "name": "INK CENTRE FOR INVESTIGATIVE JOURNALISM",
+    "url": "https://inkjournalism.org",
+    "wp_api": "https://inkjournalism.org/wp-json"
+  },
+  {
+    "region": "Africa",
+    "country": "GHANA",
+    "name": "NewsBridge Africa",
+    "url": "http://africauncensored.net/"
+  },
+  {
+    "region": "Africa",
+    "country": "KENYA",
+    "name": "AFRICA UNCENSORED",
+    "url": "https://africauncensored.online/",
+    "wp_api": "https://africauncensored.online/wp-json"
+  },
+  {
+    "region": "Africa",
+    "country": "KENYA",
+    "name": "The Elephant",
+    "url": "https://www.theelephant.info/about-the-elephant/",
+    "wp_api": "https://www.theelephant.info/wp-json"
+  },
+  {
+    "region": "Africa",
+    "country": "LIBERIA",
+    "name": "NEW NARRATIVES",
+    "url": "https://www.newnarratives.org/"
+  },
+  {
+    "region": "Africa",
+    "country": "MALAWI",
+    "name": "THE CENTRE FOR INVESTIGATIVE JOURNALISM MALAWI",
+    "url": "https://www.investigative-malawi.org/"
+  },
+  {
+    "region": "Africa",
+    "country": "MALI",
+    "name": "DEPECHE DU MALI",
+    "url": "http://www.depechesdumali.com/"
+  },
+  {
+    "region": "Africa",
+    "country": "MAURITIUS",
+    "name": "LE DEFI MEDIA GROUP",
+    "url": "https://defimedia.info/"
+  },
+  {
+    "region": "Africa",
+    "country": "MOZAMBIQUE",
+    "name": "VERDADE",
+    "url": "https://www.verdade.co.mz"
+  },
+  {
+    "region": "Africa",
+    "country": "NAMIBIA",
+    "name": "THE NAMIBIAN",
+    "url": "https://www.namibian.com.na/"
+  },
+  {
+    "region": "Africa",
+    "country": "NIGER",
+    "name": "L\u2019EVENEMENT",
+    "url": "https://levenementniger.com/"
+  },
+  {
+    "region": "Africa",
+    "country": "NIGERIA",
+    "name": "PREMIUM TIMES",
+    "url": "https://www.premiumtimesng.com/",
+    "wp_api": "https://www.premiumtimesng.com/wp-json"
+  },
+  {
+    "region": "Africa",
+    "country": "SOUTH AFRICA",
+    "name": "Mail & Guardian",
+    "url": "https://mg.co.za/about-us/",
+    "wp_api": "https://mg.co.za/wp-json"
+  },
+  {
+    "region": "Africa",
+    "country": "SOUTH AFRICA",
+    "name": "NOSEWEEK",
+    "url": "https://www.noseweek.co.za/"
+  },
+  {
+    "region": "Africa",
+    "country": "SOUTH AFRICA",
+    "name": "OXPECKERS",
+    "url": "https://oxpeckers.org/",
+    "wp_api": "https://oxpeckers.org/wp-json"
+  },
+  {
+    "region": "Africa",
+    "country": "TOGO",
+    "name": "L\u2019ALTERNATIVE",
+    "url": "http://www.togo-online.co.uk/"
+  },
+  {
+    "region": "Africa",
+    "country": "TUNISIA",
+    "name": "INKYFADA",
+    "url": "https://inkyfada.com/"
+  },
+  {
+    "region": "Africa",
+    "country": "ZAMBIA",
+    "name": "News Diggers!",
+    "url": "https://diggers.news/about-us/",
+    "wp_api": "https://diggers.news/wp-json"
+  },
+  {
+    "region": "OCCRP Regional Partners",
+    "country": null,
+    "name": "ARAB REPORTERS FOR INVESTIGATIVE JOURNALISM (ARIJ)",
+    "url": "http://www.arij.net"
+  },
+  {
+    "region": "OCCRP Regional Partners",
+    "country": null,
+    "name": "CENTRO LATINO AMERICANO de INVESTIGACION PERIODISTICA (CLIP)",
+    "url": "https://www.elclip.org/"
+  },
+  {
+    "region": "OCCRP Regional Partners",
+    "country": null,
+    "name": "RADIO FREE EUROPE/RADIO LIBERTY (RFE/RL)",
+    "url": "https://www.rferl.org/"
+  }
+]
