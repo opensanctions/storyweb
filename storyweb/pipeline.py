@@ -11,6 +11,7 @@ from pydantic import ValidationError
 from storyweb.db import engine
 from storyweb.clean import clean_entity_name
 from storyweb.models import Ref, Sentence, Tag
+from storyweb.logic import save_ref, clear_ref, save_sentences, save_tags
 
 log = logging.getLogger(__name__)
 
@@ -90,8 +91,7 @@ def load_articles(path: Path) -> None:
                 sentences.append(sentence)
 
         with engine.begin() as conn:
-            ref.save(conn)
-            Sentence.clear_ref(conn, ref.id)
-            Tag.clear_ref(conn, ref.id)
-            Sentence.save_many(conn, sentences)
-            Tag.save_many(conn, tags)
+            save_ref(conn, ref)
+            clear_ref(conn, ref.id)
+            save_sentences(conn, sentences)
+            save_tags(conn, tags)

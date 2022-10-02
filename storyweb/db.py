@@ -1,8 +1,6 @@
-from contextlib import contextmanager
-from typing import Optional, Generator
 from sqlalchemy import MetaData, create_engine
-from sqlalchemy import Table, Column, Integer, Unicode
-from sqlalchemy.engine import Engine, Connection
+from sqlalchemy import Table, Column, Integer, Unicode, DateTime
+from sqlalchemy.engine import Connection
 from sqlalchemy.dialects.postgresql import insert as upsert
 
 from storyweb import settings
@@ -12,18 +10,11 @@ Conn = Connection
 engine = create_engine(settings.DB_URL)
 meta = MetaData(bind=engine)
 
+__all__ = ["Conn", "upsert", "create_db"]
+
 
 def create_db() -> None:
     meta.create_all(checkfirst=True)
-
-
-# @contextmanager
-# def ensure_tx(engine: Engine, conn: Conn = None) -> Generator[Connection, None, None]:
-#     if conn is not None:
-#         yield conn
-#         return
-#     with engine.begin() as conn:
-#         yield conn
 
 
 ref_table = Table(
@@ -56,8 +47,24 @@ tag_table = Table(
 identity_table = Table(
     "identity",
     meta,
-    Column("ref_id", Unicode(255), primary_key=True),
-    Column("key", Unicode(1024), nullable=True, primary_key=True),
+    Column("key", Unicode(1024), primary_key=True),
+    Column("ref_id", Unicode(255), nullable=True, primary_key=True),
+    Column("label", Unicode(1024), nullable=True),
+    Column("category", Unicode(255), nullable=True),
     Column("id", Unicode(255)),
-    Column("canonical_id", Unicode(255)),
+    Column("cluster", Unicode(255)),
+    Column("user", Unicode(255), nullable=True),
+    Column("timestamp", DateTime),
+)
+
+link_table = Table(
+    "link",
+    meta,
+    Column("source", Unicode(255), primary_key=True),
+    Column("source_cluster", Unicode(255)),
+    Column("target", Unicode(255), primary_key=True),
+    Column("target_cluster", Unicode(255)),
+    Column("type", Unicode(255)),
+    Column("user", Unicode(255), nullable=True),
+    Column("timestamp", DateTime),
 )

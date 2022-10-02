@@ -28,6 +28,7 @@ setup(
         "articledata",
         "pantomime",
         "orjson",
+        "fastapi",
         # "spacy[apple]",
         "languagecodes",
         "click >= 8.0.0, < 8.1.0",

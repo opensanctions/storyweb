@@ -1,10 +1,6 @@
-from typing import Iterable, Optional
-from unicodedata import category
-from pydantic import BaseModel
-from sqlalchemy.sql import delete
-
-from storyweb.db import Conn, upsert
-from storyweb.db import ref_table, sentence_table, tag_table
+from datetime import datetime
+from typing import List, Optional
+from pydantic import BaseModel, Field
 
 
 class Ref(BaseModel):
@@ -13,39 +9,11 @@ class Ref(BaseModel):
     url: str
     title: Optional[str]
 
-    def save(self, conn: Conn) -> None:
-        data = self.dict()
-        istmt = upsert(ref_table).values([data])
-        values = dict(
-            site=istmt.excluded.site,
-            url=istmt.excluded.url,
-            title=istmt.excluded.title,
-        )
-        stmt = istmt.on_conflict_do_update(index_elements=["id"], set_=values)
-        conn.execute(stmt)
-
 
 class Sentence(BaseModel):
     ref_id: str
     sequence: int
     text: str
-
-    @classmethod
-    def save_many(self, conn: Conn, sentences: Iterable["Sentence"]) -> None:
-        values = [s.dict() for s in sentences]
-        if not len(values):
-            return
-        istmt = upsert(sentence_table).values(values)
-        updates = dict(text=istmt.excluded.text)
-        keys = ["ref_id", "sequence"]
-        stmt = istmt.on_conflict_do_update(index_elements=keys, set_=updates)
-        conn.execute(stmt)
-
-    @classmethod
-    def clear_ref(cls, conn: Conn, ref_id: str) -> None:
-        stmt = delete(sentence_table)
-        stmt = stmt.where(sentence_table.c.ref_id == ref_id)
-        conn.execute(stmt)
 
 
 class Tag(BaseModel):
@@ -55,41 +23,26 @@ class Tag(BaseModel):
     category: str
     text: str
 
-    @classmethod
-    def save_many(cls, conn: Conn, tags: Iterable["Tag"]) -> None:
-        by_keys = {(t.ref_id, t.sentence, t.key): t for t in tags}
-        values = [t.dict() for t in by_keys.values()]
-        if not len(values):
-            return
-        istmt = upsert(tag_table).values(values)
-        updates = dict(text=istmt.excluded.text, category=istmt.excluded.category)
-        keys = ["ref_id", "sentence", "key"]
-        stmt = istmt.on_conflict_do_update(index_elements=keys, set_=updates)
-        conn.execute(stmt)
-
-    @classmethod
-    def clear_ref(cls, conn: Conn, ref_id: str) -> None:
-        stmt = delete(tag_table)
-        stmt = stmt.where(tag_table.c.ref_id == ref_id)
-        conn.execute(stmt)
-
-    # def __hash__(self):
-    #     return hash(f"{self.ref_id}:{self.sentence}:{self.key}")
-
 
 class Identity(BaseModel):
-    ref_id: str
     key: str
-    category: str
+    ref_id: Optional[str]
+    label: Optional[str]
+    category: Optional[str]
     id: str
-    cluster_id: str
+    cluster: str
+    user: Optional[str]
+    timestamp: datetime
 
 
 class Link(BaseModel):
-    source_id: str
-    source_cluster_id: str
-    target_id: str
-    target_cluster_id: str
+    source: str
+    source_cluster: str
+    target: str
+    target_cluster: str
+    type: str
+    user: Optional[str]
+    timestamp: datetime
 
     # TYPES:
     #
@@ -103,3 +56,22 @@ class Link(BaseModel):
     # * Manager
     # * Member
     # *
+
+
+class Response(BaseModel):
+    status: str = Field("ok")
+    debug_msg: Optional[str] = Field(None)
+
+
+class ListingResponse(Response):
+    limit: int = Field()
+    offset: int = Field(0)
+
+
+class Site(BaseModel):
+    site: str
+    ref_count: int = 0
+
+
+class SiteListingResponse(ListingResponse):
+    results: List[Site]
