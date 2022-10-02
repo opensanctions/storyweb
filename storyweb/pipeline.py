@@ -1,6 +1,6 @@
 import spacy
 import logging
-from spacy.tokens import Span
+from spacy.tokens import Span, Doc
 from pathlib import Path
 from typing import Generator, List, Optional, Tuple
 from functools import cache
@@ -64,34 +64,38 @@ def make_tag(ref_id: str, seq: int, ent: Span) -> Optional[Tag]:
     )
 
 
+def load_article(doc: Doc, article: Article) -> None:
+    print(article.language, article.id)
+    ref = Ref(
+        id=article.id,
+        site=article.site,
+        url=article.url,
+        title=article.title,
+    )
+
+    sentences: List[Sentence] = []
+    tags: List[Tag] = []
+    for seq, sent in enumerate(doc.sents):
+        sent_tags = 0
+        for ent in sent.ents:
+            tag = make_tag(ref.id, seq, ent)
+            if tag is not None:
+                tags.append(tag)
+                sent_tags += 1
+
+        if sent_tags > 0:
+            sentence = Sentence(ref_id=ref.id, sequence=seq, text=sent.text)
+            sentences.append(sentence)
+
+    with engine.begin() as conn:
+        save_ref(conn, ref)
+        clear_ref(conn, ref.id)
+        save_sentences(conn, sentences)
+        save_tags(conn, tags)
+
+
 def load_articles(path: Path) -> None:
     nlp = load_nlp()
     articles = read_articles(path)
     for (doc, article) in nlp.pipe(articles, batch_size=20, as_tuples=True):
-        print(article.language, article.id)
-        ref = Ref(
-            id=article.id,
-            site=article.site,
-            url=article.url,
-            title=article.title,
-        )
-
-        sentences: List[Sentence] = []
-        tags: List[Tag] = []
-        for seq, sent in enumerate(doc.sents):
-            sent_tags = 0
-            for ent in sent.ents:
-                tag = make_tag(ref.id, seq, ent)
-                if tag is not None:
-                    tags.append(tag)
-                    sent_tags += 1
-
-            if sent_tags > 0:
-                sentence = Sentence(ref_id=ref.id, sequence=seq, text=sent.text)
-                sentences.append(sentence)
-
-        with engine.begin() as conn:
-            save_ref(conn, ref)
-            clear_ref(conn, ref.id)
-            save_sentences(conn, sentences)
-            save_tags(conn, tags)
+        load_article(doc, article)
