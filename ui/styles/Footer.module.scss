@@ -1,0 +1,9 @@
+@import "./variables.scss";
+
+.footer {
+    margin-top: $spacer;
+    padding-top: $spacer;
+    padding-bottom: $spacer * 2;
+    background-color: $gray-600;
+    color: white;
+}

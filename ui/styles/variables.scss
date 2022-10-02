@@ -1,0 +1,113 @@
+/// bootstrap overrides
+// https://github.com/twbs/bootstrap/blob/main/scss/_variables.scss
+$blue-50: #eff6ff;
+$blue-100: #dbeafe;
+$blue-200: #bfdbfe;
+$blue-300: #93c5fd;
+$blue-400: #60a5fa;
+$blue-500: #3b82f6;
+$blue-600: #2563eb;
+$blue-700: #1d4ed8;
+$blue-800: #1e40af;
+$blue-800: #1e3a8a;
+$blue: $blue-500;
+
+$gray-50: #fafafa;
+$gray-100: #f4f4f5;
+$gray-200: #e4e4e7;
+$gray-300: #d4d4d8;
+$gray-400: #a1a1aa;
+$gray-500: #71717a;
+$gray-600: #52525b;
+$gray-700: #3f3f46;
+$gray-800: #27272a;
+$gray-900: #18181b;
+$gray: $gray-600;
+$gray-dark: $gray-800;
+
+$green-50: #f0fdf4;
+$green-100: #dcfce7;
+$green-200: #bbf7d0;
+$green-300: #86efac;
+$green-400: #4ade80;
+$green-500: #22c55e;
+$green-600: #16a34a;
+$green-700: #15803d;
+$green-800: #166534;
+$green-900: #14532d;
+$green: $green-500;
+
+$red-50: #fef2f2;
+$red-100: #fee2e2;
+$red-200: #fecaca;
+$red-300: #fca5a5;
+$red-400: #f87171;
+$red-500: #ef4444;
+$red-600: #dc2626;
+$red-700: #b91c1c;
+$red-800: #991b1b;
+$red-900: #7f1d1d;
+$red: $red-500;
+
+$yellow-50: #fefce8;
+$yellow-100: #fef9c3;
+$yellow-200: #fef08a;
+$yellow-300: #fde047;
+$yellow-400: #facc15;
+$yellow-500: #eab308;
+$yellow-600: #ca8a04;
+$yellow-700: #a16207;
+$yellow-800: #854d0e;
+$yellow-900: #713f12;
+$yellow: $yellow-500;
+
+$primary: $blue-600;
+$secondary: $green-400;
+$info: $green-400;
+$code-color: $red-600;
+
+// $theme-blue-logo: $blue-500;
+// $theme-blue-dark: $blue-600;
+// $theme-blue-bg-light: $blue-200;
+
+// @font-face {
+//     font-family: 'Inter var experimental';
+//     font-weight: 100 900;
+//     font-display: swap;
+//     font-style: oblique 0deg 10deg;
+//     src: url("/static/fonts/Inter.var.woff2?v=3.19") format("woff2");
+// }
+
+// @font-face {
+//     font-family: 'Outfit';
+//     font-weight: 100 900;
+//     font-display: swap;
+//     src: url("/static/fonts/Outfit.var.ttf") format("truetype");
+// }
+
+// $font-family-sans-serif: 'Inter var experimental', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !default;
+// $font-family-base: $font-family-sans-serif;
+// $font-family-heading: 'Outfit', $font-family-sans-serif;
+
+@import "~bootstrap/scss/functions";
+@import "~bootstrap/scss/variables";
+@import "~bootstrap/scss/mixins";
+
+// $max-text-width: 60em;
+$default-font-size: 16px;
+$default-text-color: $gray-900;
+
+// @mixin heading-font {
+//     font-weight: 600;
+//     font-family: $font-family-heading;
+//     letter-spacing: 0.01rem;
+
+//     a {
+//         color: $theme-blue-logo;
+//         text-decoration: none;
+
+//         &:hover {
+//             text-decoration: underline;
+//         }
+//     }
+// }
