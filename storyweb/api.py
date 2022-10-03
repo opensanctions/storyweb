@@ -1,9 +1,15 @@
 from typing import Generator
-from fastapi import FastAPI, Depends
-from sqlalchemy.sql import select, func
+from fastapi import FastAPI, Depends, Path
+from fastapi.exceptions import HTTPException
 
 from storyweb.db import engine, Conn
-from storyweb.logic import list_sites, list_tags
+from storyweb.logic import (
+    create_identity,
+    get_identity_by_id,
+    get_identity_by_ref_key,
+    list_sites,
+    list_tags,
+)
 from storyweb.models import SiteListingResponse
 
 app = FastAPI(
@@ -34,6 +40,24 @@ def sites_index(conn: Conn = Depends(get_conn)):
 def tags_index(conn: Conn = Depends(get_conn)):
     tags = list_tags(conn)
     return tags
+
+
+@app.get("/tags/{ref_id}/{key}")
+def tag_identity(
+    conn: Conn = Depends(get_conn), ref_id: str = Path(), key: str = Path()
+):
+    identity = get_identity_by_ref_key(conn, ref_id, key)
+    if identity is None:
+        identity = create_identity(conn, key, ref_id, user="web")
+    return identity
+
+
+@app.get("/identities/{id}")
+def get_identity(conn: Conn = Depends(get_conn), id: str = Path()):
+    identity = get_identity_by_id(conn, id)
+    if identity is None:
+        raise HTTPException(404)
+    return identity
 
 
 # /identities/?q=putin

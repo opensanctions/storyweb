@@ -30,10 +30,10 @@ export default function Home({ response }: InferGetServerSidePropsType<typeof ge
             {response.results.map((reftag) => (
               <tr>
                 <td>{reftag.count}</td>
-                <td><code>{reftag.text}</code></td>
+                <td><Link href={`/tags/${reftag.ref.id}/${reftag.key}`}>{reftag.text}</Link></td>
                 <td><code>{reftag.category}</code></td>
                 <td>
-                  <Link href={reftag.ref.url}>{reftag.ref.title}</Link>
+                  <a target="_blank" href={reftag.ref.url}>{reftag.ref.title}</a>
                   {' - '}{reftag.ref.site}
                 </td>
               </tr>

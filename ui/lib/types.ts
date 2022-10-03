@@ -24,6 +24,13 @@ export interface IRefTag {
   count: number
 }
 
+export interface IIdentity {
+  key: string
+  ref_id?: string
+  id: string
+  cluster: string
+}
+
 export interface IRefTagListingResponse extends ListingResponse {
   results: IRefTag[]
 }

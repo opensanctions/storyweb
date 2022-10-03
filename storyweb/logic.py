@@ -68,6 +68,27 @@ def list_tags(
     return response
 
 
+def get_identity_by_ref_key(conn: Conn, ref_id: str, key: str) -> Optional[Identity]:
+    stmt = select(identity_table)
+    stmt = stmt.where(identity_table.c.ref_id == ref_id)
+    stmt = stmt.where(identity_table.c.key == key)
+    stmt = stmt.limit(1)
+    cursor = conn.execute(stmt)
+    for row in cursor.fetchall():
+        return Identity.parse_obj(row)
+    return None
+
+
+def get_identity_by_id(conn: Conn, id: str) -> Optional[Identity]:
+    stmt = select(identity_table)
+    stmt = stmt.where(identity_table.c.id == id)
+    stmt = stmt.limit(1)
+    cursor = conn.execute(stmt)
+    for row in cursor.fetchall():
+        return Identity.parse_obj(row)
+    return None
+
+
 def create_identity(
     conn: Conn,
     key: str,
