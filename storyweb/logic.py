@@ -1,11 +1,11 @@
+from uuid import uuid4
 from datetime import datetime
 from typing import Iterable, List, Optional
-from uuid import uuid4
-from sqlalchemy.sql import select, delete, func, and_
-from storyweb.clean import most_common, pick_name
+from sqlalchemy.sql import select, delete, func, and_, or_
 
 from storyweb.db import Conn, upsert
 from storyweb.db import ref_table, identity_table, sentence_table, tag_table
+from storyweb.clean import most_common, pick_name
 from storyweb.models import (
     Identity,
     Ref,
@@ -53,13 +53,22 @@ def list_tags(
     if query is not None and len(query.strip()):
         stmt = stmt.filter(tag_t.c.text.ilike(f"%{query}%"))
 
-    if coref is None:
-        stmt = stmt.join(ref_t, ref_t.c.id == tag_t.c.ref_id)
-    else:
-        stmt = stmt.join(ref_t, ref_t.c.id == tag_t.c.ref_id)
-        stmt = stmt.join(coref_t, coref_t.c.ref_id == ref_t.c.id)
-        stmt = stmt.filter(coref_t.c.cluster == coref)
-        stmt = stmt.filter(coref_t.c.key != tag_t.c.key)
+    stmt = stmt.join(ref_t, ref_t.c.id == tag_t.c.ref_id)
+    if coref is not None:
+        # stmt = stmt.join(ref_t, ref_t.c.id == tag_t.c.ref_id)
+        clause_occur = and_(
+            coref_t.c.ref_id == ref_t.c.id,
+            coref_t.c.cluster == coref,
+            coref_t.c.key != tag_t.c.key,
+        )
+        clause_alias = and_(
+            coref_t.c.key == tag_t.c.key,
+            coref_t.c.cluster == coref,
+        )
+        stmt = stmt.where(or_(clause_occur, clause_alias))
+        # stmt = stmt.join(coref_t, coref_t.c.ref_id == ref_t.c.id)
+        # stmt = stmt.filter(coref_t.c.cluster == coref)
+        # stmt = stmt.filter(coref_t.c.key != tag_t.c.key)
 
     stmt = stmt.group_by(ref_t.c.id, tag_t.c.key)
     stmt = stmt.order_by(func.count(tag_t.c.sentence).desc())
