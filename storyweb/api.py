@@ -1,5 +1,5 @@
-from typing import Generator
-from fastapi import FastAPI, Depends, Path
+from typing import Generator, List, Optional
+from fastapi import FastAPI, Depends, Path, Query
 from fastapi.responses import RedirectResponse
 from fastapi.exceptions import HTTPException
 from storyweb.clean import most_common, pick_name
@@ -13,7 +13,7 @@ from storyweb.logic import (
     list_sites,
     list_tags,
 )
-from storyweb.models import SiteListingResponse
+from storyweb.models import RefTagListingResponse, SiteListingResponse
 
 app = FastAPI(
     title="storyweb",
@@ -39,9 +39,14 @@ def sites_index(conn: Conn = Depends(get_conn)):
 #
 # /tags/?site=xxxx&q=putin
 # {'text', 'texts', 'key', 'ref_id', 'ref_site', 'ref_title', 'ref_url', 'identity_id', 'identity_cluster'}
-@app.get("/tags")
-def tags_index(conn: Conn = Depends(get_conn)):
-    tags = list_tags(conn)
+@app.get("/tags", response_model=RefTagListingResponse)
+def tags_index(
+    conn: Conn = Depends(get_conn),
+    q: Optional[str] = Query(None),
+    site: List[str] = Query([]),
+):
+    sites = [s for s in site if s is not None and len(s.strip())]
+    tags = list_tags(conn, sites=sites, query=q)
     return tags
 
 

@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
+*.code-workspace
 .DS_Store
 .envrc
 data/

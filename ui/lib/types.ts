@@ -24,6 +24,15 @@ export interface IRefTag {
   count: number
 }
 
+export interface ISite {
+  site: string
+  ref_count: number
+}
+
+export interface ISiteListingResponse extends ListingResponse {
+  results: ISite[]
+}
+
 export interface IIdentity {
   key: string
   ref_id?: string
@@ -32,6 +41,7 @@ export interface IIdentity {
   category: string
   label: string
 }
+
 
 export interface IRefTagListingResponse extends ListingResponse {
   results: IRefTag[]

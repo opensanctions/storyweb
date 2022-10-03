@@ -26,7 +26,7 @@ def list_sites(conn: Conn) -> List[Site]:
 
 
 def list_tags(
-    conn: Conn, sites: List[str] = [], q: Optional[str] = None
+    conn: Conn, sites: List[str] = [], query: Optional[str] = None
 ) -> RefTagListingResponse:
     tag_t = tag_table.alias("t")
     ref_t = ref_table.alias("r")
@@ -45,6 +45,10 @@ def list_tags(
     stmt = stmt.outerjoin(
         id_t, and_(id_t.c.ref_id == tag_t.c.ref_id, id_t.c.key == tag_t.c.key)
     )
+    if len(sites):
+        stmt = stmt.filter(ref_t.c.site.in_(sites))
+    if query is not None and len(query.strip()):
+        stmt = stmt.filter(tag_t.c.text.ilike(f"%{query}%"))
     stmt = stmt.group_by(ref_t.c.id, tag_t.c.key)
     stmt = stmt.order_by(func.count(tag_t.c.sentence).desc())
     stmt = stmt.limit(100)
