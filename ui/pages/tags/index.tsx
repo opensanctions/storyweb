@@ -7,6 +7,7 @@ import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Table from 'react-bootstrap/Table';
 import Button from 'react-bootstrap/Button';
+import InputGroup from 'react-bootstrap/InputGroup';
 import Container from 'react-bootstrap/Container';
 
 import Layout from '../../components/Layout'
@@ -21,31 +22,32 @@ export default function Tags({ response, query, site, sites }: InferGetServerSid
       <Container>
         <Form>
           <Row className="align-items-center">
-            <Col xs="auto">
-              <Form.Label htmlFor="q">
+            <Col>
+              <Form.Label htmlFor="q" visuallyHidden>
                 Search
               </Form.Label>
               <Form.Control
-                className="mb-2"
                 id="q"
                 name="q"
                 defaultValue={query}
-                placeholder="Search"
+                placeholder="Search in tagged entity names..."
               />
             </Col>
             <Col xs="auto">
-              <Form.Label htmlFor="site">
-                Source site
-              </Form.Label>
-              <Form.Select id="site" name="site" className="mb-2" defaultValue={site}>
-                <option value="">(all sites)</option>
-                {sites.map((s) =>
-                  <option value={s}>{s}</option>
-                )}
-              </Form.Select>
+              <InputGroup>
+                <InputGroup.Text>
+                  Source site
+                </InputGroup.Text>
+                <Form.Select id="site" name="site" defaultValue={site}>
+                  <option value="">(all sites)</option>
+                  {sites.map((s) =>
+                    <option value={s}>{s}</option>
+                  )}
+                </Form.Select>
+              </InputGroup>
             </Col>
             <Col xs="auto">
-              <Button type="submit" id="submit" className="mb-2">
+              <Button type="submit" id="submit">
                 Filter
               </Button>
             </Col>
