@@ -80,6 +80,7 @@ def get_identity_by_ref_key(conn: Conn, ref_id: str, key: str) -> Optional[Ident
 
 
 def get_identity_by_id(conn: Conn, id: str) -> Optional[Identity]:
+    # TODO: should this do an OR on cluster ID?
     stmt = select(identity_table)
     stmt = stmt.where(identity_table.c.id == id)
     stmt = stmt.limit(1)

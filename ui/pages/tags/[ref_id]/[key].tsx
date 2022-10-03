@@ -15,5 +15,5 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
   const res = await fetch(`${API_URL}/tags/${refId}/${key}`);
   const identity = await res.json() as IIdentity
-  return { redirect: { destination: `/identities/${identity.id}`, permanent: false } };
+  return { redirect: { destination: `/identities/${identity.cluster}`, permanent: false } };
 }
