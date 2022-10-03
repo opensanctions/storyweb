@@ -44,9 +44,10 @@ def tags_index(
     conn: Conn = Depends(get_conn),
     q: Optional[str] = Query(None),
     site: List[str] = Query([]),
+    coref: Optional[str] = Query(None),
 ):
     sites = [s for s in site if s is not None and len(s.strip())]
-    tags = list_tags(conn, sites=sites, query=q)
+    tags = list_tags(conn, sites=sites, query=q, coref=coref)
     return tags
 
 

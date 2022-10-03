@@ -26,11 +26,15 @@ def list_sites(conn: Conn) -> List[Site]:
 
 
 def list_tags(
-    conn: Conn, sites: List[str] = [], query: Optional[str] = None
+    conn: Conn,
+    sites: List[str] = [],
+    query: Optional[str] = None,
+    coref: str = None,
 ) -> RefTagListingResponse:
     tag_t = tag_table.alias("t")
     ref_t = ref_table.alias("r")
     id_t = identity_table.alias("i")
+    coref_t = identity_table.alias("coref")
     stmt = select(
         ref_t.c.id.label("ref_id"),
         ref_t.c.title.label("ref_title"),
@@ -41,7 +45,6 @@ def list_tags(
         func.array_agg(tag_t.c.category).label("categories"),
         func.count(tag_t.c.sentence).label("count"),
     )
-    stmt = stmt.join(ref_t, ref_t.c.id == tag_t.c.ref_id)
     stmt = stmt.outerjoin(
         id_t, and_(id_t.c.ref_id == tag_t.c.ref_id, id_t.c.key == tag_t.c.key)
     )
@@ -49,11 +52,21 @@ def list_tags(
         stmt = stmt.filter(ref_t.c.site.in_(sites))
     if query is not None and len(query.strip()):
         stmt = stmt.filter(tag_t.c.text.ilike(f"%{query}%"))
+
+    if coref is None:
+        stmt = stmt.join(ref_t, ref_t.c.id == tag_t.c.ref_id)
+    else:
+        stmt = stmt.join(ref_t, ref_t.c.id == tag_t.c.ref_id)
+        stmt = stmt.join(coref_t, coref_t.c.ref_id == ref_t.c.id)
+        stmt = stmt.filter(coref_t.c.cluster == coref)
+        stmt = stmt.filter(coref_t.c.key != tag_t.c.key)
+
     stmt = stmt.group_by(ref_t.c.id, tag_t.c.key)
     stmt = stmt.order_by(func.count(tag_t.c.sentence).desc())
     stmt = stmt.limit(100)
     cursor = conn.execute(stmt)
     response = RefTagListingResponse(limit=100, offset=0, results=[])
+    response.debug_msg = str(stmt)
     for row in cursor.fetchall():
         ref = Ref(
             id=row["ref_id"],
