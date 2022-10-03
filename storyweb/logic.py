@@ -41,6 +41,7 @@ def list_tags(
         ref_t.c.url.label("ref_url"),
         ref_t.c.site.label("ref_site"),
         tag_t.c.key.label("key"),
+        func.max(id_t.c.cluster).label("cluster"),
         func.array_agg(tag_t.c.text).label("texts"),
         func.array_agg(tag_t.c.category).label("categories"),
         func.count(tag_t.c.sentence).label("count"),
@@ -86,6 +87,7 @@ def list_tags(
         reftag = RefTag(
             ref=ref,
             key=row["key"],
+            cluster=row["cluster"],
             count=row["count"],
             category=most_common(row["categories"]),
             text=pick_name(row["texts"]),

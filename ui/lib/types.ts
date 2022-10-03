@@ -21,6 +21,7 @@ export interface IRefTag {
   key: string
   text: string
   category: string
+  cluster?: string
   count: number
 }
 

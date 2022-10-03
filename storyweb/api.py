@@ -45,6 +45,7 @@ def tags_index(
     q: Optional[str] = Query(None),
     site: List[str] = Query([]),
     coref: Optional[str] = Query(None),
+    coref_linked: Optional[bool] = Query(None),
 ):
     sites = [s for s in site if s is not None and len(s.strip())]
     tags = list_tags(conn, sites=sites, query=q, coref=coref)

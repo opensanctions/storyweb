@@ -19,7 +19,6 @@ export default function Identity({ identity, tags }: InferGetServerSidePropsType
     <Layout title={identity.label}>
       <Container>
         <h1>{identity.label} <Badge bg="secondary">{identity.category}</Badge></h1>
-        <pre>{tags.debug_msg}</pre>
         <Table>
           <thead>
             <tr>
@@ -42,8 +41,8 @@ export default function Identity({ identity, tags }: InferGetServerSidePropsType
               </tr>
             ))}
           </tbody>
-
         </Table>
+        <code>{tags.debug_msg}</code>
       </Container>
     </Layout>
   )
@@ -52,7 +51,7 @@ export default function Identity({ identity, tags }: InferGetServerSidePropsType
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const identityId = context.params?.id as (string | undefined);
   if (identityId === undefined) {
-    return { redirect: { destination: '/identities', permanent: false } };
+    return { redirect: { destination: '/tags', permanent: false } };
   }
   const res = await fetch(`${API_URL}/identities/${identityId}`);
   const identity = await res.json() as IIdentity
