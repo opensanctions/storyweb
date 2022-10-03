@@ -1,12 +1,15 @@
 from typing import Generator
 from fastapi import FastAPI, Depends, Path
+from fastapi.responses import RedirectResponse
 from fastapi.exceptions import HTTPException
+from storyweb.clean import most_common, pick_name
 
 from storyweb.db import engine, Conn
 from storyweb.logic import (
     create_identity,
     get_identity_by_id,
     get_identity_by_ref_key,
+    list_identity_tags,
     list_sites,
     list_tags,
 )
@@ -57,6 +60,12 @@ def get_identity(conn: Conn = Depends(get_conn), id: str = Path()):
     identity = get_identity_by_id(conn, id)
     if identity is None:
         raise HTTPException(404)
+    if identity.id != identity.cluster:
+        url = app.url_path_for("get_identity", entity_id=identity.cluster)
+        return RedirectResponse(status_code=308, url=url)
+    tags = list_identity_tags(conn, identity.cluster)
+    identity.category = most_common([t.category for t in tags])
+    identity.label = pick_name([t.text for t in tags])
     return identity
 
 

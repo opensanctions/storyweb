@@ -29,6 +29,8 @@ export interface IIdentity {
   ref_id?: string
   id: string
   cluster: string
+  category: string
+  label: string
 }
 
 export interface IRefTagListingResponse extends ListingResponse {

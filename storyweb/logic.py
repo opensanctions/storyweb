@@ -90,6 +90,18 @@ def get_identity_by_id(conn: Conn, id: str) -> Optional[Identity]:
     return None
 
 
+def list_identity_tags(conn: Conn, cluster: str) -> List[Tag]:
+    # Get all the parts of a clustered identity
+    id_t = identity_table.alias("i")
+    tag_t = tag_table.alias("t")
+    stmt = select(tag_t)
+    join_cond = and_(tag_t.c.ref_id == id_t.c.ref_id, tag_t.c.key == id_t.c.key)
+    stmt = stmt.join(id_t, join_cond)
+    stmt = stmt.where(id_t.c.cluster == cluster)
+    cursor = conn.execute(stmt)
+    return [Tag.parse_obj(r) for r in cursor.fetchall()]
+
+
 def create_identity(
     conn: Conn,
     key: str,
