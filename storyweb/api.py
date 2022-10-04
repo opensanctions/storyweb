@@ -3,11 +3,12 @@ from fastapi import FastAPI, Depends, Path, Query
 from fastapi.responses import RedirectResponse
 from fastapi.exceptions import HTTPException
 
-from storyweb.links import types
+from storyweb.links import link_types
 from storyweb.clean import most_common, pick_name
 from storyweb.db import engine, Conn
 from storyweb.logic import (
     create_identity,
+    create_link,
     get_identity_by_id,
     get_identity_by_ref_key,
     list_identity_tags,
@@ -16,6 +17,8 @@ from storyweb.logic import (
     list_tags,
 )
 from storyweb.models import (
+    Link,
+    LinkBase,
     LinkListingResponse,
     LinkTypeListingResponse,
     RefTagListingResponse,
@@ -83,7 +86,7 @@ def get_identity(conn: Conn = Depends(get_conn), id: str = Path()):
 
 @app.get("/linktypes")
 def link_types_index():
-    return LinkTypeListingResponse(limit=0, offset=0, results=types.all())
+    return LinkTypeListingResponse(limit=0, offset=0, results=link_types.all())
 
 
 @app.get("/links")
@@ -93,7 +96,16 @@ def links_index(
 ):
     identities = [i for i in identity if i is not None and len(i.strip())]
     links = list_links(conn, identities)
-    return LinkListingResponse(results=links)
+    return LinkListingResponse(results=links, limit=100, offset=0)
+
+
+@app.post("/links")
+def links_save(
+    link: LinkBase,
+    conn: Conn = Depends(get_conn),
+):
+    result = create_link(conn, link.source, link.target, link.type)
+    return result
 
 
 # /identities/?q=putin

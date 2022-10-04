@@ -35,6 +35,31 @@ export interface ISiteListingResponse extends ListingResponse {
   results: ISite[]
 }
 
+export interface ILink {
+  source: string
+  source_cluster: string
+  target: string
+  target_cluster: string
+  type: string
+  user?: string
+  timestamp?: string
+}
+
+export interface ILinkListingResponse extends ListingResponse {
+  results: ILink[]
+}
+
+export interface ILinkType {
+  name: string
+  directed: boolean
+  label: string
+  phrase: string
+}
+
+export interface ILinkTypeListingResponse extends ListingResponse {
+  results: ILinkType[]
+}
+
 export interface IIdentity {
   key: string
   ref_id?: string

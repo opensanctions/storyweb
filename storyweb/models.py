@@ -44,12 +44,15 @@ class Identity(BaseModel):
     timestamp: datetime
 
 
-class Link(BaseModel):
+class LinkBase(BaseModel):
     source: str
-    source_cluster: str
     target: str
-    target_cluster: str
     type: str
+
+
+class Link(LinkBase):
+    source_cluster: str
+    target_cluster: str
     user: Optional[str]
     timestamp: datetime
 

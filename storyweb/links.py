@@ -34,26 +34,26 @@ class LinkTypeRegistry(object):
         return self.items[name]
 
 
-types = LinkTypeRegistry()
-types.register(
+link_types = LinkTypeRegistry()
+link_types.register(
     name="SAME",
     directed=False,
     label="Same as",
     phrase="is the same as",
 )
-types.register(
+link_types.register(
     name="OBSERVER",
     directed=True,
     label="Observer",
     phrase="writes about",
 )
-types.register(
+link_types.register(
     name="UNRELATED",
     directed=False,
     label="Unrelated",
     phrase="has nothing to do with",
 )
-types.register(
+link_types.register(
     name="OTHER",
     directed=False,
     label="Other link",

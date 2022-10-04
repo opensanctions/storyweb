@@ -1,25 +1,70 @@
 import type { GetServerSidePropsContext, InferGetServerSidePropsType } from 'next'
 import queryString from 'query-string';
 import Link from 'next/link';
+import Form from 'react-bootstrap/Form';
+import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
 
 import Layout from '../components/Layout'
 import { API_URL } from '../lib/constants';
-import { IIdentity, IRefTagListingResponse } from '../lib/types';
+import { IIdentity, ILink, ILinkListingResponse, ILinkType, ILinkTypeListingResponse, IRefTagListingResponse } from '../lib/types';
+import { ChangeEvent, FormEvent, useState } from 'react';
 
 interface IPageProps {
+  initialType: string
   anchorId: string
   anchor: IIdentity
   other: IIdentity
+  linkTypes: ILinkType[]
 }
 
-export default function LinkLoom({ anchorId, anchor, other }: IPageProps) {
+export default function LinkLoom({ anchorId, anchor, other, linkTypes, initialType }: IPageProps) {
+  const [link, setLink] = useState({
+    source: anchor.id,
+    source_cluster: anchor.cluster,
+    target: other.id,
+    target_cluster: other.cluster,
+    type: initialType
+  } as ILink);
+
+  const linkType = linkTypes.find((lt) => lt.name == link.type) || linkTypes[0]
+
+  const onSubmit = async function (event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const response = await fetch(`/api/link`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(link),
+    });
+  }
+
+  const onChangeType = function (event: ChangeEvent<HTMLInputElement>, type: string) {
+    setLink({ ...link, type: type })
+  }
+
   return (
     <Layout title="Link loom">
       <Container>
-        <h1>{anchor.label} ./. {other.label}</h1>
+        <h1><code>{anchor.label}</code> {linkType.phrase} <code>{other.label}</code></h1>
+        <Form onSubmit={onSubmit}>
+          {linkTypes.map((type) => (
+            <Form.Check
+              type="radio"
+              name="type"
+              value={type.name}
+              label={type.label}
+              checked={type.name == link.type}
+              onChange={(e) => onChangeType(e, type.name)}
+            />
+          ))}
+
+          <Button type="submit">Save</Button>
+        </Form>
+
       </Container>
-    </Layout>
+    </Layout >
   )
 }
 
@@ -64,7 +109,23 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   if (other === undefined) {
     return { redirect: { destination: `/identities/${anchorId}`, permanent: false } };
   }
+
+  const linkTypesRes = await fetch(`${API_URL}/linktypes`)
+  const linkTypes = await linkTypesRes.json() as ILinkTypeListingResponse
+
+  const existingLinkUrl = queryString.stringifyUrl({
+    'url': `${API_URL}/links`,
+    'query': { identity: [anchor.id, other.id], limit: 1 }
+  })
+  console.log(existingLinkUrl);
+  const existingLinkRes = await fetch(existingLinkUrl);
+  const existingLink = await existingLinkRes.json() as ILinkListingResponse;
+  let initialType = 'UNRELATED';
+  for (let link of existingLink.results) {
+    initialType = link.type;
+  }
+
   return {
-    props: { anchorId, anchor, other }
+    props: { anchorId, anchor, other, linkTypes: linkTypes.results, initialType }
   }
 }

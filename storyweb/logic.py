@@ -1,11 +1,12 @@
 from uuid import uuid4
 from datetime import datetime
-from typing import Iterable, List, Optional
+from typing import Iterable, List, Optional, Set
 from sqlalchemy.sql import select, delete, func, and_, or_
 
 from storyweb.db import Conn, upsert
 from storyweb.db import ref_table, identity_table, sentence_table
 from storyweb.db import tag_table, link_table
+from storyweb.links import link_types
 from storyweb.clean import most_common, pick_name
 from storyweb.models import (
     Identity,
@@ -113,6 +114,58 @@ def list_links(conn: Conn, identities: List[str]) -> List[Link]:
     stmt = stmt.limit(100)
     cursor = conn.execute(stmt)
     return [Link.parse_obj(r) for r in cursor.fetchall()]
+
+
+def create_link(conn: Conn, source: str, target: str, type: str) -> Link:
+    link = Link(
+        source=source,
+        source_cluster=source,
+        target=target,
+        target_cluster=target,
+        type=type,
+        user="web",
+        timestamp=datetime.utcnow(),
+    )
+    save_link(conn, link)
+    return link
+
+
+def save_link(conn: Conn, link: Link) -> None:
+    istmt = upsert(link_table).values(link.dict())
+    values = dict(
+        type=istmt.excluded.type,
+        user=istmt.excluded.user,
+        timestamp=istmt.excluded.timestamp,
+    )
+    stmt = istmt.on_conflict_do_update(index_elements=["source", "target"], set_=values)
+    conn.execute(stmt)
+
+
+def get_cluster(conn: Conn, id: str) -> Set[str]:
+    link_t = link_table.alias("l")
+    target = link_t.c.target
+    source = link_t.c.source
+    type_c = link_t.c.type
+    same_as = link_types.SAME.name
+    stmt_t = select(target.label("node"))
+    stmt_t = stmt_t.where(source == id, type_c == same_as)
+    cte = stmt_t.cte("connected", recursive=True)
+    cte_alias = cte.alias("c")
+    stmt_s = select(source.label("node"))
+    stmt_s = stmt_s.where(target == id, type_c == same_as)
+    stmt_rs = select(source.label("node"))
+    stmt_rs = stmt_rs.join(cte_alias, cte_alias.c.node == target)
+    stmt_rs = stmt_rs.where(type_c == same_as)
+    stmt_rt = select(target.label("node"))
+    stmt_rt = stmt_rt.join(cte_alias, cte_alias.c.node == source)
+    stmt_rt = stmt_rt.where(type_c == same_as)
+    cte = cte.union(stmt_s, stmt_rs, stmt_rt)  # type: ignore
+
+    stmt = select(cte.c.node)
+    connected = set([id])
+    for row in conn.execute(stmt).fetchall():
+        connected.add(row.node)
+    return connected
 
 
 def get_identity_by_ref_key(conn: Conn, ref_id: str, key: str) -> Optional[Identity]:
