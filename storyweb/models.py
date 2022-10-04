@@ -86,3 +86,11 @@ class SiteListingResponse(ListingResponse):
 
 class RefTagListingResponse(ListingResponse):
     results: List[RefTag]
+
+
+class LinkListingResponse(ListingResponse):
+    results: List[Link]
+
+
+class LinkTypeListingResponse(ListingResponse):
+    results: List[LinkType]

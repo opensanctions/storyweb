@@ -2,18 +2,25 @@ from typing import Generator, List, Optional
 from fastapi import FastAPI, Depends, Path, Query
 from fastapi.responses import RedirectResponse
 from fastapi.exceptions import HTTPException
-from storyweb.clean import most_common, pick_name
 
+from storyweb.links import types
+from storyweb.clean import most_common, pick_name
 from storyweb.db import engine, Conn
 from storyweb.logic import (
     create_identity,
     get_identity_by_id,
     get_identity_by_ref_key,
     list_identity_tags,
+    list_links,
     list_sites,
     list_tags,
 )
-from storyweb.models import RefTagListingResponse, SiteListingResponse
+from storyweb.models import (
+    LinkListingResponse,
+    LinkTypeListingResponse,
+    RefTagListingResponse,
+    SiteListingResponse,
+)
 
 app = FastAPI(
     title="storyweb",
@@ -59,7 +66,7 @@ def tag_identity(
     identity = get_identity_by_ref_key(conn, ref_id, key)
     if identity is None:
         identity = create_identity(conn, key, ref_id, user="web")
-    url = app.url_path_for("get_identity", id=identity.cluster)
+    url = app.url_path_for("get_identity", id=identity.id)
     return RedirectResponse(status_code=308, url=url)
 
 
@@ -68,13 +75,25 @@ def get_identity(conn: Conn = Depends(get_conn), id: str = Path()):
     identity = get_identity_by_id(conn, id)
     if identity is None:
         raise HTTPException(404)
-    # if identity.id != identity.cluster:
-    #     url = app.url_path_for("get_identity", id=identity.cluster)
-    #     return RedirectResponse(status_code=308, url=url)
     tags = list_identity_tags(conn, identity.cluster)
     identity.category = most_common([t.category for t in tags])
     identity.label = pick_name([t.text for t in tags])
     return identity
+
+
+@app.get("/linktypes")
+def link_types_index():
+    return LinkTypeListingResponse(limit=0, offset=0, results=types.all())
+
+
+@app.get("/links")
+def links_index(
+    conn: Conn = Depends(get_conn),
+    identity: List[str] = Query([]),
+):
+    identities = [i for i in identity if i is not None and len(i.strip())]
+    links = list_links(conn, identities)
+    return LinkListingResponse(results=links)
 
 
 # /identities/?q=putin

@@ -4,10 +4,12 @@ from typing import Iterable, List, Optional
 from sqlalchemy.sql import select, delete, func, and_, or_
 
 from storyweb.db import Conn, upsert
-from storyweb.db import ref_table, identity_table, sentence_table, tag_table
+from storyweb.db import ref_table, identity_table, sentence_table
+from storyweb.db import tag_table, link_table
 from storyweb.clean import most_common, pick_name
 from storyweb.models import (
     Identity,
+    Link,
     Ref,
     RefTag,
     RefTagListingResponse,
@@ -94,6 +96,23 @@ def list_tags(
         )
         response.results.append(reftag)
     return response
+
+
+def list_links(conn: Conn, identities: List[str]) -> List[Link]:
+    link_t = link_table.alias("l")
+    stmt = select(link_t)
+    for idx, identity in enumerate(identities):
+        id_t = identity_table.alias(f"id_${idx}")
+        stmt = stmt.filter(id_t.c.id == identity)
+        stmt = stmt.filter(
+            or_(
+                id_t.c.cluster == link_t.c.source_cluster,
+                id_t.c.cluster == link_t.c.target_cluster,
+            )
+        )
+    stmt = stmt.limit(100)
+    cursor = conn.execute(stmt)
+    return [Link.parse_obj(r) for r in cursor.fetchall()]
 
 
 def get_identity_by_ref_key(conn: Conn, ref_id: str, key: str) -> Optional[Identity]:

@@ -15,6 +15,7 @@ import { API_URL } from '../../lib/constants';
 
 import { IRefTagListingResponse, ISiteListingResponse } from '../../lib/types';
 import Link from 'next/link';
+import { getRefTagLink } from '../../lib/util';
 
 export default function Tags({ response, query, site, sites }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   return (
@@ -68,7 +69,7 @@ export default function Tags({ response, query, site, sites }: InferGetServerSid
               <tr>
                 <td>{reftag.count}</td>
                 <td>
-                  <Link href={`/tags/${reftag.ref.id}/${reftag.key}`}>{reftag.text}</Link>
+                  <Link href={getRefTagLink(reftag)}>{reftag.text}</Link>
                   {!!reftag.cluster && (
                     <>{'*'}</>
                   )}

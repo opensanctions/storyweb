@@ -13,6 +13,7 @@ import { API_URL } from '../../lib/constants';
 
 import { IIdentity, IRefTagListingResponse } from '../../lib/types';
 import Link from 'next/link';
+import { getLinkLoomLink } from '../../lib/util';
 
 interface IIdentityPageProps {
   identity: IIdentity
@@ -24,6 +25,9 @@ export default function Identity({ identity, tags }: IIdentityPageProps) {
     <Layout title={identity.label}>
       <Container>
         <h1>{identity.label} <Badge bg="secondary">{identity.category}</Badge></h1>
+        <p>
+          <Link href={getLinkLoomLink(identity)}>Start matching</Link>
+        </p>
         <Table>
           <thead>
             <tr>
@@ -31,6 +35,7 @@ export default function Identity({ identity, tags }: IIdentityPageProps) {
               <th>Tag</th>
               <th>Category</th>
               <th>Source</th>
+              <th>Link</th>
             </tr>
           </thead>
           <tbody>
@@ -47,6 +52,9 @@ export default function Identity({ identity, tags }: IIdentityPageProps) {
                 <td>
                   <a target="_blank" href={reftag.ref.url}>{reftag.ref.title}</a>
                   {' - '}{reftag.ref.site}
+                </td>
+                <td>
+                  <Link href={getLinkLoomLink(identity, reftag)}>(+)</Link>
                 </td>
               </tr>
             ))}
