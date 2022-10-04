@@ -59,7 +59,8 @@ def tag_identity(
     identity = get_identity_by_ref_key(conn, ref_id, key)
     if identity is None:
         identity = create_identity(conn, key, ref_id, user="web")
-    return identity
+    url = app.url_path_for("get_identity", id=identity.cluster)
+    return RedirectResponse(status_code=308, url=url)
 
 
 @app.get("/identities/{id}")
@@ -67,9 +68,9 @@ def get_identity(conn: Conn = Depends(get_conn), id: str = Path()):
     identity = get_identity_by_id(conn, id)
     if identity is None:
         raise HTTPException(404)
-    if identity.id != identity.cluster:
-        url = app.url_path_for("get_identity", entity_id=identity.cluster)
-        return RedirectResponse(status_code=308, url=url)
+    # if identity.id != identity.cluster:
+    #     url = app.url_path_for("get_identity", id=identity.cluster)
+    #     return RedirectResponse(status_code=308, url=url)
     tags = list_identity_tags(conn, identity.cluster)
     identity.category = most_common([t.category for t in tags])
     identity.label = pick_name([t.text for t in tags])

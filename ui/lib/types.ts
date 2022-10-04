@@ -2,6 +2,7 @@
 
 export interface Response {
   status: string
+  debug_msg?: string
 }
 
 export interface ListingResponse extends Response {

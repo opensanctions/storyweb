@@ -53,18 +53,16 @@ class Link(BaseModel):
     user: Optional[str]
     timestamp: datetime
 
-    # TYPES:
-    #
-    # * Same
-    # * Observer
-    # * Unrelated
-    # * Indirect
-    # * Owner
-    # * Associate
-    # * Family
-    # * Manager
-    # * Member
-    # *
+
+class LinkType(BaseModel):
+    name: str
+    directed: bool
+    label: str
+    phrase: str
+
+
+class LinkTypes(BaseModel):
+    types: List[LinkType]
 
 
 class Response(BaseModel):

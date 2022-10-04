@@ -1,4 +1,4 @@
-import type { GetServerSidePropsContext, InferGetServerSidePropsType, NextPage } from 'next'
+import type { GetServerSideProps, GetServerSidePropsContext, InferGetServerSidePropsType, NextPage } from 'next'
 import queryString from 'query-string';
 import Head from 'next/head'
 import Image from 'next/image'
@@ -14,7 +14,12 @@ import { API_URL } from '../../lib/constants';
 import { IIdentity, IRefTagListingResponse } from '../../lib/types';
 import Link from 'next/link';
 
-export default function Identity({ identity, tags }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+interface IIdentityPageProps {
+  identity: IIdentity
+  tags: IRefTagListingResponse
+}
+
+export default function Identity({ identity, tags }: IIdentityPageProps) {
   return (
     <Layout title={identity.label}>
       <Container>
