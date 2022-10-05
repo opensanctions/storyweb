@@ -33,11 +33,14 @@ def list_tags(
     sites: List[str] = [],
     query: Optional[str] = None,
     coref: str = None,
+    coref_linked: Optional[bool] = None,
 ) -> RefTagListingResponse:
     tag_t = tag_table.alias("t")
     ref_t = ref_table.alias("r")
     id_t = identity_table.alias("i")
     coref_t = identity_table.alias("coref")
+    link_t = link_table.alias("link_in")
+    # link_out_t = link_table.alias("link_out")
     stmt = select(
         ref_t.c.id.label("ref_id"),
         ref_t.c.title.label("ref_title"),
@@ -59,7 +62,6 @@ def list_tags(
 
     stmt = stmt.join(ref_t, ref_t.c.id == tag_t.c.ref_id)
     if coref is not None:
-        # stmt = stmt.join(ref_t, ref_t.c.id == tag_t.c.ref_id)
         clause_occur = and_(
             coref_t.c.ref_id == ref_t.c.id,
             coref_t.c.cluster == coref,
@@ -70,9 +72,23 @@ def list_tags(
             coref_t.c.cluster == coref,
         )
         stmt = stmt.where(or_(clause_occur, clause_alias))
-        # stmt = stmt.join(coref_t, coref_t.c.ref_id == ref_t.c.id)
-        # stmt = stmt.filter(coref_t.c.cluster == coref)
-        # stmt = stmt.filter(coref_t.c.key != tag_t.c.key)
+
+        link_in = and_(
+            link_t.c.target_cluster == coref,
+            link_t.c.source_cluster == id_t.c.cluster,
+        )
+        link_out = and_(
+            link_t.c.source_cluster == coref,
+            link_t.c.target_cluster == id_t.c.cluster,
+        )
+
+        stmt = stmt.outerjoin(link_t, or_(link_in, link_out))
+        if coref_linked is True:
+            stmt = stmt.where(link_t.c.type != None)
+        if coref_linked is False:
+            stmt = stmt.where(link_t.c.type == None)
+
+        stmt = stmt.add_columns(func.array_agg(link_t.c.type).label("link_types"))
 
     stmt = stmt.group_by(ref_t.c.id, tag_t.c.key)
     stmt = stmt.order_by(func.count(tag_t.c.sentence).desc())
@@ -87,11 +103,15 @@ def list_tags(
             url=row["ref_url"],
             title=row["ref_title"],
         )
+        link_type = None
+        if "link_types" in row:
+            link_type = most_common(row["link_types"])
         reftag = RefTag(
             ref=ref,
             key=row["key"],
             cluster=row["cluster"],
             count=row["count"],
+            link_type=link_type,
             category=most_common(row["categories"]),
             text=pick_name(row["texts"]),
         )

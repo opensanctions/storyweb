@@ -23,6 +23,7 @@ export interface IRefTag {
   text: string
   category: string
   cluster?: string
+  link_type?: string
   count: number
 }
 

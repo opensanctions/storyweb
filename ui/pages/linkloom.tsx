@@ -1,4 +1,5 @@
 import type { GetServerSidePropsContext, InferGetServerSidePropsType } from 'next'
+import { useRouter } from 'next/router';
 import queryString from 'query-string';
 import Link from 'next/link';
 import Form from 'react-bootstrap/Form';
@@ -19,6 +20,7 @@ interface IPageProps {
 }
 
 export default function LinkLoom({ anchorId, anchor, other, linkTypes, initialType }: IPageProps) {
+  const router = useRouter();
   const [link, setLink] = useState({
     source: anchor.id,
     source_cluster: anchor.cluster,
@@ -26,7 +28,6 @@ export default function LinkLoom({ anchorId, anchor, other, linkTypes, initialTy
     target_cluster: other.cluster,
     type: initialType
   } as ILink);
-
   const linkType = linkTypes.find((lt) => lt.name == link.type) || linkTypes[0]
 
   const onSubmit = async function (event: FormEvent<HTMLFormElement>) {
@@ -38,6 +39,7 @@ export default function LinkLoom({ anchorId, anchor, other, linkTypes, initialTy
       },
       body: JSON.stringify(link),
     });
+    router.reload();
   }
 
   const onChangeType = function (event: ChangeEvent<HTMLInputElement>, type: string) {
@@ -79,7 +81,7 @@ async function getOtherIdentity(anchorId: string, key?: string, refId?: string, 
   }
   const corefApiUrl = queryString.stringifyUrl({
     'url': `${API_URL}/tags`,
-    'query': { coref: anchorId, limit: 1 }
+    'query': { coref: anchorId, coref_linked: false, limit: 1 }
   })
   const corefRes = await fetch(corefApiUrl);
   const tags = await corefRes.json() as IRefTagListingResponse;

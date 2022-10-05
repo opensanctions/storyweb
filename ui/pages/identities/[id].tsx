@@ -34,8 +34,8 @@ export default function Identity({ identity, tags }: IIdentityPageProps) {
               <th>Count</th>
               <th>Tag</th>
               <th>Category</th>
-              <th>Source</th>
               <th>Link</th>
+              <th>Source</th>
             </tr>
           </thead>
           <tbody>
@@ -50,11 +50,17 @@ export default function Identity({ identity, tags }: IIdentityPageProps) {
                 </td>
                 <td><code>{reftag.category}</code></td>
                 <td>
-                  <a target="_blank" href={reftag.ref.url}>{reftag.ref.title}</a>
-                  {' - '}{reftag.ref.site}
+                  {!!reftag.link_type && (
+                    <Link href={getLinkLoomLink(identity, reftag)}>{reftag.link_type}</Link>
+                  )}
+                  {!reftag.link_type && (
+                    <Link href={getLinkLoomLink(identity, reftag)}>add</Link>
+                  )}
+
                 </td>
                 <td>
-                  <Link href={getLinkLoomLink(identity, reftag)}>(+)</Link>
+                  <a target="_blank" href={reftag.ref.url}>{reftag.ref.title}</a>
+                  {' - '}{reftag.ref.site}
                 </td>
               </tr>
             ))}

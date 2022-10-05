@@ -29,6 +29,7 @@ class RefTag(BaseModel):
     key: str
     category: str
     text: str
+    link_type: Optional[str]
     cluster: Optional[str]
     count: Optional[int]
 
