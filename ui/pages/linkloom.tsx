@@ -49,7 +49,11 @@ export default function LinkLoom({ anchorId, anchor, other, linkTypes, initialTy
   return (
     <Layout title="Link loom">
       <Container>
-        <h1><code>{anchor.label}</code> {linkType.phrase} <code>{other.label}</code></h1>
+        <h2>
+          <code><Link href={`/identities/${anchor.id}`}>{anchor.label}</Link></code>{' '}
+          {linkType.phrase}
+          {' '}<code><Link href={`/identities/${other.id}`}>{other.label}</Link></code>
+        </h2>
         <Form onSubmit={onSubmit}>
           {linkTypes.map((type) => (
             <Form.Check

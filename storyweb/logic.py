@@ -1,7 +1,7 @@
 from uuid import uuid4
 from datetime import datetime
 from typing import Iterable, List, Optional, Set
-from sqlalchemy.sql import select, delete, func, and_, or_
+from sqlalchemy.sql import select, delete, update, func, and_, or_
 
 from storyweb.db import Conn, upsert
 from storyweb.db import ref_table, identity_table, sentence_table
@@ -69,9 +69,11 @@ def list_tags(
         )
         clause_alias = and_(
             coref_t.c.key == tag_t.c.key,
-            coref_t.c.cluster == coref,
+            coref_t.c.id == coref,
+            # coref_t.c.cluster != id_t.c.cluster,
         )
-        stmt = stmt.where(or_(clause_occur, clause_alias))
+        # stmt = stmt.where(or_(clause_occur, clause_alias))
+        stmt = stmt.where(or_(clause_occur))
 
         link_in = and_(
             link_t.c.target_cluster == coref,
@@ -147,10 +149,16 @@ def create_link(conn: Conn, source: str, target: str, type: str) -> Link:
         timestamp=datetime.utcnow(),
     )
     save_link(conn, link)
+    if link.type == link_types.SAME.name:
+        update_cluster(conn, link.source)
+        update_cluster(conn, link.target)
     return link
 
 
 def save_link(conn: Conn, link: Link) -> None:
+    # TODO: compute connected components on clusters
+    # generate a mapping table, or maybe a materialised view
+    # update identity and link tables from mapping table
     istmt = upsert(link_table).values(link.dict())
     values = dict(
         type=istmt.excluded.type,
@@ -158,6 +166,28 @@ def save_link(conn: Conn, link: Link) -> None:
         timestamp=istmt.excluded.timestamp,
     )
     stmt = istmt.on_conflict_do_update(index_elements=["source", "target"], set_=values)
+    conn.execute(stmt)
+
+
+def update_cluster(conn: Conn, id: str) -> None:
+    referents = get_cluster(conn, id)
+    cluster = max(referents)
+    stmt = update(identity_table)
+    stmt = stmt.where(identity_table.c.id.in_(referents))
+    stmt = stmt.where(identity_table.c.cluster != cluster)
+    stmt = stmt.values(cluster=cluster)
+    conn.execute(stmt)
+
+    stmt = update(link_table)
+    stmt = stmt.where(link_table.c.source.in_(referents))
+    stmt = stmt.where(link_table.c.source_cluster != cluster)
+    stmt = stmt.values(source_cluster=cluster)
+    conn.execute(stmt)
+
+    stmt = update(link_table)
+    stmt = stmt.where(link_table.c.target.in_(referents))
+    stmt = stmt.where(link_table.c.target_cluster != cluster)
+    stmt = stmt.values(target_cluster=cluster)
     conn.execute(stmt)
 
 
@@ -169,19 +199,20 @@ def get_cluster(conn: Conn, id: str) -> Set[str]:
     same_as = link_types.SAME.name
     stmt_t = select(target.label("node"))
     stmt_t = stmt_t.where(source == id, type_c == same_as)
-    cte = stmt_t.cte("connected", recursive=True)
-    cte_alias = cte.alias("c")
     stmt_s = select(source.label("node"))
     stmt_s = stmt_s.where(target == id, type_c == same_as)
-    stmt_rs = select(source.label("node"))
-    stmt_rs = stmt_rs.join(cte_alias, cte_alias.c.node == target)
-    stmt_rs = stmt_rs.where(type_c == same_as)
+    cte = stmt_t.cte("connected", recursive=True)
+    cte_alias = cte.alias("c")
+    # stmt_rs = select(source.label("node"))
+    # stmt_rs = stmt_rs.join(cte_alias, cte_alias.c.node == target)
+    # stmt_rs = stmt_rs.where(type_c == same_as)
     stmt_rt = select(target.label("node"))
     stmt_rt = stmt_rt.join(cte_alias, cte_alias.c.node == source)
     stmt_rt = stmt_rt.where(type_c == same_as)
-    cte = cte.union(stmt_s, stmt_rs, stmt_rt)  # type: ignore
+    cte = cte.union(stmt_s, stmt_rt)  # type: ignore
 
     stmt = select(cte.c.node)
+    # print(stmt)
     connected = set([id])
     for row in conn.execute(stmt).fetchall():
         connected.add(row.node)
@@ -255,13 +286,8 @@ def save_identity(conn: Conn, identity: Identity) -> None:
     )
     stmt = istmt.on_conflict_do_update(index_elements=["key", "ref_id"], set_=values)
     conn.execute(stmt)
-
-
-def build_cluster_mapping(cls):
-    pass
-    # TODO: compute connected components on clusters
-    # generate a mapping table, or maybe a materialised view
-    # update identity and link tables from mapping table
+    # TODO: needed?
+    update_cluster(conn, identity.id)
 
 
 def save_ref(conn: Conn, ref: Ref) -> None:

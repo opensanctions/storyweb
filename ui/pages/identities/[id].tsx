@@ -24,7 +24,11 @@ export default function Identity({ identity, tags }: IIdentityPageProps) {
   return (
     <Layout title={identity.label}>
       <Container>
-        <h1>{identity.label} <Badge bg="secondary">{identity.category}</Badge></h1>
+        <h1>{identity.label}</h1>
+        <p>
+          <Badge bg="secondary">{identity.category}</Badge>
+          ID: <code>{identity.id}</code>, Cluster: <code>{identity.cluster}</code>
+        </p>
         <p>
           <Link href={getLinkLoomLink(identity)}>Start matching</Link>
         </p>
@@ -36,6 +40,7 @@ export default function Identity({ identity, tags }: IIdentityPageProps) {
               <th>Category</th>
               <th>Link</th>
               <th>Source</th>
+              <th>Site</th>
             </tr>
           </thead>
           <tbody>
@@ -60,7 +65,9 @@ export default function Identity({ identity, tags }: IIdentityPageProps) {
                 </td>
                 <td>
                   <a target="_blank" href={reftag.ref.url}>{reftag.ref.title}</a>
-                  {' - '}{reftag.ref.site}
+                </td>
+                <td>
+                  {reftag.ref.site}
                 </td>
               </tr>
             ))}

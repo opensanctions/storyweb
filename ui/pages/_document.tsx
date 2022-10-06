@@ -5,7 +5,7 @@ export default class StoryWebDocument extends Document {
     return (
       <Html lang="en">
         <Head>
-          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          {/* <meta name="viewport" content="width=device-width, initial-scale=1" /> */}
           <meta name="twitter:site" content="@open_sanctions" />
         </Head>
         <body>

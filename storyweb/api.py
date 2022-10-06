@@ -70,7 +70,7 @@ def tag_identity(
     if identity is None:
         identity = create_identity(conn, key, ref_id, user="web")
     url = app.url_path_for("get_identity", id=identity.id)
-    return RedirectResponse(status_code=308, url=url)
+    return RedirectResponse(status_code=307, url=url)
 
 
 @app.get("/identities/{id}")
