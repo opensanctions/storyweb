@@ -5,7 +5,7 @@ from fastapi.exceptions import HTTPException
 
 from storyweb.links import link_types
 from storyweb.clean import pick_name
-from storyweb.ontology import pick_category
+from storyweb.ontology import ENTITY, pick_category
 from storyweb.db import engine, Conn
 from storyweb.logic import (
     create_link,
@@ -67,7 +67,10 @@ def tag_identity(conn: Conn = Depends(get_conn), tag_id: str = Path()):
     if tag is None:
         raise HTTPException(404)
     tags = get_cluster(conn, tag.cluster)
-    tag.category = pick_category([t.category for t in tags])
+    try:
+        tag.category = pick_category([t.category for t in tags])
+    except TypeError:
+        tag.category = ENTITY
     tag.label = pick_name([t.label for t in tags])
     return tag
 

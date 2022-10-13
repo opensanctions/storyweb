@@ -234,25 +234,33 @@ def compute_cluster(conn: Conn, id: str) -> Set[str]:
     source = link_t.c.source
     type_c = link_t.c.type
     same_as = link_types.SAME.name
-    stmt_t = select(target.label("node"))
-    stmt_t = stmt_t.where(source == id, type_c == same_as)
-    stmt_s = select(source.label("node"))
-    stmt_s = stmt_s.where(target == id, type_c == same_as)
+    stmt_t = select(target.label("target"), source.label("source"))
+    init_clause = or_(source == id, target == id)
+    stmt_t = stmt_t.where(init_clause, type_c == same_as)
+    # stmt_s = select(source.label("node"))
+    # stmt_s = stmt_s.where(target == id, type_c == same_as)
     cte = stmt_t.cte("connected", recursive=True)
     cte_alias = cte.alias("c")
     # stmt_rs = select(source.label("node"))
     # stmt_rs = stmt_rs.join(cte_alias, cte_alias.c.node == target)
     # stmt_rs = stmt_rs.where(type_c == same_as)
-    stmt_rt = select(target.label("node"))
-    stmt_rt = stmt_rt.join(cte_alias, cte_alias.c.node == source)
-    stmt_rt = stmt_rt.where(type_c == same_as)
-    cte = cte.union(stmt_s, stmt_rt)  # type: ignore
+    stmt_r = select(target.label("target"), source.label("source"))
+    join_clause = or_(
+        cte_alias.c.source == source,
+        cte_alias.c.source == target,
+        cte_alias.c.target == source,
+        cte_alias.c.target == target,
+    )
+    stmt_r = stmt_r.join(cte_alias, join_clause)
+    stmt_r = stmt_r.where(type_c == same_as)
+    cte = cte.union(stmt_r)  # type: ignore
 
-    stmt = select(cte.c.node)
+    stmt = select(cte.c.source, cte.c.target)
     # print(stmt)
     connected = set([id])
     for row in conn.execute(stmt).fetchall():
-        connected.add(row.node)
+        connected.add(row.source)
+        connected.add(row.target)
     return connected
 
 

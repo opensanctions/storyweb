@@ -124,9 +124,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   for (let link of existingLink.results) {
     initialType = link.type;
   }
-
-  console.log('XXXXX', initialType);
-
   return {
     props: { anchor, other, linkTypes: linkTypes.results, initialType }
   }
