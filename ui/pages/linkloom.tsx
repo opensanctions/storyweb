@@ -1,4 +1,4 @@
-import type { GetServerSidePropsContext, InferGetServerSidePropsType } from 'next'
+import type { GetServerSidePropsContext } from 'next'
 import { useRouter } from 'next/router';
 import queryString from 'query-string';
 import Link from 'next/link';
@@ -8,18 +8,18 @@ import Container from 'react-bootstrap/Container';
 
 import Layout from '../components/Layout'
 import { API_URL } from '../lib/constants';
-import { ITag, ILink, ILinkListingResponse, ILinkType, ILinkTypeListingResponse, IArticleTagListingResponse, IClusterListingResponse } from '../lib/types';
+import { ITag, ILink, ILinkListingResponse, ILinkType, ILinkTypeListingResponse, IClusterListingResponse } from '../lib/types';
 import { ChangeEvent, FormEvent, useState } from 'react';
+import { getTagLink } from '../lib/util';
 
 interface IPageProps {
   initialType: string
-  anchorId: string
   anchor: ITag
   other: ITag
   linkTypes: ILinkType[]
 }
 
-export default function LinkLoom({ anchorId, anchor, other, linkTypes, initialType }: IPageProps) {
+export default function LinkLoom({ anchor, other, linkTypes, initialType }: IPageProps) {
   const router = useRouter();
   const [link, setLink] = useState({
     source: anchor.id,
@@ -32,7 +32,7 @@ export default function LinkLoom({ anchorId, anchor, other, linkTypes, initialTy
 
   const onSubmit = async function (event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const response = await fetch(`/api/link`, {
+    await fetch(`/api/link`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -50,9 +50,15 @@ export default function LinkLoom({ anchorId, anchor, other, linkTypes, initialTy
     <Layout title="Link loom">
       <Container>
         <h2>
-          <code><Link href={`/tags/${anchor.id}`}>{anchor.label}</Link></code>{' '}
+          <code>
+            <Link href={getTagLink(anchor)}>{anchor.label}</Link>
+          </code>
+          {' '}
           {linkType.phrase}
-          {' '}<code><Link href={`/tags/${other.id}`}>{other.label}</Link></code>
+          {' '}
+          <code>
+            <Link href={getTagLink(other)}>{other.label}</Link>
+          </code>
         </h2>
         <Form onSubmit={onSubmit}>
           {linkTypes.map((type) => (
@@ -65,7 +71,6 @@ export default function LinkLoom({ anchorId, anchor, other, linkTypes, initialTy
               onChange={(e) => onChangeType(e, type.name)}
             />
           ))}
-
           <Button type="submit">Save</Button>
         </Form>
 
@@ -93,10 +98,6 @@ async function getOtherIdentity(anchor: ITag, otherId?: string): Promise<ITag | 
 }
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
-  // TODO: we want - other ID
-  // accept 1: otherId
-  // accept 2: ref_id, key
-  // accept 3: nothing, auto=true
   const anchorId = context.query.anchor as (string | undefined);
   if (anchorId === undefined) {
     return { redirect: { destination: '/tags', permanent: false } };
@@ -115,17 +116,18 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const existingLinkUrl = queryString.stringifyUrl({
     'url': `${API_URL}/links`,
-    'query': { identity: [anchor.cluster, other.cluster], limit: 1 }
+    'query': { cluster: [anchor.cluster, other.cluster], limit: 1 }
   })
-  // console.log(existingLinkUrl);
   const existingLinkRes = await fetch(existingLinkUrl);
   const existingLink = await existingLinkRes.json() as ILinkListingResponse;
-  let initialType = 'UNRELATED';
+  let initialType = other.fingerprint === anchor.fingerprint ? 'SAME' : 'UNRELATED';
   for (let link of existingLink.results) {
     initialType = link.type;
   }
 
+  console.log('XXXXX', initialType);
+
   return {
-    props: { anchorId, anchor, other, linkTypes: linkTypes.results, initialType }
+    props: { anchor, other, linkTypes: linkTypes.results, initialType }
   }
 }
