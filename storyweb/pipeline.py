@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Generator, List, Optional, Tuple
 from functools import cache
 from normality import slugify
-from articledata import Article as ArticleFormat
+from articledata import Article as RawArticle
 from pydantic import ValidationError
 
 from storyweb.db import engine
@@ -16,27 +16,32 @@ from storyweb.ontology import LOCATION, ORGANIZATION, PERSON
 
 log = logging.getLogger(__name__)
 
-NLP_CATEGORIES = {"PERSON": PERSON, "PER": PERSON, "ORG": ORGANIZATION, "GPE": LOCATION}
+NLP_CATEGORIES = {
+    "PERSON": PERSON,
+    "PER": PERSON,
+    "ORG": ORGANIZATION,
+    "GPE": LOCATION,
+}
 
 
 @cache
 def load_nlp():
-    # spacy.prefer_gpu()
+    spacy.prefer_gpu()
     # disable everything but NER:
     nlp = spacy.load(
-        "en_core_web_trf",
-        # "en_core_web_sm",
+        # "en_core_web_trf",
+        "en_core_web_sm",
         disable=["tok2vec", "tagger", "parser", "attribute_ruler", "lemmatizer"],
     )
     nlp.add_pipe("sentencizer")
     return nlp
 
 
-def read_articles(path: Path) -> Generator[Tuple[str, ArticleFormat], None, None]:
+def read_raw_articles(path: Path) -> Generator[Tuple[str, RawArticle], None, None]:
     with open(path, "rb") as fh:
         while line := fh.readline():
             try:
-                article = ArticleFormat.parse_raw(line)
+                article = RawArticle.parse_raw(line)
                 if article.id is None:
                     continue
                 if article.language != "eng":
@@ -67,13 +72,13 @@ def make_tag(ref_id: str, seq: int, ent: Span) -> Optional[Tag]:
     )
 
 
-def load_article(doc: Doc, article: ArticleFormat) -> None:
-    print(article.language, article.id)
+def load_article(doc: Doc, raw: RawArticle) -> None:
+    log.info("Article [%s, %s]: %r", raw.id, raw.language, raw.title)
     ref = Ref(
-        id=article.id,
-        site=article.site,
-        url=article.url,
-        title=article.title,
+        id=raw.id,
+        site=raw.site,
+        url=raw.url,
+        title=raw.title,
     )
 
     sentences: List[Sentence] = []
@@ -99,6 +104,6 @@ def load_article(doc: Doc, article: ArticleFormat) -> None:
 
 def load_articles(path: Path) -> None:
     nlp = load_nlp()
-    articles = read_articles(path)
-    for (doc, article) in nlp.pipe(articles, batch_size=20, as_tuples=True):
-        load_article(doc, article)
+    raw_articles = read_raw_articles(path)
+    for (doc, raw_article) in nlp.pipe(raw_articles, batch_size=20, as_tuples=True):
+        load_article(doc, raw_article)
