@@ -12,7 +12,7 @@ from pydantic import ValidationError
 from storyweb.db import engine
 from storyweb.clean import clean_entity_name, pick_name
 from storyweb.models import Article, Sentence, Tag, TagSentence
-from storyweb.logic import save_article, save_extracted
+from storyweb.logic import save_extracted
 from storyweb.ontology import LOCATION, ORGANIZATION, PERSON, pick_category
 
 log = logging.getLogger(__name__)
@@ -114,7 +114,7 @@ def load_article(doc: Doc, raw: RawArticle) -> None:
             fingerprint=fp,
             category=category,
             label=pick_name(labels),
-            count=1,
+            count=len(labels),
         )
         tags.append(tag)
 

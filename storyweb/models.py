@@ -36,6 +36,7 @@ class ArticleTag(BaseModel):
     article: Article
     id: str
     cluster: str
+    fingerprint: str
     category: str
     label: str
     link_type: Optional[str]
