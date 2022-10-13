@@ -1,38 +1,50 @@
 
 
-export interface Response {
+export interface IResponse {
   status: string
   debug_msg?: string
 }
 
-export interface ListingResponse extends Response {
+export interface IListingResponse extends IResponse {
   limit: number
   offset: number
 }
 
-export interface IRef {
+export interface IArticle {
   id: string
   title: string
   site: string
   url: string
 }
 
-export interface IRefTag {
-  ref: IRef
-  key: string
-  text: string
+
+export interface ITag {
+  id: string
+  cluster: string
+  article: string
+  fingerprint: string
   category: string
-  cluster?: string
-  link_type?: string
+  label: string
   count: number
+}
+
+export interface IArticleTag {
+  article: IArticle
+  id: string
+  cluster: string
+  fingerprint: string
+  category: string
+  label: string
+  count: number
+  link_type?: string
 }
 
 export interface ISite {
   site: string
-  ref_count: number
+  articles: number
 }
 
-export interface ISiteListingResponse extends ListingResponse {
+export interface ISiteListingResponse extends IListingResponse {
   results: ISite[]
 }
 
@@ -46,7 +58,7 @@ export interface ILink {
   timestamp?: string
 }
 
-export interface ILinkListingResponse extends ListingResponse {
+export interface ILinkListingResponse extends IListingResponse {
   results: ILink[]
 }
 
@@ -57,20 +69,12 @@ export interface ILinkType {
   phrase: string
 }
 
-export interface ILinkTypeListingResponse extends ListingResponse {
+export interface ILinkTypeListingResponse extends IListingResponse {
   results: ILinkType[]
 }
 
-export interface IIdentity {
-  key: string
-  ref_id?: string
-  id: string
-  cluster: string
-  category: string
-  label: string
-}
 
 
-export interface IRefTagListingResponse extends ListingResponse {
-  results: IRefTag[]
+export interface IArticleTagListingResponse extends IListingResponse {
+  results: IArticleTag[]
 }

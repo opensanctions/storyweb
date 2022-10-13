@@ -1,18 +1,15 @@
 import queryString from 'query-string';
 
-import { IIdentity, IRefTag } from "./types";
+import { IArticleTag, ITag } from "./types";
 
 
-export function getRefTagLink(reftag: IRefTag): string {
-  if (!!reftag.cluster) {
-    return `/identities/${reftag.cluster}`
-  }
-  return `/tags/${reftag.ref.id}/${reftag.key}`
+export function getTagLink(tag: ITag | IArticleTag): string {
+  return `/tags/${tag.id}`
 }
 
-export function getLinkLoomLink(anchor: IIdentity, reftag?: IRefTag): string {
+export function getLinkLoomLink(anchor: ITag, other?: ITag): string {
   return queryString.stringifyUrl({
     'url': `/linkloom/`,
-    'query': { anchor: anchor.id, ref_id: reftag?.ref?.id, key: reftag?.key, other: reftag?.cluster }
+    'query': { anchor: anchor.id, other: other?.id }
   })
 }

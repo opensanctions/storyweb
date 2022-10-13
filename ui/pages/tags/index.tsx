@@ -2,6 +2,7 @@ import type { GetServerSidePropsContext, InferGetServerSidePropsType, NextPage }
 import queryString from 'query-string';
 import Head from 'next/head'
 import Image from 'next/image'
+import Link from 'next/link';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
@@ -13,11 +14,17 @@ import Container from 'react-bootstrap/Container';
 import Layout from '../../components/Layout'
 import { API_URL } from '../../lib/constants';
 
-import { IRefTagListingResponse, ISiteListingResponse } from '../../lib/types';
-import Link from 'next/link';
-import { getRefTagLink } from '../../lib/util';
+import { IArticleTagListingResponse, ISiteListingResponse } from '../../lib/types';
+import { getTagLink } from '../../lib/util';
 
-export default function Tags({ response, query, site, sites }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+interface TagsProps {
+  response: IArticleTagListingResponse,
+  query: string,
+  site: string,
+  sites: string[]
+}
+
+export default function Tags({ response, query, site, sites }: TagsProps) {
   return (
     <Layout title="Tags listing">
       <Container>
@@ -62,22 +69,22 @@ export default function Tags({ response, query, site, sites }: InferGetServerSid
               <th>Tag</th>
               <th>Category</th>
               <th>Source</th>
+              <th>Site</th>
             </tr>
           </thead>
           <tbody>
-            {response.results.map((reftag) => (
+            {response.results.map((tag) => (
               <tr>
-                <td>{reftag.count}</td>
+                <td>{tag.count}</td>
                 <td>
-                  <Link href={getRefTagLink(reftag)}>{reftag.text}</Link>
-                  {!!reftag.cluster && (
-                    <>{'*'}</>
-                  )}
+                  <Link href={getTagLink(tag)}>{tag.label}</Link>
                 </td>
-                <td><code>{reftag.category}</code></td>
+                <td><code>{tag.category}</code></td>
                 <td>
-                  <a target="_blank" href={reftag.ref.url}>{reftag.ref.title}</a>
-                  {' - '}{reftag.ref.site}
+                  <a target="_blank" href={tag.article.url}>{tag.article.title}</a>
+                </td>
+                <td>
+                  {tag.article.site}
                 </td>
               </tr>
             ))}
@@ -99,10 +106,10 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     }
   })
   const res = await fetch(apiUrl);
-  const data = await res.json() as IRefTagListingResponse
+  const data = await res.json() as IArticleTagListingResponse;
 
   const sitesResponse = await fetch(`${API_URL}/sites`);
-  const sitesData = await sitesResponse.json() as ISiteListingResponse
+  const sitesData = await sitesResponse.json() as ISiteListingResponse;
   const sites = sitesData.results.map((s) => s.site);
 
   return {

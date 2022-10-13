@@ -8,14 +8,14 @@ import Container from 'react-bootstrap/Container';
 
 import Layout from '../components/Layout'
 import { API_URL } from '../lib/constants';
-import { IIdentity, ILink, ILinkListingResponse, ILinkType, ILinkTypeListingResponse, IRefTagListingResponse } from '../lib/types';
+import { ITag, ILink, ILinkListingResponse, ILinkType, ILinkTypeListingResponse, IArticleTagListingResponse } from '../lib/types';
 import { ChangeEvent, FormEvent, useState } from 'react';
 
 interface IPageProps {
   initialType: string
   anchorId: string
-  anchor: IIdentity
-  other: IIdentity
+  anchor: ITag
+  other: ITag
   linkTypes: ILinkType[]
 }
 
@@ -50,9 +50,9 @@ export default function LinkLoom({ anchorId, anchor, other, linkTypes, initialTy
     <Layout title="Link loom">
       <Container>
         <h2>
-          <code><Link href={`/identities/${anchor.id}`}>{anchor.label}</Link></code>{' '}
+          <code><Link href={`/tags/${anchor.id}`}>{anchor.label}</Link></code>{' '}
           {linkType.phrase}
-          {' '}<code><Link href={`/identities/${other.id}`}>{other.label}</Link></code>
+          {' '}<code><Link href={`/tags/${other.id}`}>{other.label}</Link></code>
         </h2>
         <Form onSubmit={onSubmit}>
           {linkTypes.map((type) => (
@@ -74,24 +74,20 @@ export default function LinkLoom({ anchorId, anchor, other, linkTypes, initialTy
   )
 }
 
-async function getOtherIdentity(anchorId: string, key?: string, refId?: string, otherId?: string): Promise<IIdentity | undefined> {
+async function getOtherIdentity(anchorId: string, otherId?: string): Promise<ITag | undefined> {
   if (!!otherId) {
-    const res = await fetch(`${API_URL}/identities/${otherId}`);
-    return await res.json() as IIdentity
-  }
-  if (!!key && !!refId) {
-    const res = await fetch(`${API_URL}/tags/${refId}/${key}`);
-    return await res.json() as IIdentity
+    const res = await fetch(`${API_URL}/tags/${otherId}`);
+    return await res.json() as ITag
   }
   const corefApiUrl = queryString.stringifyUrl({
     'url': `${API_URL}/tags`,
     'query': { coref: anchorId, coref_linked: false, limit: 1 }
   })
   const corefRes = await fetch(corefApiUrl);
-  const tags = await corefRes.json() as IRefTagListingResponse;
+  const tags = await corefRes.json() as IArticleTagListingResponse;
   if (tags.results.length > 0) {
     const reftag = tags.results[0];
-    return await getOtherIdentity(anchorId, reftag.key, reftag.ref.id, reftag.cluster)
+    return await getOtherIdentity(anchorId, reftag.cluster)
   }
   return undefined;
 }
@@ -105,15 +101,13 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   if (anchorId === undefined) {
     return { redirect: { destination: '/tags', permanent: false } };
   }
-  const anchorRes = await fetch(`${API_URL}/identities/${anchorId}`);
-  const anchor = await anchorRes.json() as IIdentity
+  const anchorRes = await fetch(`${API_URL}/tags/${anchorId}`);
+  const anchor = await anchorRes.json() as ITag
 
-  const key = context.query.key as (string | undefined);
-  const refId = context.query.ref_id as (string | undefined);
   const otherId = context.query.other as (string | undefined);
-  const other = await getOtherIdentity(anchorId, key, refId, otherId);
+  const other = await getOtherIdentity(anchorId, otherId);
   if (other === undefined) {
-    return { redirect: { destination: `/identities/${anchorId}`, permanent: false } };
+    return { redirect: { destination: `/tags/${anchorId}`, permanent: false } };
   }
 
   const linkTypesRes = await fetch(`${API_URL}/linktypes`)
@@ -123,7 +117,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     'url': `${API_URL}/links`,
     'query': { identity: [anchor.id, other.id], limit: 1 }
   })
-  console.log(existingLinkUrl);
+  // console.log(existingLinkUrl);
   const existingLinkRes = await fetch(existingLinkUrl);
   const existingLink = await existingLinkRes.json() as ILinkListingResponse;
   let initialType = 'UNRELATED';
