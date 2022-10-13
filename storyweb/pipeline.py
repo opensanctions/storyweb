@@ -3,14 +3,14 @@ import logging
 import hashlib
 from spacy.tokens import Span, Doc
 from pathlib import Path
-from typing import Dict, Generator, List, Optional, Tuple
+from typing import Dict, Generator, List, Optional, Set, Tuple
 from functools import cache
 from normality import slugify
 from articledata import Article as RawArticle
 from pydantic import ValidationError
 
 from storyweb.db import engine
-from storyweb.clean import clean_entity_name
+from storyweb.clean import clean_entity_name, pick_name
 from storyweb.models import Article, Sentence, Tag, TagSentence
 from storyweb.logic import save_article, save_extracted
 from storyweb.ontology import LOCATION, ORGANIZATION, PERSON, pick_category
@@ -52,7 +52,7 @@ def read_raw_articles(path: Path) -> Generator[Tuple[str, RawArticle], None, Non
                 log.warn("Article validation [%s]: %s", article.id, ve)
 
 
-def extract_tag(article_id: str, ent: Span) -> Optional[Tuple[str, str, str, str]]:
+def extract_tag(article_id: str, ent: Span) -> Optional[Tuple[str, str, str]]:
     category = NLP_CATEGORIES.get(ent.label_)
     if category is None:
         return None
@@ -63,9 +63,7 @@ def extract_tag(article_id: str, ent: Span) -> Optional[Tuple[str, str, str, str
     fp = "-".join(sorted(fp.split("-")))
     if category == PERSON and " " not in label:
         return None
-    key = f"{article_id}.{fp}".encode("utf-8")
-    id = hashlib.sha1(key).hexdigest()
-    return (id, label, category, fp)
+    return (label, category, fp)
 
 
 def load_article(doc: Doc, raw: RawArticle) -> None:
@@ -77,47 +75,55 @@ def load_article(doc: Doc, raw: RawArticle) -> None:
         title=raw.title,
     )
     sentences: List[Sentence] = []
-    tags: Dict[str, Tag] = {}
-    tag_sentences: Dict[int, TagSentence] = {}
-    # tag_categories: Dict[str, ]
+    tag_sentences: Dict[str, Set[int]] = {}
+    tag_categories: Dict[str, List[str]] = {}
+    tag_labels: Dict[str, List[str]] = {}
     for seq, sent in enumerate(doc.sents):
         sent_tags = 0
         for ent in sent.ents:
             extracted = extract_tag(article.id, ent)
             if extracted is None:
                 continue
-            (tag_id, label, category, fp) = extracted
-            if tag_id not in tags:
-                tags[tag_id] = Tag(
-                    id=tag_id,
-                    cluster=tag_id,
-                    article=article.id,
-                    fingerprint=fp,
-                    category=category,
-                    label=label,
-                    count=1,
-                )
-            else:
-                # TODO figure out categories
-                categories = [category, tags[tag_id].category]
-                try:
-                    tags[tag_id].category = pick_category(categories)
-                except TypeError:
-                    pass
-                tags[tag_id].count += 1
-
-            # log.info("Tag: %r", tags[tag_id])
-
-            tag_sentence = TagSentence(tag=tag_id, article=article.id, sentence=seq)
-            tag_sentences[seq] = tag_sentence
+            (label, category, fp) = extracted
+            tag_labels.setdefault(fp, [])
+            tag_labels[fp].append(label)
+            tag_categories.setdefault(fp, [])
+            tag_categories[fp].append(category)
+            tag_sentences.setdefault(fp, set())
+            tag_sentences[fp].add(seq)
             sent_tags += 1
 
         if sent_tags > 0:
             sentence = Sentence(article=article.id, sequence=seq, text=sent.text)
             sentences.append(sentence)
 
+    tags: List[Tag] = []
+    tag_sentence_objs: List[TagSentence] = []
+    for fp, labels in tag_labels.items():
+        key = f"{article.id}>{fp}".encode("utf-8")
+        tag_id = hashlib.sha1(key).hexdigest()
+        try:
+            category = pick_category(tag_categories[fp])
+        except TypeError:
+            category = "ENT"
+
+        tag = Tag(
+            id=tag_id,
+            cluster=tag_id,
+            article=article.id,
+            fingerprint=fp,
+            category=category,
+            label=pick_name(labels),
+            count=1,
+        )
+        tags.append(tag)
+
+        for seq in tag_sentences.get(fp, []):
+            obj = TagSentence(tag=tag_id, article=article.id, sentence=seq)
+            tag_sentence_objs.append(obj)
+
     with engine.begin() as conn:
-        save_extracted(conn, article, sentences, tag_sentences.values(), tags.values())
+        save_extracted(conn, article, sentences, tag_sentence_objs, tags)
 
 
 def load_articles(path: Path) -> None:
