@@ -5,15 +5,18 @@ from pathlib import Path
 from typing import Generator, List, Optional, Tuple
 from functools import cache
 from normality import slugify
-from articledata import Article
+from articledata import Article as ArticleFormat
 from pydantic import ValidationError
 
 from storyweb.db import engine
 from storyweb.clean import clean_entity_name
 from storyweb.models import Ref, Sentence, Tag
 from storyweb.logic import save_ref, clear_ref, save_sentences, save_tags
+from storyweb.ontology import LOCATION, ORGANIZATION, PERSON
 
 log = logging.getLogger(__name__)
+
+NLP_CATEGORIES = {"PERSON": PERSON, "PER": PERSON, "ORG": ORGANIZATION, "GPE": LOCATION}
 
 
 @cache
@@ -29,11 +32,11 @@ def load_nlp():
     return nlp
 
 
-def read_articles(path: Path) -> Generator[Tuple[str, Article], None, None]:
+def read_articles(path: Path) -> Generator[Tuple[str, ArticleFormat], None, None]:
     with open(path, "rb") as fh:
         while line := fh.readline():
             try:
-                article = Article.parse_raw(line)
+                article = ArticleFormat.parse_raw(line)
                 if article.id is None:
                     continue
                 if article.language != "eng":
@@ -44,8 +47,8 @@ def read_articles(path: Path) -> Generator[Tuple[str, Article], None, None]:
 
 
 def make_tag(ref_id: str, seq: int, ent: Span) -> Optional[Tag]:
-    category = ent.label_
-    if category not in ["PERSON", "ORG", "GPE"]:
+    category = NLP_CATEGORIES.get(ent.label_)
+    if category is None:
         return None
     text = clean_entity_name(ent.text)
     fp = slugify(text, sep="-")
@@ -64,7 +67,7 @@ def make_tag(ref_id: str, seq: int, ent: Span) -> Optional[Tag]:
     )
 
 
-def load_article(doc: Doc, article: Article) -> None:
+def load_article(doc: Doc, article: ArticleFormat) -> None:
     print(article.language, article.id)
     ref = Ref(
         id=article.id,
