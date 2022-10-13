@@ -19,7 +19,8 @@ def pick_category(categories: List[str]):
     if len(unique) == 1:
         return categories[0]
     if LOCATION in unique:
-        raise TypeError("Cannot merge LOCATION and other type")
+        # works in practice, not in theory:
+        return LOCATION
     if PERSON in unique and ORGANIZATION in unique:
         return ENTITY
     if PERSON in unique:

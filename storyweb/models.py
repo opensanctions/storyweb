@@ -3,7 +3,7 @@ from typing import List, Optional
 from pydantic import BaseModel, Field
 
 
-class Ref(BaseModel):
+class Article(BaseModel):
     id: str
     site: str
     url: str
@@ -11,21 +11,29 @@ class Ref(BaseModel):
 
 
 class Sentence(BaseModel):
-    ref_id: str
+    article: str
     sequence: int
     text: str
 
 
 class Tag(BaseModel):
-    ref_id: str
-    sentence: int
-    key: str
+    id: str
+    cluster: str
+    article: str
+    fingerprint: str
     category: str
-    text: str
+    label: str
+    count: int
 
 
-class RefTag(BaseModel):
-    ref: Ref
+class TagSentence(BaseModel):
+    tag: str
+    article: str
+    sentence: int
+
+
+class ArticleTag(BaseModel):
+    article: Article
     key: str
     category: str
     text: str
@@ -88,8 +96,8 @@ class SiteListingResponse(ListingResponse):
     results: List[Site]
 
 
-class RefTagListingResponse(ListingResponse):
-    results: List[RefTag]
+class ArticleTagListingResponse(ListingResponse):
+    results: List[ArticleTag]
 
 
 class LinkListingResponse(ListingResponse):

@@ -1,29 +1,33 @@
 from uuid import uuid4
 from datetime import datetime
 from typing import Iterable, List, Optional, Set
-from sqlalchemy.sql import select, delete, update, func, and_, or_
+from sqlalchemy.sql import select, delete, update, insert, func, and_, or_
 
 from storyweb.db import Conn, upsert
-from storyweb.db import ref_table, identity_table, sentence_table
-from storyweb.db import tag_table, link_table
+from storyweb.db import article_table, identity_table, sentence_table
+from storyweb.db import tag_table, link_table, tag_sentence_table
 from storyweb.links import link_types
 from storyweb.clean import most_common, pick_name
 from storyweb.models import (
     Identity,
     Link,
-    Ref,
-    RefTag,
-    RefTagListingResponse,
+    Article,
+    ArticleTag,
+    ArticleTagListingResponse,
     Sentence,
     Site,
     Tag,
+    TagSentence,
 )
 
 
 def list_sites(conn: Conn) -> List[Site]:
-    stmt = select(ref_table.c.site, func.count(ref_table.c.id).label("ref_count"))
-    stmt = stmt.group_by(ref_table.c.site)
-    stmt = stmt.order_by(ref_table.c.site)
+    stmt = select(
+        article_table.c.site,
+        func.count(article_table.c.id).label("ref_count"),
+    )
+    stmt = stmt.group_by(article_table.c.site)
+    stmt = stmt.order_by(article_table.c.site)
     cursor = conn.execute(stmt)
     return [Site.parse_obj(r) for r in cursor.fetchall()]
 
@@ -34,9 +38,9 @@ def list_tags(
     query: Optional[str] = None,
     coref: str = None,
     coref_linked: Optional[bool] = None,
-) -> RefTagListingResponse:
+) -> ArticleTagListingResponse:
     tag_t = tag_table.alias("t")
-    ref_t = ref_table.alias("r")
+    ref_t = article_table.alias("r")
     id_t = identity_table.alias("i")
     coref_t = identity_table.alias("coref")
     link_t = link_table.alias("link_in")
@@ -96,10 +100,10 @@ def list_tags(
     stmt = stmt.order_by(func.count(tag_t.c.sentence).desc())
     stmt = stmt.limit(100)
     cursor = conn.execute(stmt)
-    response = RefTagListingResponse(limit=100, offset=0, results=[])
+    response = ArticleTagListingResponse(limit=100, offset=0, results=[])
     response.debug_msg = str(stmt)
     for row in cursor.fetchall():
-        ref = Ref(
+        ref = Article(
             id=row["ref_id"],
             site=row["ref_site"],
             url=row["ref_url"],
@@ -108,7 +112,7 @@ def list_tags(
         link_type = None
         if "link_types" in row:
             link_type = most_common(row["link_types"])
-        reftag = RefTag(
+        reftag = ArticleTag(
             ref=ref,
             key=row["key"],
             cluster=row["cluster"],
@@ -290,8 +294,8 @@ def save_identity(conn: Conn, identity: Identity) -> None:
     update_cluster(conn, identity.id)
 
 
-def save_ref(conn: Conn, ref: Ref) -> None:
-    istmt = upsert(ref_table).values([ref.dict()])
+def save_article(conn: Conn, article: Article) -> None:
+    istmt = upsert(article_table).values([article.dict()])
     values = dict(
         site=istmt.excluded.site,
         url=istmt.excluded.url,
@@ -301,34 +305,37 @@ def save_ref(conn: Conn, ref: Ref) -> None:
     conn.execute(stmt)
 
 
-def save_sentences(conn: Conn, sentences: Iterable[Sentence]) -> None:
-    values = [s.dict() for s in sentences]
-    if not len(values):
-        return
-    istmt = upsert(sentence_table).values(values)
-    updates = dict(text=istmt.excluded.text)
-    keys = ["ref_id", "sequence"]
-    stmt = istmt.on_conflict_do_update(index_elements=keys, set_=updates)
-    conn.execute(stmt)
-
-
-def save_tags(conn: Conn, tags: Iterable[Tag]) -> None:
-    by_keys = {(t.ref_id, t.sentence, t.key): t for t in tags}
-    values = [t.dict() for t in by_keys.values()]
-    if not len(values):
-        return
-    istmt = upsert(tag_table).values(values)
-    updates = dict(text=istmt.excluded.text, category=istmt.excluded.category)
-    keys = ["ref_id", "sentence", "key"]
-    stmt = istmt.on_conflict_do_update(index_elements=keys, set_=updates)
-    conn.execute(stmt)
-
-
-def clear_ref(conn: Conn, ref_id: str) -> None:
+def save_extracted(
+    conn: Conn,
+    article: Article,
+    sentences: Iterable[Sentence],
+    tag_sentences: Iterable[TagSentence],
+    tags: Iterable[Tag],
+) -> None:
+    save_article(conn, article)
     stmt = delete(sentence_table)
-    stmt = stmt.where(sentence_table.c.ref_id == ref_id)
+    stmt = stmt.where(sentence_table.c.article == article.id)
     conn.execute(stmt)
+    sentence_values = [s.dict() for s in sentences]
+    if len(sentence_values):
+        sstmt = insert(sentence_table).values(sentence_values)
+        conn.execute(sstmt)
 
-    stmt = delete(tag_table)
-    stmt = stmt.where(tag_table.c.ref_id == ref_id)
+    stmt = delete(tag_sentence_table)
+    stmt = stmt.where(tag_sentence_table.c.article == article.id)
     conn.execute(stmt)
+    tag_sentence_values = [s.dict() for s in tag_sentences]
+    if len(tag_sentence_values):
+        sstmt = insert(tag_sentence_table).values(tag_sentence_values)
+        conn.execute(sstmt)
+
+    tag_values = [t.dict() for t in tags]
+    if len(tag_values):
+        istmt = upsert(tag_table).values(tag_values)
+        updates = dict(
+            category=istmt.excluded.category,
+            label=istmt.excluded.label,
+            count=istmt.excluded.count,
+        )
+        ustmt = istmt.on_conflict_do_update(index_elements=["id"], set_=updates)
+        conn.execute(ustmt)

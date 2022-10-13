@@ -17,8 +17,8 @@ def create_db() -> None:
     meta.create_all(checkfirst=True)
 
 
-ref_table = Table(
-    "ref",
+article_table = Table(
+    "article",
     meta,
     Column("id", Unicode(255), primary_key=True),
     Column("site", Unicode(255), index=True, nullable=False),
@@ -29,7 +29,7 @@ ref_table = Table(
 sentence_table = Table(
     "sentence",
     meta,
-    Column("ref_id", Unicode(255), primary_key=True),
+    Column("article", Unicode(255), primary_key=True),
     Column("sequence", Integer, primary_key=True),
     Column("text", Unicode),
 )
@@ -37,11 +37,21 @@ sentence_table = Table(
 tag_table = Table(
     "tag",
     meta,
-    Column("ref_id", Unicode(255), primary_key=True),
-    Column("sentence", Integer, primary_key=True),
-    Column("key", Unicode(1024), primary_key=True),
+    Column("id", Unicode(255), primary_key=True),
+    Column("cluster", Unicode(255), index=True),
+    Column("article", Unicode(255)),
+    Column("fingerprint", Unicode(1024)),
     Column("category", Unicode(255)),
-    Column("text", Unicode),
+    Column("label", Unicode),
+    Column("count", Integer),
+)
+
+tag_sentence_table = Table(
+    "tag_sentence",
+    meta,
+    Column("article", Unicode(255), primary_key=True),
+    Column("sentence", Integer, primary_key=True),
+    Column("tag", Unicode(255), primary_key=True),
 )
 
 identity_table = Table(
