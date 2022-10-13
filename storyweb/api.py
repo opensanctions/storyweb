@@ -4,14 +4,13 @@ from fastapi.responses import RedirectResponse
 from fastapi.exceptions import HTTPException
 
 from storyweb.links import link_types
-from storyweb.clean import most_common, pick_name
+from storyweb.clean import pick_name
+from storyweb.ontology import pick_category
 from storyweb.db import engine, Conn
 from storyweb.logic import (
-    create_identity,
     create_link,
-    get_identity_by_id,
-    get_identity_by_ref_key,
-    list_identity_tags,
+    get_cluster,
+    get_tag_by_id,
     list_links,
     list_sites,
     list_tags,
@@ -21,7 +20,7 @@ from storyweb.models import (
     LinkBase,
     LinkListingResponse,
     LinkTypeListingResponse,
-    RefTagListingResponse,
+    ArticleTagListingResponse,
     SiteListingResponse,
 )
 
@@ -49,7 +48,7 @@ def sites_index(conn: Conn = Depends(get_conn)):
 #
 # /tags/?site=xxxx&q=putin
 # {'text', 'texts', 'key', 'ref_id', 'ref_site', 'ref_title', 'ref_url', 'identity_id', 'identity_cluster'}
-@app.get("/tags", response_model=RefTagListingResponse)
+@app.get("/tags", response_model=ArticleTagListingResponse)
 def tags_index(
     conn: Conn = Depends(get_conn),
     q: Optional[str] = Query(None),
@@ -62,26 +61,15 @@ def tags_index(
     return tags
 
 
-@app.get("/tags/{ref_id}/{key}")
-def tag_identity(
-    conn: Conn = Depends(get_conn), ref_id: str = Path(), key: str = Path()
-):
-    identity = get_identity_by_ref_key(conn, ref_id, key)
-    if identity is None:
-        identity = create_identity(conn, key, ref_id, user="web")
-    url = app.url_path_for("get_identity", id=identity.id)
-    return RedirectResponse(status_code=307, url=url)
-
-
-@app.get("/identities/{id}")
-def get_identity(conn: Conn = Depends(get_conn), id: str = Path()):
-    identity = get_identity_by_id(conn, id)
-    if identity is None:
+@app.get("/tags/{tag_id}")
+def tag_identity(conn: Conn = Depends(get_conn), tag_id: str = Path()):
+    tag = get_tag_by_id(conn, tag_id)
+    if tag is None:
         raise HTTPException(404)
-    tags = list_identity_tags(conn, identity.cluster)
-    identity.category = most_common([t.category for t in tags])
-    identity.label = pick_name([t.text for t in tags])
-    return identity
+    tags = get_cluster(conn, tag.cluster)
+    tag.category = pick_category([t.category for t in tags])
+    tag.label = pick_name([t.label for t in tags])
+    return tag
 
 
 @app.get("/linktypes")

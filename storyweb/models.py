@@ -34,23 +34,12 @@ class TagSentence(BaseModel):
 
 class ArticleTag(BaseModel):
     article: Article
-    key: str
-    category: str
-    text: str
-    link_type: Optional[str]
-    cluster: Optional[str]
-    count: Optional[int]
-
-
-class Identity(BaseModel):
-    key: str
-    ref_id: Optional[str]
-    label: Optional[str]
-    category: Optional[str]
     id: str
     cluster: str
-    user: Optional[str]
-    timestamp: datetime
+    category: str
+    label: str
+    link_type: Optional[str]
+    count: Optional[int]
 
 
 class LinkBase(BaseModel):
@@ -89,7 +78,7 @@ class ListingResponse(Response):
 
 class Site(BaseModel):
     site: str
-    ref_count: int = 0
+    articles: int = 0
 
 
 class SiteListingResponse(ListingResponse):

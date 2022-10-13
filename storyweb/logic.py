@@ -9,7 +9,6 @@ from storyweb.db import tag_table, link_table, tag_sentence_table
 from storyweb.links import link_types
 from storyweb.clean import most_common, pick_name
 from storyweb.models import (
-    Identity,
     Link,
     Article,
     ArticleTag,
@@ -24,7 +23,7 @@ from storyweb.models import (
 def list_sites(conn: Conn) -> List[Site]:
     stmt = select(
         article_table.c.site,
-        func.count(article_table.c.id).label("ref_count"),
+        func.count(article_table.c.id).label("articles"),
     )
     stmt = stmt.group_by(article_table.c.site)
     stmt = stmt.order_by(article_table.c.site)
@@ -174,11 +173,11 @@ def save_link(conn: Conn, link: Link) -> None:
 
 
 def update_cluster(conn: Conn, id: str) -> None:
-    referents = get_cluster(conn, id)
+    referents = compute_cluster(conn, id)
     cluster = max(referents)
-    stmt = update(identity_table)
-    stmt = stmt.where(identity_table.c.id.in_(referents))
-    stmt = stmt.where(identity_table.c.cluster != cluster)
+    stmt = update(tag_table)
+    stmt = stmt.where(tag_table.c.id.in_(referents))
+    stmt = stmt.where(tag_table.c.cluster != cluster)
     stmt = stmt.values(cluster=cluster)
     conn.execute(stmt)
 
@@ -195,7 +194,7 @@ def update_cluster(conn: Conn, id: str) -> None:
     conn.execute(stmt)
 
 
-def get_cluster(conn: Conn, id: str) -> Set[str]:
+def compute_cluster(conn: Conn, id: str) -> Set[str]:
     link_t = link_table.alias("l")
     target = link_t.c.target
     source = link_t.c.source
@@ -223,81 +222,30 @@ def get_cluster(conn: Conn, id: str) -> Set[str]:
     return connected
 
 
-def get_identity_by_ref_key(conn: Conn, ref_id: str, key: str) -> Optional[Identity]:
-    stmt = select(identity_table)
-    stmt = stmt.where(identity_table.c.ref_id == ref_id)
-    stmt = stmt.where(identity_table.c.key == key)
-    stmt = stmt.limit(1)
-    cursor = conn.execute(stmt)
-    for row in cursor.fetchall():
-        return Identity.parse_obj(row)
-    return None
-
-
-def get_identity_by_id(conn: Conn, id: str) -> Optional[Identity]:
+def get_tag_by_id(conn: Conn, id: str) -> Optional[Tag]:
     # TODO: should this do an OR on cluster ID?
-    stmt = select(identity_table)
-    stmt = stmt.where(identity_table.c.id == id)
+    stmt = select(tag_table)
+    stmt = stmt.where(tag_table.c.id == id)
     stmt = stmt.limit(1)
     cursor = conn.execute(stmt)
     for row in cursor.fetchall():
-        return Identity.parse_obj(row)
+        return Tag.parse_obj(row)
     return None
 
 
-def list_identity_tags(conn: Conn, cluster: str) -> List[Tag]:
+def get_cluster(conn: Conn, cluster: str) -> List[Tag]:
     # Get all the parts of a clustered identity
-    id_t = identity_table.alias("i")
-    tag_t = tag_table.alias("t")
-    stmt = select(tag_t)
-    join_cond = and_(tag_t.c.ref_id == id_t.c.ref_id, tag_t.c.key == id_t.c.key)
-    stmt = stmt.join(id_t, join_cond)
-    stmt = stmt.where(id_t.c.cluster == cluster)
+    stmt = select(tag_table)
+    stmt = stmt.where(tag_table.c.cluster == cluster)
     cursor = conn.execute(stmt)
     return [Tag.parse_obj(r) for r in cursor.fetchall()]
-
-
-def create_identity(
-    conn: Conn,
-    key: str,
-    ref_id: Optional[str],
-    label: Optional[str] = None,
-    category: Optional[str] = None,
-    user: Optional[str] = None,
-) -> Identity:
-    # TODO: make this into upsert save()?
-    id = uuid4().hex
-    obj = Identity(
-        id=id,
-        cluster=id,
-        key=key,
-        ref_id=ref_id,
-        label=label,
-        category=category,
-        user=user,
-        timestamp=datetime.utcnow(),
-    )
-    save_identity(conn, obj)
-    return obj
-
-
-def save_identity(conn: Conn, identity: Identity) -> None:
-    istmt = upsert(identity_table).values(identity.dict())
-    values = dict(
-        label=istmt.excluded.label,
-        category=istmt.excluded.category,
-        cluster=istmt.excluded.cluster,
-    )
-    stmt = istmt.on_conflict_do_update(index_elements=["key", "ref_id"], set_=values)
-    conn.execute(stmt)
-    # TODO: needed?
-    update_cluster(conn, identity.id)
 
 
 def save_article(conn: Conn, article: Article) -> None:
     istmt = upsert(article_table).values([article.dict()])
     values = dict(
         site=istmt.excluded.site,
+        cluster=istmt.excluded.cluster,
         url=istmt.excluded.url,
         title=istmt.excluded.title,
     )
