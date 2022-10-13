@@ -8,7 +8,7 @@ import Container from 'react-bootstrap/Container';
 
 import Layout from '../components/Layout'
 import { API_URL } from '../lib/constants';
-import { ITag, ILink, ILinkListingResponse, ILinkType, ILinkTypeListingResponse, IArticleTagListingResponse } from '../lib/types';
+import { ITag, ILink, ILinkListingResponse, ILinkType, ILinkTypeListingResponse, IArticleTagListingResponse, IClusterListingResponse } from '../lib/types';
 import { ChangeEvent, FormEvent, useState } from 'react';
 
 interface IPageProps {
@@ -74,20 +74,20 @@ export default function LinkLoom({ anchorId, anchor, other, linkTypes, initialTy
   )
 }
 
-async function getOtherIdentity(anchorId: string, otherId?: string): Promise<ITag | undefined> {
+async function getOtherIdentity(anchor: ITag, otherId?: string): Promise<ITag | undefined> {
   if (!!otherId) {
     const res = await fetch(`${API_URL}/tags/${otherId}`);
     return await res.json() as ITag
   }
   const corefApiUrl = queryString.stringifyUrl({
-    'url': `${API_URL}/tags`,
-    'query': { coref: anchorId, coref_linked: false, limit: 1 }
+    'url': `${API_URL}/clusters`,
+    'query': { coref: anchor.cluster, linked: false, limit: 1 }
   })
   const corefRes = await fetch(corefApiUrl);
-  const tags = await corefRes.json() as IArticleTagListingResponse;
+  const tags = await corefRes.json() as IClusterListingResponse;
   if (tags.results.length > 0) {
     const reftag = tags.results[0];
-    return await getOtherIdentity(anchorId, reftag.cluster)
+    return await getOtherIdentity(anchor, reftag.id)
   }
   return undefined;
 }
@@ -105,7 +105,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const anchor = await anchorRes.json() as ITag
 
   const otherId = context.query.other as (string | undefined);
-  const other = await getOtherIdentity(anchorId, otherId);
+  const other = await getOtherIdentity(anchor, otherId);
   if (other === undefined) {
     return { redirect: { destination: `/tags/${anchorId}`, permanent: false } };
   }
@@ -115,7 +115,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const existingLinkUrl = queryString.stringifyUrl({
     'url': `${API_URL}/links`,
-    'query': { identity: [anchor.id, other.id], limit: 1 }
+    'query': { identity: [anchor.cluster, other.cluster], limit: 1 }
   })
   // console.log(existingLinkUrl);
   const existingLinkRes = await fetch(existingLinkUrl);

@@ -3,6 +3,16 @@ from typing import List, Optional
 from pydantic import BaseModel, Field
 
 
+class Response(BaseModel):
+    status: str = Field("ok")
+    debug_msg: Optional[str] = Field(None)
+
+
+class ListingResponse(Response):
+    limit: int = Field()
+    offset: int = Field(0)
+
+
 class Article(BaseModel):
     id: str
     site: str
@@ -39,8 +49,25 @@ class ArticleTag(BaseModel):
     fingerprint: str
     category: str
     label: str
+    count: int
+
+
+class ArticleTagListingResponse(ListingResponse):
+    results: List[ArticleTag]
+
+
+class Cluster(BaseModel):
+    id: str
+    category: str
+    label: str
+    labels: List[str]
     link_type: Optional[str]
-    count: Optional[int]
+    count: int
+    tags: int
+
+
+class ClusterListingResponse(ListingResponse):
+    results: List[Cluster]
 
 
 class LinkBase(BaseModel):
@@ -63,18 +90,16 @@ class LinkType(BaseModel):
     phrase: str
 
 
+class LinkListingResponse(ListingResponse):
+    results: List[Link]
+
+
 class LinkTypes(BaseModel):
     types: List[LinkType]
 
 
-class Response(BaseModel):
-    status: str = Field("ok")
-    debug_msg: Optional[str] = Field(None)
-
-
-class ListingResponse(Response):
-    limit: int = Field()
-    offset: int = Field(0)
+class LinkTypeListingResponse(ListingResponse):
+    results: List[LinkType]
 
 
 class Site(BaseModel):
@@ -84,15 +109,3 @@ class Site(BaseModel):
 
 class SiteListingResponse(ListingResponse):
     results: List[Site]
-
-
-class ArticleTagListingResponse(ListingResponse):
-    results: List[ArticleTag]
-
-
-class LinkListingResponse(ListingResponse):
-    results: List[Link]
-
-
-class LinkTypeListingResponse(ListingResponse):
-    results: List[LinkType]

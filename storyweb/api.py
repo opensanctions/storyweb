@@ -11,11 +11,13 @@ from storyweb.logic import (
     create_link,
     get_cluster,
     get_tag_by_id,
+    list_clusters,
     list_links,
     list_sites,
     list_tags,
 )
 from storyweb.models import (
+    ClusterListingResponse,
     Link,
     LinkBase,
     LinkListingResponse,
@@ -53,11 +55,9 @@ def tags_index(
     conn: Conn = Depends(get_conn),
     q: Optional[str] = Query(None),
     site: List[str] = Query([]),
-    coref: Optional[str] = Query(None),
-    coref_linked: Optional[bool] = Query(None),
 ):
     sites = [s for s in site if s is not None and len(s.strip())]
-    tags = list_tags(conn, sites=sites, query=q, coref=coref, coref_linked=coref_linked)
+    tags = list_tags(conn, sites=sites, query=q)
     return tags
 
 
@@ -72,6 +72,17 @@ def tag_identity(conn: Conn = Depends(get_conn), tag_id: str = Path()):
     return tag
 
 
+@app.get("/clusters", response_model=ClusterListingResponse)
+def clusters_index(
+    conn: Conn = Depends(get_conn),
+    q: Optional[str] = Query(None),
+    coref: Optional[str] = Query(None),
+    linked: Optional[bool] = Query(None),
+):
+    tags = list_clusters(conn, query=q, coref=coref, linked=linked)
+    return tags
+
+
 @app.get("/linktypes")
 def link_types_index():
     return LinkTypeListingResponse(limit=0, offset=0, results=link_types.all())
@@ -80,10 +91,10 @@ def link_types_index():
 @app.get("/links")
 def links_index(
     conn: Conn = Depends(get_conn),
-    identity: List[str] = Query([]),
+    cluster: List[str] = Query([]),
 ):
-    identities = [i for i in identity if i is not None and len(i.strip())]
-    links = list_links(conn, identities)
+    clusters = [i for i in cluster if i is not None and len(i.strip())]
+    links = list_links(conn, clusters)
     return LinkListingResponse(results=links, limit=100, offset=0)
 
 

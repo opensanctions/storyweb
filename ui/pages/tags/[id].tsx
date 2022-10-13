@@ -11,13 +11,13 @@ import Container from 'react-bootstrap/Container';
 import Layout from '../../components/Layout'
 import { API_URL } from '../../lib/constants';
 
-import { ITag, IArticleTagListingResponse } from '../../lib/types';
+import { ITag, IClusterListingResponse } from '../../lib/types';
 import Link from 'next/link';
 import { getLinkLoomLink, getTagLink } from '../../lib/util';
 
 interface TagProps {
   tag: ITag
-  related: IArticleTagListingResponse
+  related: IClusterListingResponse
 }
 
 export default function Tag({ tag, related }: TagProps) {
@@ -35,21 +35,18 @@ export default function Tag({ tag, related }: TagProps) {
         <Table>
           <thead>
             <tr>
-              <th>Count</th>
-              <th>Tag</th>
+              <th>Articles</th>
+              <th>Name</th>
               <th>Category</th>
               <th>Link</th>
-              <th>Source</th>
-              <th>Site</th>
             </tr>
           </thead>
           <tbody>
             {related.results.map((reltag) => (
               <tr>
-                <td>{reltag.count}</td>
+                <td>{reltag.tags}</td>
                 <td>
                   <Link href={getTagLink(reltag)}>{reltag.label}</Link>
-
                 </td>
                 <td><code>{reltag.category}</code></td>
                 <td>
@@ -59,13 +56,6 @@ export default function Tag({ tag, related }: TagProps) {
                   {!reltag.link_type && (
                     <Link href={getLinkLoomLink(tag, reltag)}>add</Link>
                   )}
-
-                </td>
-                <td>
-                  <a target="_blank" href={reltag.article.url}>{reltag.article.title}</a>
-                </td>
-                <td>
-                  {reltag.article.site}
                 </td>
               </tr>
             ))}
@@ -86,13 +76,13 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const tag = await res.json() as ITag;
 
   const corefApiUrl = queryString.stringifyUrl({
-    'url': `${API_URL}/tags`,
+    'url': `${API_URL}/clusters`,
     'query': {
       coref: tag.cluster
     }
   })
   const corefRes = await fetch(corefApiUrl);
-  const related = await corefRes.json() as IArticleTagListingResponse
+  const related = await corefRes.json() as IClusterListingResponse
 
   return {
     props: { tag, related },

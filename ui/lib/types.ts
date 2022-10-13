@@ -39,6 +39,24 @@ export interface IArticleTag {
   link_type?: string
 }
 
+export interface IArticleTagListingResponse extends IListingResponse {
+  results: IArticleTag[]
+}
+
+export interface ICluster {
+  id: string
+  category: string
+  label: string
+  labels: string[]
+  count: number
+  tags: number
+  link_type?: string
+}
+
+export interface IClusterListingResponse extends IListingResponse {
+  results: ICluster[]
+}
+
 export interface ISite {
   site: string
   articles: number
@@ -71,10 +89,4 @@ export interface ILinkType {
 
 export interface ILinkTypeListingResponse extends IListingResponse {
   results: ILinkType[]
-}
-
-
-
-export interface IArticleTagListingResponse extends IListingResponse {
-  results: IArticleTag[]
 }
