@@ -285,8 +285,9 @@ def get_tag_by_id(conn: Conn, id: str) -> Optional[Tag]:
     cursor = conn.execute(stmt)
     for row in cursor.fetchall():
         tag = Tag.parse_obj(row)
-        tag.label = row.cluster_label
-        tag.category = row.cluster_category
+        # tag.label = row.cluster_label
+        # tag.category = row.cluster_category
+        return tag
     return None
 
 
@@ -340,6 +341,7 @@ def save_extracted(
             category=istmt.excluded.category,
             label=istmt.excluded.label,
             count=istmt.excluded.count,
+            frequency=istmt.excluded.frequency,
         )
         ustmt = istmt.on_conflict_do_update(index_elements=["id"], set_=updates)
         conn.execute(ustmt)

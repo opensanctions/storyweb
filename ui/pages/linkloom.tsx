@@ -16,10 +16,11 @@ interface IPageProps {
   initialType: string
   anchor: ITag
   other: ITag
+  autoMode: boolean
   linkTypes: ILinkType[]
 }
 
-export default function LinkLoom({ anchor, other, linkTypes, initialType }: IPageProps) {
+export default function LinkLoom({ anchor, other, linkTypes, autoMode, initialType }: IPageProps) {
   const router = useRouter();
   const [link, setLink] = useState({
     source: anchor.id,
@@ -32,14 +33,20 @@ export default function LinkLoom({ anchor, other, linkTypes, initialType }: IPag
 
   const onSubmit = async function (event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    await fetch(`/api/link`, {
+    const resp = await fetch(`/api/link`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(link),
     });
-    router.reload();
+    const linkResp = await resp.json() as ILink;
+    const anchorCluster = link.source_cluster;
+    if (autoMode) {
+      router.reload();
+    } else {
+      router.push(`/tags/${anchorCluster}`);
+    }
   }
 
   const onChangeType = function (event: ChangeEvent<HTMLInputElement>, type: string) {
@@ -79,11 +86,7 @@ export default function LinkLoom({ anchor, other, linkTypes, initialType }: IPag
   )
 }
 
-async function getOtherIdentity(anchor: ITag, otherId?: string): Promise<ITag | undefined> {
-  if (!!otherId) {
-    const res = await fetch(`${API_URL}/tags/${otherId}`);
-    return await res.json() as ITag
-  }
+async function getOtherIdentity(anchor: ITag): Promise<string | undefined> {
   const corefApiUrl = queryString.stringifyUrl({
     'url': `${API_URL}/clusters`,
     'query': { coref: anchor.cluster, linked: false, limit: 1 }
@@ -92,7 +95,7 @@ async function getOtherIdentity(anchor: ITag, otherId?: string): Promise<ITag | 
   const tags = await corefRes.json() as IClusterListingResponse;
   if (tags.results.length > 0) {
     const reftag = tags.results[0];
-    return await getOtherIdentity(anchor, reftag.id)
+    return reftag.id;
   }
   return undefined;
 }
@@ -105,11 +108,16 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const anchorRes = await fetch(`${API_URL}/tags/${anchorId}`);
   const anchor = await anchorRes.json() as ITag
 
-  const otherId = context.query.other as (string | undefined);
-  const other = await getOtherIdentity(anchor, otherId);
-  if (other === undefined) {
+  let otherId = context.query.other as (string | undefined);
+  const autoMode = !otherId;
+  if (autoMode) {
+    otherId = await getOtherIdentity(anchor);
+  }
+  if (otherId === undefined) {
     return { redirect: { destination: `/tags/${anchorId}`, permanent: false } };
   }
+  const otherRes = await fetch(`${API_URL}/tags/${otherId}`);
+  const other = await otherRes.json() as ITag
 
   const linkTypesRes = await fetch(`${API_URL}/linktypes`)
   const linkTypes = await linkTypesRes.json() as ILinkTypeListingResponse
@@ -125,6 +133,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     initialType = link.type;
   }
   return {
-    props: { anchor, other, linkTypes: linkTypes.results, initialType }
+    props: { anchor, other, autoMode, linkTypes: linkTypes.results, initialType, }
   }
 }

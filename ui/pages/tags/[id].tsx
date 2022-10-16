@@ -13,7 +13,7 @@ import { API_URL } from '../../lib/constants';
 
 import { ITag, IClusterListingResponse } from '../../lib/types';
 import Link from 'next/link';
-import { getLinkLoomLink, getTagLink } from '../../lib/util';
+import { getClusterLink, getLinkLoomLink, getTagLink } from '../../lib/util';
 
 interface TagProps {
   tag: ITag
@@ -42,19 +42,19 @@ export default function Tag({ tag, related }: TagProps) {
             </tr>
           </thead>
           <tbody>
-            {related.results.map((reltag) => (
+            {related.results.map((cluster) => (
               <tr>
-                <td>{reltag.tags}</td>
+                <td>{cluster.tags}</td>
                 <td>
-                  <Link href={getTagLink(reltag)}>{reltag.label}</Link>
+                  <Link href={getClusterLink(cluster)}>{cluster.label}</Link>
                 </td>
-                <td><code>{reltag.category}</code></td>
+                <td><code>{cluster.category}</code></td>
                 <td>
-                  {!!reltag.link_type && (
-                    <Link href={getLinkLoomLink(tag, reltag)}>{reltag.link_type}</Link>
+                  {!!cluster.link_type && (
+                    <Link href={getLinkLoomLink(tag, cluster)}>{cluster.link_type}</Link>
                   )}
-                  {!reltag.link_type && (
-                    <Link href={getLinkLoomLink(tag, reltag)}>add</Link>
+                  {!cluster.link_type && (
+                    <Link href={getLinkLoomLink(tag, cluster)}>add</Link>
                   )}
                 </td>
               </tr>

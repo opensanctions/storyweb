@@ -1,11 +1,9 @@
 from typing import Generator, List, Optional
 from fastapi import FastAPI, Depends, Path, Query
-from fastapi.responses import RedirectResponse
 from fastapi.exceptions import HTTPException
 
 from storyweb.links import link_types
-from storyweb.clean import pick_name
-from storyweb.ontology import ENTITY, pick_category
+from storyweb.ontology import ENTITY
 from storyweb.db import engine, Conn
 from storyweb.logic import (
     create_link,
@@ -45,10 +43,6 @@ def sites_index(conn: Conn = Depends(get_conn)):
     return SiteListingResponse(limit=len(sites), results=sites)
 
 
-# * get the set of (unprocessed) tags (site/ilike search)
-#
-# /tags/?site=xxxx&q=putin
-# {'text', 'texts', 'key', 'ref_id', 'ref_site', 'ref_title', 'ref_url', 'identity_id', 'identity_cluster'}
 @app.get("/tags", response_model=ArticleTagListingResponse)
 def tags_index(
     conn: Conn = Depends(get_conn),
@@ -61,7 +55,12 @@ def tags_index(
 
 
 @app.get("/tags/{tag_id}")
-def tag_identity(conn: Conn = Depends(get_conn), tag_id: str = Path()):
+def get_tag(conn: Conn = Depends(get_conn), tag_id: str = Path()):
+    # TODO:
+    # * view an identity
+    #   * see all possible aliases (same name, different article tags)
+    #   * see all possible links
+    #   * see all existing links
     tag = get_tag_by_id(conn, tag_id)
     if tag is None:
         raise HTTPException(404)
@@ -99,31 +98,8 @@ def links_save(
     link: LinkBase,
     conn: Conn = Depends(get_conn),
 ):
+    # * make a link (any type)
+    #   * see all sentences that mention both tags/identities
+    #   * pick a relationship type
     result = create_link(conn, link.source, link.target, link.type)
     return result
-
-
-# /identities/?q=putin
-# {'cluster_id', 'identity_ids', 'text', 'texts'}
-#
-# POST /identities <- {'key', 'ref_id', 'cluster'}
-#
-# /identities/xxxx
-# {'cluster', 'text', 'tags': [{}], }
-#
-# /identities/xxxx/cooccuring?unlinked=true
-# {'key', 'refs', 'count'}
-#
-# /identities/xxxx/links  (or /link?identity=xxxx ?)
-# {'source_id', 'target_id', 'type', ...}
-#
-# * view an identity
-#   * see all possible aliases (same name, different article tags)
-#   * see all possible links
-#   * see all existing links
-#
-# * make a link (any type)
-#   * see all sentences that mention both tags/identities
-#   * pick a relationship type
-#
-# *

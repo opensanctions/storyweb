@@ -37,8 +37,8 @@ class Tag(BaseModel):
     label: str
     count: int
     frequency: float
-    # cluster_category: str
-    # cluster_label: str
+    cluster_category: Optional[str]
+    cluster_label: Optional[str]
 
 
 class TagSentence(BaseModel):
@@ -65,7 +65,6 @@ class Cluster(BaseModel):
     id: str
     category: str
     label: str
-    labels: List[str]
     link_type: Optional[str]
     count: int
     tags: int

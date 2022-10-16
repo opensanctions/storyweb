@@ -45,11 +45,11 @@ tag_table = Table(
     Column("article", Unicode(255), index=True),
     Column("fingerprint", Unicode(1024), index=True),
     Column("category", Unicode(10)),
+    Column("cluster_category", Unicode(10)),
     Column("label", Unicode),
+    Column("cluster_label", Unicode),
     Column("count", Integer),
     Column("frequency", Float),
-    Column("cluster_category", Unicode(10)),
-    Column("cluster_label", Unicode),
 )
 
 tag_sentence_table = Table(
