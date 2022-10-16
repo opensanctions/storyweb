@@ -1,11 +1,12 @@
 from sqlalchemy import MetaData, create_engine
-from sqlalchemy import Table, Column, Integer, Unicode, DateTime
+from sqlalchemy import Table, Column, Integer, Unicode, DateTime, Float
 from sqlalchemy.engine import Connection
 from sqlalchemy.dialects.postgresql import insert as upsert
 
 from storyweb import settings
 
 Conn = Connection
+KEY_LEN = 40
 
 engine = create_engine(settings.DB_URL)
 meta = MetaData(bind=engine)
@@ -24,6 +25,8 @@ article_table = Table(
     Column("site", Unicode(255), index=True, nullable=False),
     Column("url", Unicode, nullable=True),
     Column("title", Unicode, nullable=True),
+    Column("tags_count", Integer, default=0),
+    Column("tags_mentions", Integer, default=0),
 )
 
 sentence_table = Table(
@@ -37,13 +40,16 @@ sentence_table = Table(
 tag_table = Table(
     "tag",
     meta,
-    Column("id", Unicode(255), primary_key=True),
-    Column("cluster", Unicode(255), index=True),
-    Column("article", Unicode(255)),
-    Column("fingerprint", Unicode(1024)),
-    Column("category", Unicode(255)),
+    Column("id", Unicode(KEY_LEN), primary_key=True),
+    Column("cluster", Unicode(KEY_LEN), index=True),
+    Column("article", Unicode(255), index=True),
+    Column("fingerprint", Unicode(1024), index=True),
+    Column("category", Unicode(10)),
     Column("label", Unicode),
     Column("count", Integer),
+    Column("frequency", Float),
+    Column("cluster_category", Unicode(10)),
+    Column("cluster_label", Unicode),
 )
 
 tag_sentence_table = Table(
@@ -51,29 +57,23 @@ tag_sentence_table = Table(
     meta,
     Column("article", Unicode(255), primary_key=True),
     Column("sentence", Integer, primary_key=True),
-    Column("tag", Unicode(255), primary_key=True),
+    Column("tag", Unicode(KEY_LEN), primary_key=True),
 )
 
-identity_table = Table(
-    "identity",
+fingerprint_idf_table = Table(
+    "fingerprint_idf",
     meta,
-    Column("key", Unicode(1024), primary_key=True),
-    Column("ref_id", Unicode(255), nullable=True, primary_key=True),
-    Column("label", Unicode(1024), nullable=True),
-    Column("category", Unicode(255), nullable=True),
-    Column("id", Unicode(255)),
-    Column("cluster", Unicode(255)),
-    Column("user", Unicode(255), nullable=True),
-    Column("timestamp", DateTime),
+    Column("fingerprint", Unicode(1024), index=True),
+    Column("frequency", Float),
 )
 
 link_table = Table(
     "link",
     meta,
-    Column("source", Unicode(255), primary_key=True),
-    Column("source_cluster", Unicode(255)),
-    Column("target", Unicode(255), primary_key=True),
-    Column("target_cluster", Unicode(255)),
+    Column("source", Unicode(KEY_LEN), primary_key=True),
+    Column("source_cluster", Unicode(KEY_LEN)),
+    Column("target", Unicode(KEY_LEN), primary_key=True),
+    Column("target_cluster", Unicode(KEY_LEN)),
     Column("type", Unicode(255)),
     Column("user", Unicode(255), nullable=True),
     Column("timestamp", DateTime),

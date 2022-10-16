@@ -2,7 +2,8 @@ import click
 import logging
 from pathlib import Path
 
-from storyweb.db import create_db
+from storyweb.db import create_db, engine
+from storyweb.logic import compute_idf
 from storyweb.pipeline import load_articles
 
 
@@ -22,6 +23,12 @@ def cli() -> None:
 @click.argument("articles", type=InPath)
 def parse(articles: Path) -> None:
     load_articles(articles)
+
+
+@cli.command("compute", help="Run backend computations")
+def compute() -> None:
+    with engine.begin() as conn:
+        compute_idf(conn)
 
 
 @cli.command("init", help="Initialize the database")

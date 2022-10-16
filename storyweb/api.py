@@ -9,7 +9,6 @@ from storyweb.ontology import ENTITY, pick_category
 from storyweb.db import engine, Conn
 from storyweb.logic import (
     create_link,
-    get_cluster,
     get_tag_by_id,
     list_clusters,
     list_links,
@@ -66,12 +65,6 @@ def tag_identity(conn: Conn = Depends(get_conn), tag_id: str = Path()):
     tag = get_tag_by_id(conn, tag_id)
     if tag is None:
         raise HTTPException(404)
-    tags = get_cluster(conn, tag.cluster)
-    try:
-        tag.category = pick_category([t.category for t in tags])
-    except TypeError:
-        tag.category = ENTITY
-    tag.label = pick_name([t.label for t in tags])
     return tag
 
 

@@ -18,6 +18,8 @@ class Article(BaseModel):
     site: str
     url: str
     title: Optional[str]
+    tags_count: Optional[int]
+    tags_mentions: Optional[int]
 
 
 class Sentence(BaseModel):
@@ -34,6 +36,9 @@ class Tag(BaseModel):
     category: str
     label: str
     count: int
+    frequency: float
+    # cluster_category: str
+    # cluster_label: str
 
 
 class TagSentence(BaseModel):

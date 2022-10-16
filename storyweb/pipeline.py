@@ -97,6 +97,8 @@ def load_article(doc: Doc, raw: RawArticle) -> None:
             sentence = Sentence(article=article.id, sequence=seq, text=sent.text)
             sentences.append(sentence)
 
+    article.tags_count = len(tag_labels)
+    article.tags_mentions = sum([len(v) for v in tag_labels.values()])
     tags: List[Tag] = []
     tag_sentence_objs: List[TagSentence] = []
     for fp, labels in tag_labels.items():
@@ -106,15 +108,18 @@ def load_article(doc: Doc, raw: RawArticle) -> None:
             category = pick_category(tag_categories[fp])
         except TypeError:
             category = "ENT"
-
+        label = pick_name(labels)
         tag = Tag(
             id=tag_id,
             cluster=tag_id,
             article=article.id,
             fingerprint=fp,
             category=category,
-            label=pick_name(labels),
+            label=label,
             count=len(labels),
+            frequency=float(len(labels)) / article.tags_mentions,
+            cluster_category=category,
+            cluster_label=label,
         )
         tags.append(tag)
 

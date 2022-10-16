@@ -6,6 +6,7 @@ from sqlalchemy.sql import select, delete, update, insert, func, and_, or_
 from storyweb.db import Conn, upsert
 from storyweb.db import article_table, sentence_table
 from storyweb.db import tag_table, link_table, tag_sentence_table
+from storyweb.db import fingerprint_idf_table
 from storyweb.links import link_types
 from storyweb.clean import most_common, pick_name
 from storyweb.models import (
@@ -49,8 +50,8 @@ def list_tags(
         tag_t.c.id.label("id"),
         tag_t.c.cluster.label("cluster"),
         tag_t.c.fingerprint.label("fingerprint"),
-        tag_t.c.category.label("category"),
-        tag_t.c.label.label("label"),
+        tag_t.c.cluster_category.label("category"),
+        tag_t.c.cluster_label.label("label"),
         tag_t.c.count.label("count"),
     )
     if len(sites):
@@ -94,8 +95,8 @@ def list_clusters(
     link_t = link_table.alias("link")
     stmt = select(
         tag_t.c.cluster.label("id"),
-        func.array_agg(tag_t.c.category).label("categories"),
-        func.array_agg(tag_t.c.label).label("labels"),
+        func.max(tag_t.c.cluster_category).label("category"),
+        func.max(tag_t.c.cluster_label).label("label"),
         func.count(func.distinct(tag_t.c.id)).label("tags"),
         func.sum(tag_t.c.count).label("count"),
     )
@@ -149,9 +150,8 @@ def list_clusters(
             link_type = most_common(row["link_types"])
         cluster = Cluster(
             id=row["id"],
-            category=pick_category(row["categories"]),
-            label=pick_name(row["labels"]),
-            labels=row["labels"],
+            category=row["category"],
+            label=row["label"],
             count=row["count"],
             tags=row["tags"],
             link_type=link_type,
@@ -209,10 +209,28 @@ def save_link(conn: Conn, link: Link) -> None:
 def update_cluster(conn: Conn, id: str) -> None:
     referents = compute_cluster(conn, id)
     cluster = max(referents)
+
+    sstmt = select(tag_table)
+    sstmt = sstmt.where(tag_table.c.id.in_(referents))
+    res = conn.execute(sstmt)
+    rows = res.fetchall()
+    cluster_label = most_common([r.label for r in rows])
+    cluster_category = most_common([r.category for r in rows])
+
     stmt = update(tag_table)
     stmt = stmt.where(tag_table.c.id.in_(referents))
-    stmt = stmt.where(tag_table.c.cluster != cluster)
-    stmt = stmt.values(cluster=cluster)
+    stmt = stmt.where(
+        or_(
+            tag_table.c.cluster != cluster,
+            tag_table.c.cluster_label != cluster_label,
+            tag_table.c.cluster_category != cluster_category,
+        )
+    )
+    stmt = stmt.values(
+        cluster=cluster,
+        cluster_label=cluster_label,
+        cluster_category=cluster_category,
+    )
     conn.execute(stmt)
 
     stmt = update(link_table)
@@ -271,16 +289,18 @@ def get_tag_by_id(conn: Conn, id: str) -> Optional[Tag]:
     stmt = stmt.limit(1)
     cursor = conn.execute(stmt)
     for row in cursor.fetchall():
-        return Tag.parse_obj(row)
+        tag = Tag.parse_obj(row)
+        tag.label = row.cluster_label
+        tag.category = row.cluster_category
     return None
 
 
-def get_cluster(conn: Conn, cluster: str) -> List[Tag]:
-    # Get all the parts of a clustered identity
-    stmt = select(tag_table)
-    stmt = stmt.where(tag_table.c.cluster == cluster)
-    cursor = conn.execute(stmt)
-    return [Tag.parse_obj(r) for r in cursor.fetchall()]
+# def get_cluster(conn: Conn, cluster: str) -> List[Tag]:
+#     # Get all the parts of a clustered identity
+#     stmt = select(tag_table)
+#     stmt = stmt.where(tag_table.c.cluster == cluster)
+#     cursor = conn.execute(stmt)
+#     return [Tag.parse_obj(r) for r in cursor.fetchall()]
 
 
 def save_article(conn: Conn, article: Article) -> None:
@@ -328,3 +348,22 @@ def save_extracted(
         )
         ustmt = istmt.on_conflict_do_update(index_elements=["id"], set_=updates)
         conn.execute(ustmt)
+
+
+def compute_idf(conn: Conn):
+    cstmt = select(func.count(article_table.c.id))
+    article_count = float(conn.execute(cstmt).scalar())
+    print("Article count", article_count)
+
+    conn.execute(delete(fingerprint_idf_table))
+
+    gstmt = select(
+        tag_table.c.fingerprint,
+        func.log(article_count / func.count(tag_table.c.article)),
+    )
+    gstmt = gstmt.group_by(tag_table.c.fingerprint)
+    stmt = fingerprint_idf_table.insert().from_select(
+        ["fingerprint", "frequency"], gstmt
+    )
+    print(stmt)
+    conn.execute(stmt)

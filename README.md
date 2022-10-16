@@ -16,14 +16,11 @@ python -m spacy download en_core_web_trf
 
 ## Queries
 
-See top people mentioned in OCCRP reporting:
 
 ```sql
-SELECT ARRAY_AGG(DISTINCT t.text), MAX(t.category), t.key, COUNT(DISTINCT t.ref_id) FROM tag t LEFT JOIN ref r ON r.id = t.ref_id WHERE r.site = 'occrp' AND t.category = 'PERSON' GROUP BY t.key ORDER BY COUNT(DISTINCT t.ref_id) DESC;
-```
-
-People linked to Navalny:
-
-```sql
-SELECT ARRAY_AGG(DISTINCT t.text), MAX(t.category), t.key, COUNT(DISTINCT t.ref_id) FROM tag t LEFT JOIN ref r ON r.id = t.ref_id LEFT JOIN tag o ON o.ref_id = r.id WHERE r.site = 'occrp' AND t.category = 'PERSON' AND o.key <> t.key AND o.key = 'person:alexei-navalny' GROUP BY t.key ORDER BY COUNT(DISTINCT t.ref_id) DESC;
+SELECT MAX(x.label), SUM(x.count)
+	FROM tag t LEFT JOIN tag x ON x.article = t.article AND x.fingerprint <> t.fingerprint
+	WHERE t.fingerprint = 'putin-vladimir'
+	GROUP BY x.fingerprint
+	ORDER BY SUM(x.count) DESC;
 ```
