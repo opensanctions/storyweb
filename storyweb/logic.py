@@ -255,13 +255,8 @@ def compute_cluster(conn: Conn, id: str) -> Set[str]:
     stmt_t = select(target.label("target"), source.label("source"))
     init_clause = or_(source == id, target == id)
     stmt_t = stmt_t.where(init_clause, type_c == same_as)
-    # stmt_s = select(source.label("node"))
-    # stmt_s = stmt_s.where(target == id, type_c == same_as)
     cte = stmt_t.cte("connected", recursive=True)
     cte_alias = cte.alias("c")
-    # stmt_rs = select(source.label("node"))
-    # stmt_rs = stmt_rs.join(cte_alias, cte_alias.c.node == target)
-    # stmt_rs = stmt_rs.where(type_c == same_as)
     stmt_r = select(target.label("target"), source.label("source"))
     join_clause = or_(
         cte_alias.c.source == source,
@@ -356,14 +351,12 @@ def compute_idf(conn: Conn):
     print("Article count", article_count)
 
     conn.execute(delete(fingerprint_idf_table))
-
     gstmt = select(
         tag_table.c.fingerprint,
         func.log(article_count / func.count(tag_table.c.article)),
     )
     gstmt = gstmt.group_by(tag_table.c.fingerprint)
-    stmt = fingerprint_idf_table.insert().from_select(
-        ["fingerprint", "frequency"], gstmt
-    )
-    print(stmt)
+    stmt = fingerprint_idf_table.insert()
+    stmt = stmt.from_select(["fingerprint", "frequency"], gstmt)
+    print("Update tf/idf", stmt)
     conn.execute(stmt)
