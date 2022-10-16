@@ -133,6 +133,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     initialType = link.type;
   }
   return {
-    props: { anchor, other, autoMode, linkTypes: linkTypes.results, initialType, }
+    props: { anchor, other, autoMode, linkTypes: linkTypes.results, initialType }
   }
 }
