@@ -64,6 +64,7 @@ fingerprint_idf_table = Table(
     "fingerprint_idf",
     meta,
     Column("fingerprint", Unicode(1024), index=True),
+    Column("count", Integer),
     Column("frequency", Float),
 )
 

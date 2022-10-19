@@ -355,10 +355,11 @@ def compute_idf(conn: Conn):
     conn.execute(delete(fingerprint_idf_table))
     gstmt = select(
         tag_table.c.fingerprint,
+        func.count(tag_table.c.article),
         func.log(article_count / func.count(tag_table.c.article)),
     )
     gstmt = gstmt.group_by(tag_table.c.fingerprint)
     stmt = fingerprint_idf_table.insert()
-    stmt = stmt.from_select(["fingerprint", "frequency"], gstmt)
+    stmt = stmt.from_select(["fingerprint", "count", "frequency"], gstmt)
     print("Update tf/idf", stmt)
     conn.execute(stmt)

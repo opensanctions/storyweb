@@ -10,7 +10,7 @@ from articledata import Article as RawArticle
 from pydantic import ValidationError
 
 from storyweb.db import engine
-from storyweb.clean import clean_entity_name, pick_name
+from storyweb.clean import clean_entity_name, most_common, pick_name
 from storyweb.models import Article, Sentence, Tag, TagSentence
 from storyweb.logic import save_extracted
 from storyweb.ontology import LOCATION, ORGANIZATION, PERSON, pick_category
@@ -104,10 +104,7 @@ def load_article(doc: Doc, raw: RawArticle) -> None:
     for fp, labels in tag_labels.items():
         key = f"{article.id}>{fp}".encode("utf-8")
         tag_id = hashlib.sha1(key).hexdigest()
-        try:
-            category = pick_category(tag_categories[fp])
-        except TypeError:
-            category = "ENT"
+        category = most_common(tag_categories[fp])
         label = pick_name(labels)
         tag = Tag(
             id=tag_id,
