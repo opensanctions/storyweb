@@ -13,6 +13,13 @@ class ListingResponse(Response):
     offset: int = Field(0)
 
 
+class Listing(BaseModel):
+    limit: int
+    offset: int
+    sort_direction: str
+    sort_field: Optional[str]
+
+
 class Article(BaseModel):
     id: str
     site: str
@@ -20,6 +27,10 @@ class Article(BaseModel):
     title: Optional[str]
     tags_count: Optional[int]
     tags_mentions: Optional[int]
+
+
+class ArticleListingResponse(ListingResponse):
+    results: List[Article]
 
 
 class Sentence(BaseModel):

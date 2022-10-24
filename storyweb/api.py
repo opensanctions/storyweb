@@ -3,11 +3,11 @@ from fastapi import FastAPI, Depends, Path, Query
 from fastapi.exceptions import HTTPException
 
 from storyweb.links import link_types
-from storyweb.ontology import ENTITY
 from storyweb.db import engine, Conn
 from storyweb.logic import (
     create_link,
     get_tag_by_id,
+    list_articles,
     list_clusters,
     list_links,
     list_sites,
@@ -20,6 +20,7 @@ from storyweb.models import (
     LinkListingResponse,
     LinkTypeListingResponse,
     ArticleTagListingResponse,
+    Listing,
     SiteListingResponse,
 )
 
@@ -36,21 +37,53 @@ def get_conn() -> Generator[Conn, None, None]:
         yield conn
 
 
+def get_listing(
+    limit: int = Query(50, description="Number of objects to return", le=500),
+    offset: int = Query(0, description="Skip the first N objects in response"),
+    sort: Optional[str] = Query(
+        None, description="Sort criterion, format: field:direction"
+    ),
+) -> Listing:
+    direction = "desc"
+    if sort is not None and ":" in sort:
+        sort, direction = sort.rsplit(":", 1)
+        direction = direction.lower().strip()
+        direction = "asc" if direction == "asc" else "desc"
+    return Listing(
+        limit=limit,
+        offset=offset,
+        sort_direction=direction,
+        sort_field=sort,
+    )
+
+
 @app.get("/sites")
-def sites_index(conn: Conn = Depends(get_conn)):
+def sites_index(
+    conn: Conn = Depends(get_conn),
+    listing: Listing = Depends(get_listing),
+):
     """List all the source sites from which articles (refs) have been imported."""
-    sites = list_sites(conn)
-    return SiteListingResponse(limit=len(sites), results=sites)
+    return list_sites(conn, listing)
+
+
+@app.get("/articles")
+def articles_index(
+    conn: Conn = Depends(get_conn),
+    listing: Listing = Depends(get_listing),
+    site: Optional[str] = Query(None),
+):
+    return list_articles(conn, listing, site=site)
 
 
 @app.get("/tags", response_model=ArticleTagListingResponse)
 def tags_index(
     conn: Conn = Depends(get_conn),
+    listing: Listing = Depends(get_listing),
     q: Optional[str] = Query(None),
     site: List[str] = Query([]),
 ):
     sites = [s for s in site if s is not None and len(s.strip())]
-    tags = list_tags(conn, sites=sites, query=q)
+    tags = list_tags(conn, listing, sites=sites, query=q)
     return tags
 
 
@@ -70,12 +103,12 @@ def get_tag(conn: Conn = Depends(get_conn), tag_id: str = Path()):
 @app.get("/clusters", response_model=ClusterListingResponse)
 def clusters_index(
     conn: Conn = Depends(get_conn),
+    listing: Listing = Depends(get_listing),
     q: Optional[str] = Query(None),
     coref: Optional[str] = Query(None),
     linked: Optional[bool] = Query(None),
 ):
-    tags = list_clusters(conn, query=q, coref=coref, linked=linked)
-    return tags
+    return list_clusters(conn, listing, query=q, coref=coref, linked=linked)
 
 
 @app.get("/linktypes")
@@ -86,11 +119,11 @@ def link_types_index():
 @app.get("/links")
 def links_index(
     conn: Conn = Depends(get_conn),
+    listing: Listing = Depends(get_listing),
     cluster: List[str] = Query([]),
 ):
     clusters = [i for i in cluster if i is not None and len(i.strip())]
-    links = list_links(conn, clusters)
-    return LinkListingResponse(results=links, limit=100, offset=0)
+    return list_links(conn, listing, clusters)
 
 
 @app.post("/links")

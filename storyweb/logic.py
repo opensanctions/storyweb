@@ -10,33 +10,66 @@ from storyweb.db import fingerprint_idf_table
 from storyweb.links import link_types
 from storyweb.clean import most_common, pick_name
 from storyweb.models import (
+    ArticleListingResponse,
     Cluster,
     ClusterListingResponse,
     Link,
     Article,
     ArticleTag,
     ArticleTagListingResponse,
+    LinkListingResponse,
+    Listing,
     Sentence,
     Site,
+    SiteListingResponse,
     Tag,
     TagSentence,
 )
 from storyweb.ontology import pick_category
 
 
-def list_sites(conn: Conn) -> List[Site]:
+def list_sites(conn: Conn, listing: Listing) -> SiteListingResponse:
     stmt = select(
         article_table.c.site,
         func.count(article_table.c.id).label("articles"),
     )
     stmt = stmt.group_by(article_table.c.site)
     stmt = stmt.order_by(article_table.c.site)
+    stmt = stmt.limit(listing.limit).offset(listing.offset)
     cursor = conn.execute(stmt)
-    return [Site.parse_obj(r) for r in cursor.fetchall()]
+    results = [Site.parse_obj(r) for r in cursor.fetchall()]
+    return SiteListingResponse(
+        status="ok",
+        debug_msg=str(stmt),
+        limit=listing.limit,
+        offset=listing.offset,
+        results=results,
+    )
+
+
+def list_articles(
+    conn: Conn, listing: Listing, site: Optional[str]
+) -> ArticleListingResponse:
+    stmt = select(article_table)
+    if site is not None:
+        stmt = stmt.filter(article_table.c.site == site)
+    if listing.sort_field is not None:
+        column = article_table.c[listing.sort_field]
+        # stmt = stmt.order_by(column.desc() if listing)
+    cursor = conn.execute(stmt)
+    results = [Article.parse_obj(r) for r in cursor.fetchall()]
+    return ArticleListingResponse(
+        status="ok",
+        debug_msg=str(stmt),
+        limit=listing.limit,
+        offset=listing.offset,
+        results=results,
+    )
 
 
 def list_tags(
     conn: Conn,
+    listing: Listing,
     sites: List[str] = [],
     query: Optional[str] = None,
 ) -> ArticleTagListingResponse:
@@ -61,9 +94,11 @@ def list_tags(
 
     stmt = stmt.join(article_t, tag_t.c.article == article_t.c.id)
     stmt = stmt.order_by(tag_t.c.count.desc())
-    stmt = stmt.limit(100)
+    stmt = stmt.limit(listing.limit).offset(listing.offset)
     cursor = conn.execute(stmt)
-    response = ArticleTagListingResponse(limit=100, offset=0, results=[])
+    response = ArticleTagListingResponse(
+        limit=listing.limit, offset=listing.offset, results=[]
+    )
     response.debug_msg = str(stmt)
     for row in cursor.fetchall():
         article = Article(
@@ -87,6 +122,7 @@ def list_tags(
 
 def list_clusters(
     conn: Conn,
+    listing: Listing,
     query: Optional[str] = None,
     coref: str = None,
     linked: Optional[bool] = None,
@@ -108,16 +144,7 @@ def list_clusters(
         # local_t = tag_table.alias("local")
         stmt = stmt.where(tag_t.c.cluster != coref)
         stmt = stmt.where(coref_t.c.cluster == coref)
-        clause_occur = and_(
-            coref_t.c.article == tag_t.c.article,
-        )
-        # stmt = stmt.where(or_(clause_occur))
-        clause_alias = and_(
-            coref_t.c.fingerprint == tag_t.c.fingerprint,
-        )
-        # stmt = stmt.where(or_(clause_alias))
-        stmt = stmt.where(or_(clause_occur, clause_alias))
-
+        stmt = stmt.where(coref_t.c.article == tag_t.c.article)
         link_in = and_(
             link_t.c.target_cluster == coref,
             link_t.c.source_cluster == tag_t.c.cluster,
@@ -139,10 +166,11 @@ def list_clusters(
         func.count(func.distinct(tag_t.c.id)).desc(),
         func.sum(tag_t.c.count).desc(),
     )
-    stmt = stmt.limit(100)
-    # print(stmt)
+    stmt = stmt.limit(listing.limit).offset(listing.offset)
     cursor = conn.execute(stmt)
-    response = ClusterListingResponse(limit=100, offset=0, results=[])
+    response = ClusterListingResponse(
+        limit=listing.limit, offset=listing.offset, results=[]
+    )
     response.debug_msg = str(stmt)
     for row in cursor.fetchall():
         link_type = None
@@ -160,7 +188,9 @@ def list_clusters(
     return response
 
 
-def list_links(conn: Conn, clusters: List[str]) -> List[Link]:
+def list_links(
+    conn: Conn, listing: Listing, clusters: List[str]
+) -> LinkListingResponse:
     link_t = link_table.alias("l")
     stmt = select(link_t)
     for cluster in clusters:
@@ -170,9 +200,12 @@ def list_links(conn: Conn, clusters: List[str]) -> List[Link]:
                 link_t.c.target_cluster == cluster,
             )
         )
-    stmt = stmt.limit(100)
+    stmt = stmt.limit(listing.limit).offset(listing.offset)
     cursor = conn.execute(stmt)
-    return [Link.parse_obj(r) for r in cursor.fetchall()]
+    results = [Link.parse_obj(r) for r in cursor.fetchall()]
+    return LinkListingResponse(
+        limit=listing.limit, offset=listing.offset, results=results
+    )
 
 
 def create_link(conn: Conn, source: str, target: str, type: str) -> Link:
