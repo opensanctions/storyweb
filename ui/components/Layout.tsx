@@ -1,6 +1,7 @@
 import React from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
+import { HotkeysProvider } from "@blueprintjs/core";
 
 import Navbar from './Navbar';
 import Footer from './Footer';
@@ -32,7 +33,6 @@ export default function Layout({ title, description, children }: React.PropsWith
         <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="twitter:card" content="summary" />
-        <meta name="twitter:site" content="@open_sanctions" />
         <meta name="twitter:creator" content="@pudo" />
         {!!description && (
           <>
@@ -42,11 +42,17 @@ export default function Layout({ title, description, children }: React.PropsWith
         )}
         <meta name="og:site" content={SITE} />
       </Head>
-      <div className={styles.page}>
-        <Navbar />
-        {children}
-      </div>
-      <Footer />
+      <HotkeysProvider>
+        <>
+          <div className={styles.page}>
+            <Navbar />
+            <div className={styles.content}>
+              {children}
+            </div>
+          </div>
+          <Footer />
+        </>
+      </HotkeysProvider>
     </>
   )
 }
