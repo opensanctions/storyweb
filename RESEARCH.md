@@ -1,5 +1,9 @@
 
 
+### Bad Will Hunting
+
+* https://blogs.lse.ac.uk/polis/2022/09/15/bad-will-hunting-the-story-so-far/ 
+
 * SparkNLP: https://nlp.johnsnowlabs.com/
 * Rosette Text Analytics: https://www.rosette.com/capability/entity-extractor/ 
 
