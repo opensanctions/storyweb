@@ -1,11 +1,6 @@
-import type { GetServerSideProps, GetServerSidePropsContext, InferGetServerSidePropsType, NextPage } from 'next'
+import type { GetServerSidePropsContext } from 'next'
 import queryString from 'query-string';
-import Head from 'next/head'
-import Image from 'next/image'
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
 import Table from 'react-bootstrap/Table';
-import Badge from 'react-bootstrap/Badge';
 import Container from 'react-bootstrap/Container';
 
 import Layout from '../../components/Layout'
@@ -13,7 +8,8 @@ import { API_URL } from '../../lib/constants';
 
 import { ITag, IClusterListingResponse } from '../../lib/types';
 import Link from 'next/link';
-import { getClusterLink, getLinkLoomLink, getTagLink } from '../../lib/util';
+import { getClusterLink, getLinkLoomLink } from '../../lib/util';
+import { TagCategory, TagLabel } from '../../components/util';
 
 interface TagProps {
   tag: ITag
@@ -23,46 +19,44 @@ interface TagProps {
 export default function Tag({ tag, related }: TagProps) {
   return (
     <Layout title={tag.label}>
-      <Container>
-        <h1>{tag.label}</h1>
-        <p>
-          <Badge bg="secondary">{tag.category}</Badge>
-          ID: <code>{tag.id}</code>, Cluster: <code>{tag.cluster}</code>
-        </p>
-        <p>
-          <Link href={getLinkLoomLink(tag)}>Start matching</Link>
-        </p>
-        <Table>
-          <thead>
+      <h1><TagLabel label={tag.label} /></h1>
+      <p>
+        <TagCategory category={tag.category} />
+        ID: <code>{tag.id}</code>, Cluster: <code>{tag.cluster}</code>
+      </p>
+      <p>
+        <Link href={getLinkLoomLink(tag)}>Start matching</Link>
+      </p>
+      <Table>
+        <thead>
+          <tr>
+            <th>Articles</th>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Link</th>
+          </tr>
+        </thead>
+        <tbody>
+          {related.results.map((cluster) => (
             <tr>
-              <th>Articles</th>
-              <th>Name</th>
-              <th>Category</th>
-              <th>Link</th>
+              <td>{cluster.tags}</td>
+              <td>
+                <Link href={getClusterLink(cluster)}>{cluster.label}</Link>
+              </td>
+              <td><code>{cluster.category}</code></td>
+              <td>
+                {!!cluster.link_type && (
+                  <Link href={getLinkLoomLink(tag, cluster)}>{cluster.link_type}</Link>
+                )}
+                {!cluster.link_type && (
+                  <Link href={getLinkLoomLink(tag, cluster)}>add</Link>
+                )}
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {related.results.map((cluster) => (
-              <tr>
-                <td>{cluster.tags}</td>
-                <td>
-                  <Link href={getClusterLink(cluster)}>{cluster.label}</Link>
-                </td>
-                <td><code>{cluster.category}</code></td>
-                <td>
-                  {!!cluster.link_type && (
-                    <Link href={getLinkLoomLink(tag, cluster)}>{cluster.link_type}</Link>
-                  )}
-                  {!cluster.link_type && (
-                    <Link href={getLinkLoomLink(tag, cluster)}>add</Link>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-        <code>{related.debug_msg}</code>
-      </Container>
+          ))}
+        </tbody>
+      </Table>
+      <code>{related.debug_msg}</code>
     </Layout>
   )
 }

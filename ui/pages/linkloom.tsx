@@ -55,33 +55,30 @@ export default function LinkLoom({ anchor, other, linkTypes, autoMode, initialTy
 
   return (
     <Layout title="Link loom">
-      <Container>
-        <h2>
-          <code>
-            <Link href={getTagLink(anchor)}>{anchor.label}</Link>
-          </code>
-          {' '}
-          {linkType.phrase}
-          {' '}
-          <code>
-            <Link href={getTagLink(other)}>{other.label}</Link>
-          </code>
-        </h2>
-        <Form onSubmit={onSubmit}>
-          {linkTypes.map((type) => (
-            <Form.Check
-              type="radio"
-              name="type"
-              value={type.name}
-              label={type.label}
-              checked={type.name == link.type}
-              onChange={(e) => onChangeType(e, type.name)}
-            />
-          ))}
-          <Button type="submit">Save</Button>
-        </Form>
-
-      </Container>
+      <h2>
+        <code>
+          <Link href={getTagLink(anchor)}>{anchor.label}</Link>
+        </code>
+        {' '}
+        {linkType.phrase}
+        {' '}
+        <code>
+          <Link href={getTagLink(other)}>{other.label}</Link>
+        </code>
+      </h2>
+      <Form onSubmit={onSubmit}>
+        {linkTypes.map((type) => (
+          <Form.Check
+            type="radio"
+            name="type"
+            value={type.name}
+            label={type.label}
+            checked={type.name == link.type}
+            onChange={(e) => onChangeType(e, type.name)}
+          />
+        ))}
+        <Button type="submit">Save</Button>
+      </Form>
     </Layout >
   )
 }

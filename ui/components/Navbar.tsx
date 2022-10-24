@@ -9,7 +9,7 @@ import styles from '../styles/Navbar.module.scss';
 export default function NavbarSection() {
   return (
     <Navbar>
-      <div className='container'>
+      <div className='page-container'>
         <Navbar.Group align={Alignment.LEFT}>
           <Navbar.Heading>StoryWeb</Navbar.Heading>
           <Navbar.Divider />

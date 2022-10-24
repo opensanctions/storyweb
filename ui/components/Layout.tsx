@@ -1,5 +1,6 @@
 import React from 'react';
 import Head from 'next/head';
+import classnames from 'classnames'
 import { useRouter } from 'next/router';
 import { HotkeysProvider } from "@blueprintjs/core";
 
@@ -46,7 +47,7 @@ export default function Layout({ title, description, children }: React.PropsWith
         <>
           <div className={styles.page}>
             <Navbar />
-            <div className={styles.content}>
+            <div className={classnames(styles.content, 'page-container')}>
               {children}
             </div>
           </div>

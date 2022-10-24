@@ -7,7 +7,7 @@ export default class Footer extends React.Component {
   render() {
     return (
       <div className={styles.footer}>
-        <div className='container section'>
+        <div className='page-container'>
           StoryWeb prototype
         </div>
       </div>
