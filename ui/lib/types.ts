@@ -15,6 +15,12 @@ export interface IArticle {
   title: string
   site: string
   url: string
+  tags_count: number
+  tags_mentions: number
+}
+
+export interface IArticleListingResponse extends IListingResponse {
+  results: IArticle[]
 }
 
 

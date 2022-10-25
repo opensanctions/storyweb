@@ -8,6 +8,7 @@ export async function fetchJson<T>(path: string, query: any = undefined): Promis
     'url': `${API_URL}${path}`,
     'query': query
   })
+  console.log("Query", apiUrl);
   const data = await fetch(apiUrl);
   if (!data.ok) {
     throw Error(`Backend error (${data.status})`);

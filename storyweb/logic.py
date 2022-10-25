@@ -48,16 +48,22 @@ def list_sites(conn: Conn, listing: Listing) -> SiteListingResponse:
 
 
 def list_articles(
-    conn: Conn, listing: Listing, site: Optional[str], query: Optional[str]
+    conn: Conn,
+    listing: Listing,
+    site: Optional[str] = None,
+    query: Optional[str] = None,
 ) -> ArticleListingResponse:
     stmt = select(article_table)
-    if site is not None:
-        stmt = stmt.filter(article_table.c.site == site)
-    if query is not None:
-        stmt = stmt.filter(article_table.c.title.ilike(f"%{query}%"))
+    if site is not None and len(site.strip()):
+        stmt = stmt.where(article_table.c.site == site)
+    if query is not None and len(query.strip()):
+        stmt = stmt.where(article_table.c.title.ilike(f"%{query}%"))
     if listing.sort_field is not None:
         column = article_table.c[listing.sort_field]
-        stmt = stmt.order_by(column.desc() if listing == "desc" else column.asc())
+        if listing.sort_direction == "desc":
+            stmt = stmt.order_by(column.desc())
+        else:
+            stmt = stmt.order_by(column.asc())
     cursor = conn.execute(stmt)
     results = [Article.parse_obj(r) for r in cursor.fetchall()]
     return ArticleListingResponse(
