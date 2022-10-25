@@ -20,7 +20,7 @@ interface TagsProps {
 }
 
 export default function ArticleIndex({ response, query, site, sites }: TagsProps) {
-  const [previewArticle, setPreviewArticle] = useState<IArticle | null>(null);
+  const [previewArticle, setPreviewArticle] = useState<IArticle | undefined>(undefined);
 
   const onArticleClick = (event: React.MouseEvent<HTMLAnchorElement>, article: IArticle) => {
     event.preventDefault();
@@ -76,13 +76,11 @@ export default function ArticleIndex({ response, query, site, sites }: TagsProps
           ))}
         </tbody>
       </HTMLTable>
-      {previewArticle !== null && (
-        <ArticleDrawer
-          isOpen={true}
-          article={previewArticle}
-          onClose={() => setPreviewArticle(null)}
-        />
-      )}
+      <ArticleDrawer
+        isOpen={previewArticle !== undefined}
+        article={previewArticle}
+        onClose={() => setPreviewArticle(undefined)}
+      />
     </Layout >
   )
 }

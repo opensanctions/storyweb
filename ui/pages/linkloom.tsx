@@ -1,15 +1,14 @@
 import type { GetServerSidePropsContext } from 'next'
 import { useRouter } from 'next/router';
-import queryString from 'query-string';
 import Link from 'next/link';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 
 import Layout from '../components/Layout'
-import { API_URL } from '../lib/constants';
 import { ITag, ILink, ILinkListingResponse, ILinkType, ILinkTypeListingResponse, IClusterListingResponse } from '../lib/types';
 import { ChangeEvent, FormEvent, useState } from 'react';
 import { getTagLink } from '../lib/util';
+import { fetchJson } from '../lib/data';
 
 interface IPageProps {
   initialType: string
@@ -83,12 +82,8 @@ export default function LinkLoom({ anchor, other, linkTypes, autoMode, initialTy
 }
 
 async function getOtherIdentity(anchor: ITag): Promise<string | undefined> {
-  const corefApiUrl = queryString.stringifyUrl({
-    'url': `${API_URL}/clusters`,
-    'query': { coref: anchor.cluster, linked: false, limit: 1 }
-  })
-  const corefRes = await fetch(corefApiUrl);
-  const tags = await corefRes.json() as IClusterListingResponse;
+  const tagsParams = { coref: anchor.cluster, linked: false, limit: 1 };
+  const tags = await fetchJson<IClusterListingResponse>('/clusters', tagsParams);
   if (tags.results.length > 0) {
     const reftag = tags.results[0];
     return reftag.id;
@@ -101,8 +96,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   if (anchorId === undefined) {
     return { redirect: { destination: '/tags', permanent: false } };
   }
-  const anchorRes = await fetch(`${API_URL}/tags/${anchorId}`);
-  const anchor = await anchorRes.json() as ITag
+  const anchor = await fetchJson<ITag>(`/tags/${anchorId}`)
 
   let otherId = context.query.other as (string | undefined);
   const autoMode = !otherId;
@@ -112,18 +106,10 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   if (otherId === undefined) {
     return { redirect: { destination: `/tags/${anchorId}`, permanent: false } };
   }
-  const otherRes = await fetch(`${API_URL}/tags/${otherId}`);
-  const other = await otherRes.json() as ITag
-
-  const linkTypesRes = await fetch(`${API_URL}/linktypes`)
-  const linkTypes = await linkTypesRes.json() as ILinkTypeListingResponse
-
-  const existingLinkUrl = queryString.stringifyUrl({
-    'url': `${API_URL}/links`,
-    'query': { cluster: [anchor.cluster, other.cluster], limit: 1 }
-  })
-  const existingLinkRes = await fetch(existingLinkUrl);
-  const existingLink = await existingLinkRes.json() as ILinkListingResponse;
+  const other = await fetchJson<ITag>(`/tags/${otherId}`);
+  const linkTypes = await fetchJson<ILinkTypeListingResponse>('/linktypes')
+  const existingParams = { cluster: [anchor.cluster, other.cluster], limit: 1 };
+  const existingLink = await fetchJson<ILinkListingResponse>('/links', existingParams);
   let initialType = other.fingerprint === anchor.fingerprint ? 'SAME' : 'UNRELATED';
   for (let link of existingLink.results) {
     initialType = link.type;

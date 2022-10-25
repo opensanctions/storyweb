@@ -3,7 +3,7 @@ import { SyntheticEvent } from "react"
 import { IArticle } from "../lib/types"
 
 type ArticleDrawerProps = {
-  article: IArticle,
+  article?: IArticle,
   isOpen: boolean,
   onClose: (event: SyntheticEvent<HTMLElement>) => void
 }
@@ -17,9 +17,11 @@ export function ArticleDrawer({ article, isOpen, onClose }: ArticleDrawerProps) 
       hasBackdrop
       autoFocus
       enforceFocus
-      title={article.title}
+      title={article ? article.title : 'No article'}
     >
-      <iframe src={article.url} referrerPolicy="no-referrer" />
+      {article && (
+        <iframe src={article.url} referrerPolicy="no-referrer" />
+      )}
     </Drawer>
   )
 }
