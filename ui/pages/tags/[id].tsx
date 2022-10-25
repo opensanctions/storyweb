@@ -1,15 +1,13 @@
 import type { GetServerSidePropsContext } from 'next'
-import queryString from 'query-string';
-import Table from 'react-bootstrap/Table';
-import Container from 'react-bootstrap/Container';
+import Link from 'next/link';
 
 import Layout from '../../components/Layout'
-import { API_URL } from '../../lib/constants';
-
 import { ITag, IClusterListingResponse } from '../../lib/types';
-import Link from 'next/link';
+
 import { getClusterLink, getLinkLoomLink } from '../../lib/util';
 import { TagCategory, TagLabel } from '../../components/util';
+import { fetchJson } from '../../lib/data';
+import { HTMLTable } from '@blueprintjs/core';
 
 interface TagProps {
   tag: ITag
@@ -27,7 +25,7 @@ export default function Tag({ tag, related }: TagProps) {
       <p>
         <Link href={getLinkLoomLink(tag)}>Start matching</Link>
       </p>
-      <Table>
+      <HTMLTable condensed bordered className="wide">
         <thead>
           <tr>
             <th>Articles</th>
@@ -38,7 +36,7 @@ export default function Tag({ tag, related }: TagProps) {
         </thead>
         <tbody>
           {related.results.map((cluster) => (
-            <tr>
+            <tr key={cluster.id}>
               <td>{cluster.tags}</td>
               <td>
                 <Link href={getClusterLink(cluster)}>{cluster.label}</Link>
@@ -55,7 +53,7 @@ export default function Tag({ tag, related }: TagProps) {
             </tr>
           ))}
         </tbody>
-      </Table>
+      </HTMLTable>
       <code>{related.debug_msg}</code>
     </Layout>
   )
@@ -66,18 +64,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   if (tagId === undefined) {
     return { redirect: { destination: '/tags', permanent: false } };
   }
-  const res = await fetch(`${API_URL}/tags/${tagId}`);
-  const tag = await res.json() as ITag;
-
-  const corefApiUrl = queryString.stringifyUrl({
-    'url': `${API_URL}/clusters`,
-    'query': {
-      coref: tag.cluster
-    }
-  })
-  const corefRes = await fetch(corefApiUrl);
-  const related = await corefRes.json() as IClusterListingResponse
-
+  const tag = await fetchJson<ITag>(`/tags/${tagId}`);
+  const corefQuery = { coref: tag.cluster };
+  const related = await fetchJson<IClusterListingResponse>('/clusters', corefQuery);
   return {
     props: { tag, related },
   }

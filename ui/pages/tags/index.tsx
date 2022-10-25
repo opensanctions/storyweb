@@ -1,18 +1,16 @@
-import type { GetServerSidePropsContext, InferGetServerSidePropsType, NextPage } from 'next'
-import queryString from 'query-string';
+import type { GetServerSidePropsContext } from 'next'
+import { HTMLTable } from '@blueprintjs/core';
 import Link from 'next/link';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
-import Table from 'react-bootstrap/Table';
 import Button from 'react-bootstrap/Button';
 import InputGroup from 'react-bootstrap/InputGroup';
 
 import Layout from '../../components/Layout'
-import { API_URL } from '../../lib/constants';
-
 import { IArticleTagListingResponse, ISiteListingResponse } from '../../lib/types';
 import { getTagLink } from '../../lib/util';
+import { fetchJson } from '../../lib/data';
 
 interface TagsProps {
   response: IArticleTagListingResponse,
@@ -57,8 +55,7 @@ export default function Tags({ response, query, site, sites }: TagsProps) {
           </Col>
         </Row>
       </Form>
-
-      <Table>
+      <HTMLTable condensed bordered className="wide">
         <thead>
           <tr>
             <th>Count</th>
@@ -85,26 +82,17 @@ export default function Tags({ response, query, site, sites }: TagsProps) {
             </tr>
           ))}
         </tbody>
-
-      </Table>
+      </HTMLTable>
     </Layout>
   )
 }
 
+
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const query = '' + (context.query.q || '');
   const site = '' + (context.query.site || '');
-  const apiUrl = queryString.stringifyUrl({
-    'url': `${API_URL}/tags`,
-    'query': {
-      ...context.query
-    }
-  })
-  const res = await fetch(apiUrl);
-  const data = await res.json() as IArticleTagListingResponse;
-
-  const sitesResponse = await fetch(`${API_URL}/sites`);
-  const sitesData = await sitesResponse.json() as ISiteListingResponse;
+  const data = await fetchJson<IArticleTagListingResponse>('/tags', context.query);
+  const sitesData = await fetchJson<ISiteListingResponse>('/sites');
   const sites = sitesData.results.map((s) => s.site);
 
   return {

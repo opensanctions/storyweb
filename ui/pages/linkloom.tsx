@@ -4,7 +4,6 @@ import queryString from 'query-string';
 import Link from 'next/link';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
-import Container from 'react-bootstrap/Container';
 
 import Layout from '../components/Layout'
 import { API_URL } from '../lib/constants';
