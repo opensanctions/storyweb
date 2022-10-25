@@ -1,6 +1,6 @@
 import type { GetServerSidePropsContext } from 'next'
 import classnames from 'classnames';
-import { Button, Classes, ControlGroup, HTMLTable } from '@blueprintjs/core';
+import { Button, Classes, ControlGroup, HTMLSelect, HTMLTable } from '@blueprintjs/core';
 import Link from 'next/link';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -39,7 +39,7 @@ export default function ArticleIndex({ response, query, site, sites }: TagsProps
               placeholder="Search in articles..."
               name="q"
             />
-            <select
+            <HTMLSelect
               className={classnames(Classes.HTML_SELECT)}
               defaultValue={site}
               name="site">
@@ -47,7 +47,7 @@ export default function ArticleIndex({ response, query, site, sites }: TagsProps
               {sites.map((s) =>
                 <option key={s} value={s}>{s}</option>
               )}
-            </select>
+            </HTMLSelect>
             <Button type="submit">Search</Button>
           </ControlGroup>
         </form>
@@ -56,6 +56,7 @@ export default function ArticleIndex({ response, query, site, sites }: TagsProps
         <thead>
           <tr>
             <th>Title</th>
+            <th></th>
             <th>Site</th>
             <th className="numeric">Entities</th>
           </tr>
@@ -64,7 +65,10 @@ export default function ArticleIndex({ response, query, site, sites }: TagsProps
           {response.results.map((article) => (
             <tr key={article.id}>
               <td>
-                <a onClick={(e) => onArticleClick(e, article)} href={article.url}>{article.title}</a>
+                <a href={article.url} target="_blank">{article.title}</a>
+              </td>
+              <td>
+                <a onClick={(e) => onArticleClick(e, article)} href={article.url}>[pop]</a>
               </td>
               <td>
                 {article.site}
