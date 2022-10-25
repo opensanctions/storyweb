@@ -14,6 +14,7 @@ from storyweb.logic import (
     list_tags,
 )
 from storyweb.models import (
+    ArticleListingResponse,
     ClusterListingResponse,
     Link,
     LinkBase,
@@ -57,7 +58,7 @@ def get_listing(
     )
 
 
-@app.get("/sites")
+@app.get("/sites", response_model=SiteListingResponse)
 def sites_index(
     conn: Conn = Depends(get_conn),
     listing: Listing = Depends(get_listing),
@@ -66,13 +67,14 @@ def sites_index(
     return list_sites(conn, listing)
 
 
-@app.get("/articles")
+@app.get("/articles", response_model=ArticleListingResponse)
 def articles_index(
     conn: Conn = Depends(get_conn),
     listing: Listing = Depends(get_listing),
     site: Optional[str] = Query(None),
+    q: Optional[str] = Query(None),
 ):
-    return list_articles(conn, listing, site=site)
+    return list_articles(conn, listing, site=site, query=q)
 
 
 @app.get("/tags", response_model=ArticleTagListingResponse)

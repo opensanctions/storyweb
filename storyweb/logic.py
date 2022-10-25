@@ -48,14 +48,16 @@ def list_sites(conn: Conn, listing: Listing) -> SiteListingResponse:
 
 
 def list_articles(
-    conn: Conn, listing: Listing, site: Optional[str]
+    conn: Conn, listing: Listing, site: Optional[str], query: Optional[str]
 ) -> ArticleListingResponse:
     stmt = select(article_table)
     if site is not None:
         stmt = stmt.filter(article_table.c.site == site)
+    if query is not None:
+        stmt = stmt.filter(article_table.c.title.ilike(f"%{query}%"))
     if listing.sort_field is not None:
         column = article_table.c[listing.sort_field]
-        # stmt = stmt.order_by(column.desc() if listing)
+        stmt = stmt.order_by(column.desc() if listing == "desc" else column.asc())
     cursor = conn.execute(stmt)
     results = [Article.parse_obj(r) for r in cursor.fetchall()]
     return ArticleListingResponse(
@@ -136,8 +138,10 @@ def list_clusters(
         func.count(func.distinct(tag_t.c.id)).label("tags"),
         func.sum(tag_t.c.count).label("count"),
     )
-    # if query is not None and len(query.strip()):
-    #     stmt = stmt.filter(tag_t.c.label.ilike(f"%{query}%"))
+    if query is not None and len(query.strip()):
+        text_t = tag_table.alias("q")
+        stmt = stmt.where(text_t.c.cluster == tag_t.c.cluster)
+        stmt = stmt.where(text_t.c.label.ilike(f"%{query}%"))
 
     if coref is not None:
         coref_t = tag_table.alias("coref")
