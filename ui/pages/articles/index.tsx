@@ -1,16 +1,16 @@
 import type { GetServerSidePropsContext } from 'next'
-import { HTMLTable } from '@blueprintjs/core';
+import classnames from 'classnames';
+import { Button, Classes, ControlGroup, HTMLTable } from '@blueprintjs/core';
 import Link from 'next/link';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-import Form from 'react-bootstrap/Form';
-import Button from 'react-bootstrap/Button';
-import InputGroup from 'react-bootstrap/InputGroup';
 
 import Layout from '../../components/Layout'
-import { IArticleListingResponse, IArticleTagListingResponse, ISiteListingResponse } from '../../lib/types';
+import { IArticle, IArticleListingResponse, IArticleTagListingResponse, ISiteListingResponse } from '../../lib/types';
 import { getTagLink } from '../../lib/util';
 import { fetchJson } from '../../lib/data';
+import { useState } from 'react';
+import { ArticleDrawer } from '../../components/Article';
 
 interface TagsProps {
   response: IArticleListingResponse,
@@ -20,41 +20,38 @@ interface TagsProps {
 }
 
 export default function ArticleIndex({ response, query, site, sites }: TagsProps) {
+  const [previewArticle, setPreviewArticle] = useState<IArticle | null>(null);
+
+  const onArticleClick = (event: React.MouseEvent<HTMLAnchorElement>, article: IArticle) => {
+    event.preventDefault();
+    console.log(article);
+    setPreviewArticle(article)
+  }
+
   return (
     <Layout title="Articles">
-      <Form>
-        <Row className="align-items-center">
-          <Col>
-            <Form.Label htmlFor="q" visuallyHidden>
-              Search
-            </Form.Label>
-            <Form.Control
-              id="q"
-              name="q"
+      <section className="section">
+        <form method="GET">
+          <ControlGroup fill>
+            <input
+              className={classnames(Classes.INPUT, Classes.FILL)}
               defaultValue={query}
               placeholder="Search in articles..."
+              name="q"
             />
-          </Col>
-          <Col xs="auto">
-            <InputGroup>
-              <InputGroup.Text>
-                Source site
-              </InputGroup.Text>
-              <Form.Select id="site" name="site" defaultValue={site}>
-                <option value="">(all sites)</option>
-                {sites.map((s) =>
-                  <option key={s} value={s}>{s}</option>
-                )}
-              </Form.Select>
-            </InputGroup>
-          </Col>
-          <Col xs="auto">
-            <Button type="submit" id="submit">
-              Filter
-            </Button>
-          </Col>
-        </Row>
-      </Form>
+            <select
+              className={classnames(Classes.HTML_SELECT)}
+              defaultValue={site}
+              name="site">
+              <option value="">(all sites)</option>
+              {sites.map((s) =>
+                <option key={s} value={s}>{s}</option>
+              )}
+            </select>
+            <Button type="submit">Search</Button>
+          </ControlGroup>
+        </form>
+      </section>
       <HTMLTable condensed bordered className="wide">
         <thead>
           <tr>
@@ -66,7 +63,9 @@ export default function ArticleIndex({ response, query, site, sites }: TagsProps
         <tbody>
           {response.results.map((article) => (
             <tr key={article.id}>
-              <td>{article.title}</td>
+              <td>
+                <a onClick={(e) => onArticleClick(e, article)} href={article.url}>{article.title}</a>
+              </td>
               <td>
                 {article.site}
               </td>
@@ -77,7 +76,14 @@ export default function ArticleIndex({ response, query, site, sites }: TagsProps
           ))}
         </tbody>
       </HTMLTable>
-    </Layout>
+      {previewArticle !== null && (
+        <ArticleDrawer
+          isOpen={true}
+          article={previewArticle}
+          onClose={() => setPreviewArticle(null)}
+        />
+      )}
+    </Layout >
   )
 }
 

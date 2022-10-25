@@ -11,10 +11,16 @@ export default function NavbarSection() {
     <Navbar>
       <div className='page-container'>
         <Navbar.Group align={Alignment.LEFT}>
-          <Navbar.Heading>StoryWeb</Navbar.Heading>
+          <Navbar.Heading>
+            <Link href="/">StoryWeb</Link>
+          </Navbar.Heading>
           <Navbar.Divider />
-          <AnchorButton className="bp4-minimal" icon="home" text="Home" href="/" />
-          <AnchorButton className="bp4-minimal" icon="document" text="Tags" href="/tags" />
+          <Link passHref href="/tags">
+            <AnchorButton className="bp4-minimal" icon="people" text="Tags" />
+          </Link>
+          <Link passHref href="/articles">
+            <AnchorButton className="bp4-minimal" icon="document" text="Articles" />
+          </Link>
         </Navbar.Group>
       </div>
     </Navbar>

@@ -17,7 +17,9 @@ interface TagProps {
 export default function Tag({ tag, related }: TagProps) {
   return (
     <Layout title={tag.label}>
-      <h1><TagLabel label={tag.label} /></h1>
+      <h1>
+        <TagLabel label={tag.label} />
+      </h1>
       <p>
         <TagCategory category={tag.category} />
         ID: <code>{tag.id}</code>, Cluster: <code>{tag.cluster}</code>

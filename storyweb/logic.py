@@ -64,6 +64,7 @@ def list_articles(
             stmt = stmt.order_by(column.desc())
         else:
             stmt = stmt.order_by(column.asc())
+    stmt = stmt.limit(listing.limit).offset(listing.offset)
     cursor = conn.execute(stmt)
     results = [Article.parse_obj(r) for r in cursor.fetchall()]
     return ArticleListingResponse(
