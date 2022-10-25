@@ -199,6 +199,41 @@ def list_clusters(
     return response
 
 
+def list_similar(conn: Conn, listing: Listing, cluster: str):
+    stmt_fp = select(func.distinct(tag_table.c.fingerprint).label("fingerprint"))
+    stmt_fp = stmt_fp.where(tag_table.c.cluster == cluster)
+    cte_fp = stmt_fp.cte("fingerprints")
+
+    # TODO: add using TF/IDF
+    tag_cluster = tag_table.alias("tcl")
+    tag_coref = tag_table.alias("tco")
+    stmt_co = select(tag_coref.c.fingerprint.alias("fingerprint"))
+    stmt_co = stmt_co.where(tag_cluster.c.article == tag_coref.c.article)
+    stmt_co = stmt_co.where(tag_cluster.c.fingerprint != tag_coref.c.fingerprint)
+    stmt_co = stmt_co.where(tag_cluster.c.cluster == cluster)
+    stmt_co = stmt_co.group_by(tag_coref.c.fingerprint)
+    cte_co = stmt_co.cte("coref")
+
+    other_cluster = tag_table.alias("oc")
+    other_coref = tag_table.alias("oc")
+    stmt = select(
+        other_cluster.c.cluster.label("id"),
+        func.max(other_cluster.c.cluster_label).label("label"),
+        func.max(other_cluster.c.cluster_category).label("category"),
+        func.array_agg(other_coref.c.label).label("common"),
+        func.count(other_coref.c.id).label("common_count"),
+    )
+    stmt = stmt.join(other_coref, other_coref.c.fingerprint == cte_co.c.fingerprint)
+    stmt = stmt.join(other_cluster, other_cluster.c.article == other_coref.c.article)
+    stmt = stmt.join(cte_fp, cte_fp.c.fingerprint == other_cluster.c.fingerprint)
+    stmt = stmt.where(other_cluster.c.cluster != cluster)
+    stmt = stmt.group_by(other_cluster.c.cluster)
+    stmt = stmt.order_by(func.count(other_coref.c.id).desc())
+
+    stmt = stmt.limit(listing.limit).offset(listing.offset)
+    cursor = conn.execute(stmt)
+
+
 def list_links(
     conn: Conn, listing: Listing, clusters: List[str]
 ) -> LinkListingResponse:
