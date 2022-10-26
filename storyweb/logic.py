@@ -1,5 +1,5 @@
-from uuid import uuid4
 from datetime import datetime
+from nntplib import ArticleInfo
 from typing import Iterable, List, Optional, Set
 from sqlalchemy.sql import select, delete, update, insert, func, and_, or_
 
@@ -10,14 +10,10 @@ from storyweb.db import fingerprint_idf_table
 from storyweb.links import link_types
 from storyweb.clean import most_common, pick_name
 from storyweb.models import (
-    ArticleListingResponse,
     Cluster,
-    ClusterListingResponse,
     Link,
     Article,
     ArticleTag,
-    ArticleTagListingResponse,
-    LinkListingResponse,
     Listing,
     ListingResponse,
     RelatedCluster,
@@ -53,7 +49,7 @@ def list_articles(
     listing: Listing,
     site: Optional[str] = None,
     query: Optional[str] = None,
-) -> ArticleListingResponse:
+) -> ListingResponse[Article]:
     stmt = select(article_table)
     if site is not None and len(site.strip()):
         stmt = stmt.where(article_table.c.site == site)
@@ -68,7 +64,7 @@ def list_articles(
     stmt = stmt.limit(listing.limit).offset(listing.offset)
     cursor = conn.execute(stmt)
     results = [Article.parse_obj(r) for r in cursor.fetchall()]
-    return ArticleListingResponse(
+    return ListingResponse[Article](
         debug_msg=str(stmt),
         limit=listing.limit,
         offset=listing.offset,
@@ -81,7 +77,7 @@ def list_tags(
     listing: Listing,
     sites: List[str] = [],
     query: Optional[str] = None,
-) -> ArticleTagListingResponse:
+) -> ListingResponse[ArticleTag]:
     tag_t = tag_table.alias("t")
     article_t = article_table.alias("a")
     stmt = select(
@@ -105,7 +101,7 @@ def list_tags(
     stmt = stmt.order_by(tag_t.c.count.desc())
     stmt = stmt.limit(listing.limit).offset(listing.offset)
     cursor = conn.execute(stmt)
-    response = ArticleTagListingResponse(
+    response = ListingResponse[ArticleTag](
         limit=listing.limit, offset=listing.offset, results=[]
     )
     response.debug_msg = str(stmt)
@@ -135,7 +131,7 @@ def list_clusters(
     query: Optional[str] = None,
     coref: str = None,
     linked: Optional[bool] = None,
-) -> ClusterListingResponse:
+) -> ListingResponse[Cluster]:
     tag_t = tag_table.alias("t")
     link_t = link_table.alias("link")
     stmt = select(
@@ -179,7 +175,7 @@ def list_clusters(
     )
     stmt = stmt.limit(listing.limit).offset(listing.offset)
     cursor = conn.execute(stmt)
-    response = ClusterListingResponse(
+    response = ListingResponse[Cluster](
         limit=listing.limit, offset=listing.offset, results=[]
     )
     response.debug_msg = str(stmt)
@@ -253,14 +249,13 @@ def list_related(
     cluster_t = tag_table.alias("c")
     link_t = link_table.alias("link")
     articles = func.count(func.distinct(cluster_t.c.article))
+    link_types = func.array_remove(func.array_agg(func.distinct(link_t.c.type)), None)
     stmt = select(
         tag_t.c.cluster.label("id"),
         tag_t.c.cluster_label.label("label"),
         tag_t.c.cluster_category.label("category"),
         articles.label("common_articles"),
-        func.array_remove(func.array_agg(func.distinct(link_t.c.type)), None).label(
-            "link_types"
-        ),
+        link_types.label("link_types"),
     )
     stmt = stmt.where(tag_t.c.article == cluster_t.c.article)
     stmt = stmt.where(tag_t.c.cluster != cluster)
@@ -301,7 +296,7 @@ def list_related(
 
 def list_links(
     conn: Conn, listing: Listing, clusters: List[str]
-) -> LinkListingResponse:
+) -> ListingResponse[Link]:
     link_t = link_table.alias("l")
     stmt = select(link_t)
     for cluster in clusters:
@@ -314,7 +309,7 @@ def list_links(
     stmt = stmt.limit(listing.limit).offset(listing.offset)
     cursor = conn.execute(stmt)
     results = [Link.parse_obj(r) for r in cursor.fetchall()]
-    return LinkListingResponse(
+    return ListingResponse[Link](
         debug_msg=str(stmt),
         limit=listing.limit,
         offset=listing.offset,

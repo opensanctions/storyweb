@@ -16,11 +16,12 @@ from storyweb.logic import (
     list_tags,
 )
 from storyweb.models import (
-    ArticleListingResponse,
-    ClusterListingResponse,
+    Article,
+    ArticleTag,
+    Cluster,
+    Link,
     LinkBase,
-    LinkTypeListingResponse,
-    ArticleTagListingResponse,
+    LinkType,
     Listing,
     ListingResponse,
     RelatedCluster,
@@ -70,7 +71,7 @@ def sites_index(
     return list_sites(conn, listing)
 
 
-@app.get("/articles", response_model=ArticleListingResponse)
+@app.get("/articles", response_model=ListingResponse[Article])
 def articles_index(
     conn: Conn = Depends(get_conn),
     listing: Listing = Depends(get_listing),
@@ -80,7 +81,7 @@ def articles_index(
     return list_articles(conn, listing, site=site, query=q)
 
 
-@app.get("/tags", response_model=ArticleTagListingResponse)
+@app.get("/tags", response_model=ListingResponse[ArticleTag])
 def tags_index(
     conn: Conn = Depends(get_conn),
     listing: Listing = Depends(get_listing),
@@ -124,7 +125,7 @@ def route_cluster_related(
     return list_related(conn, listing, cluster, linked=linked)
 
 
-@app.get("/clusters", response_model=ClusterListingResponse)
+@app.get("/clusters", response_model=ListingResponse[Cluster])
 def route_cluster_index(
     conn: Conn = Depends(get_conn),
     listing: Listing = Depends(get_listing),
@@ -137,10 +138,10 @@ def route_cluster_index(
 
 @app.get("/linktypes")
 def link_types_index():
-    return LinkTypeListingResponse(limit=10000, offset=0, results=link_types.all())
+    return ListingResponse[LinkType](limit=10000, offset=0, results=link_types.all())
 
 
-@app.get("/links")
+@app.get("/links", response_model=ListingResponse[Link])
 def links_index(
     conn: Conn = Depends(get_conn),
     listing: Listing = Depends(get_listing),
@@ -150,7 +151,7 @@ def links_index(
     return list_links(conn, listing, clusters)
 
 
-@app.post("/links")
+@app.post("/links", response_model=Link)
 def links_save(
     link: LinkBase,
     conn: Conn = Depends(get_conn),

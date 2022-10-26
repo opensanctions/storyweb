@@ -33,10 +33,6 @@ class Article(BaseModel):
     tags_mentions: Optional[int]
 
 
-class ArticleListingResponse(ListingResponse):
-    results: List[Article]
-
-
 class Sentence(BaseModel):
     article: str
     sequence: int
@@ -72,19 +68,11 @@ class ArticleTag(BaseModel):
     count: int
 
 
-class ArticleTagListingResponse(ListingResponse):
-    results: List[ArticleTag]
-
-
 class Cluster(BaseModel):
     id: str
     category: str
     label: str
     article: int
-
-
-class ClusterListingResponse(ListingResponse):
-    results: List[Cluster]
 
 
 class RelatedCluster(BaseModel):
@@ -123,16 +111,8 @@ class LinkType(BaseModel):
     phrase: str
 
 
-class LinkListingResponse(ListingResponse):
-    results: List[Link]
-
-
 class LinkTypes(BaseModel):
     types: List[LinkType]
-
-
-class LinkTypeListingResponse(ListingResponse):
-    results: List[LinkType]
 
 
 class Site(BaseModel):
