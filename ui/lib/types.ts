@@ -5,9 +5,10 @@ export interface IResponse {
   debug_msg?: string
 }
 
-export interface IListingResponse extends IResponse {
+export interface IListingResponse<T> extends IResponse {
   limit: number
   offset: number
+  results: T[]
 }
 
 export interface IArticle {
@@ -17,10 +18,6 @@ export interface IArticle {
   url: string
   tags_count: number
   tags_mentions: number
-}
-
-export interface IArticleListingResponse extends IListingResponse {
-  results: IArticle[]
 }
 
 
@@ -45,9 +42,6 @@ export interface IArticleTag {
   link_type?: string
 }
 
-export interface IArticleTagListingResponse extends IListingResponse {
-  results: IArticleTag[]
-}
 
 export interface ICluster {
   id: string
@@ -59,17 +53,10 @@ export interface ICluster {
   link_type?: string
 }
 
-export interface IClusterListingResponse extends IListingResponse {
-  results: ICluster[]
-}
 
 export interface ISite {
   site: string
   articles: number
-}
-
-export interface ISiteListingResponse extends IListingResponse {
-  results: ISite[]
 }
 
 export interface ILink {
@@ -82,17 +69,10 @@ export interface ILink {
   timestamp?: string
 }
 
-export interface ILinkListingResponse extends IListingResponse {
-  results: ILink[]
-}
 
 export interface ILinkType {
   name: string
   directed: boolean
   label: string
   phrase: string
-}
-
-export interface ILinkTypeListingResponse extends IListingResponse {
-  results: ILinkType[]
 }

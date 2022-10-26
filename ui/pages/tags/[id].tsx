@@ -2,7 +2,7 @@ import type { GetServerSidePropsContext } from 'next'
 import Link from 'next/link';
 
 import Layout from '../../components/Layout'
-import { ITag, IClusterListingResponse } from '../../lib/types';
+import { ITag, IListingResponse, ICluster } from '../../lib/types';
 
 import { getClusterLink, getLinkLoomLink } from '../../lib/util';
 import { TagCategory, TagLabel } from '../../components/util';
@@ -11,7 +11,7 @@ import { HTMLTable } from '@blueprintjs/core';
 
 interface TagProps {
   tag: ITag
-  related: IClusterListingResponse
+  related: IListingResponse<ICluster>
 }
 
 export default function Tag({ tag, related }: TagProps) {
@@ -68,7 +68,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
   const tag = await fetchJson<ITag>(`/tags/${tagId}`);
   const corefQuery = { coref: tag.cluster };
-  const related = await fetchJson<IClusterListingResponse>('/clusters', corefQuery);
+  const related = await fetchJson<IListingResponse<ICluster>>('/clusters', corefQuery);
   return {
     props: { tag, related },
   }

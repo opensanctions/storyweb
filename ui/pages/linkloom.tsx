@@ -5,7 +5,7 @@ import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 
 import Layout from '../components/Layout'
-import { ITag, ILink, ILinkListingResponse, ILinkType, ILinkTypeListingResponse, IClusterListingResponse } from '../lib/types';
+import { ITag, ILink, ILinkType, IListingResponse, ICluster } from '../lib/types';
 import { ChangeEvent, FormEvent, useState } from 'react';
 import { getTagLink } from '../lib/util';
 import { fetchJson } from '../lib/data';
@@ -83,7 +83,7 @@ export default function LinkLoom({ anchor, other, linkTypes, autoMode, initialTy
 
 async function getOtherIdentity(anchor: ITag): Promise<string | undefined> {
   const tagsParams = { coref: anchor.cluster, linked: false, limit: 1 };
-  const tags = await fetchJson<IClusterListingResponse>('/clusters', tagsParams);
+  const tags = await fetchJson<IListingResponse<ICluster>>('/clusters', tagsParams);
   if (tags.results.length > 0) {
     const reftag = tags.results[0];
     return reftag.id;
@@ -107,9 +107,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     return { redirect: { destination: `/tags/${anchorId}`, permanent: false } };
   }
   const other = await fetchJson<ITag>(`/tags/${otherId}`);
-  const linkTypes = await fetchJson<ILinkTypeListingResponse>('/linktypes')
+  const linkTypes = await fetchJson<IListingResponse<ILinkType>>('/linktypes')
   const existingParams = { cluster: [anchor.cluster, other.cluster], limit: 1 };
-  const existingLink = await fetchJson<ILinkListingResponse>('/links', existingParams);
+  const existingLink = await fetchJson<IListingResponse<ILink>>('/links', existingParams);
   let initialType = other.fingerprint === anchor.fingerprint ? 'SAME' : 'UNRELATED';
   for (let link of existingLink.results) {
     initialType = link.type;

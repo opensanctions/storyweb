@@ -6,14 +6,14 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 
 import Layout from '../../components/Layout'
-import { IArticle, IArticleListingResponse, IArticleTagListingResponse, ISiteListingResponse } from '../../lib/types';
+import { IArticle, IListingResponse, ISite } from '../../lib/types';
 import { getTagLink } from '../../lib/util';
 import { fetchJson } from '../../lib/data';
 import { useState } from 'react';
 import { ArticleDrawer } from '../../components/Article';
 
 interface TagsProps {
-  response: IArticleListingResponse,
+  response: IListingResponse<IArticle>,
   query: string,
   site: string,
   sites: string[]
@@ -97,8 +97,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     ...context.query,
     sort: 'tags_count:desc'
   }
-  const data = await fetchJson<IArticleListingResponse>('/articles', params);
-  const sitesData = await fetchJson<ISiteListingResponse>('/sites');
+  const data = await fetchJson<IListingResponse<IArticle>>('/articles', params);
+  const sitesData = await fetchJson<IListingResponse<ISite>>('/sites');
   const sites = sitesData.results.map((s) => s.site);
 
   return {

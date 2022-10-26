@@ -8,12 +8,12 @@ import Button from 'react-bootstrap/Button';
 import InputGroup from 'react-bootstrap/InputGroup';
 
 import Layout from '../../components/Layout'
-import { IArticleTagListingResponse, ISiteListingResponse } from '../../lib/types';
+import { IListingResponse, IArticleTag, ISite } from '../../lib/types';
 import { getTagLink } from '../../lib/util';
 import { fetchJson } from '../../lib/data';
 
 interface TagsProps {
-  response: IArticleTagListingResponse,
+  response: IListingResponse<IArticleTag>,
   query: string,
   site: string,
   sites: string[]
@@ -91,8 +91,8 @@ export default function Tags({ response, query, site, sites }: TagsProps) {
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const query = '' + (context.query.q || '');
   const site = '' + (context.query.site || '');
-  const data = await fetchJson<IArticleTagListingResponse>('/tags', context.query);
-  const sitesData = await fetchJson<ISiteListingResponse>('/sites');
+  const data = await fetchJson<IListingResponse<IArticleTag>>('/tags', context.query);
+  const sitesData = await fetchJson<IListingResponse<ISite>>('/sites');
   const sites = sitesData.results.map((s) => s.site);
 
   return {
