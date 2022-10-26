@@ -19,16 +19,18 @@ from storyweb.models import (
     ArticleTagListingResponse,
     LinkListingResponse,
     Listing,
+    ListingResponse,
+    RelatedCluster,
     Sentence,
+    SimilarCluster,
     Site,
-    SiteListingResponse,
     Tag,
     TagSentence,
 )
 from storyweb.ontology import pick_category
 
 
-def list_sites(conn: Conn, listing: Listing) -> SiteListingResponse:
+def list_sites(conn: Conn, listing: Listing) -> ListingResponse[Site]:
     stmt = select(
         article_table.c.site,
         func.count(article_table.c.id).label("articles"),
@@ -38,8 +40,7 @@ def list_sites(conn: Conn, listing: Listing) -> SiteListingResponse:
     stmt = stmt.limit(listing.limit).offset(listing.offset)
     cursor = conn.execute(stmt)
     results = [Site.parse_obj(r) for r in cursor.fetchall()]
-    return SiteListingResponse(
-        status="ok",
+    return ListingResponse[Site](
         debug_msg=str(stmt),
         limit=listing.limit,
         offset=listing.offset,
@@ -68,7 +69,6 @@ def list_articles(
     cursor = conn.execute(stmt)
     results = [Article.parse_obj(r) for r in cursor.fetchall()]
     return ArticleListingResponse(
-        status="ok",
         debug_msg=str(stmt),
         limit=listing.limit,
         offset=listing.offset,
@@ -207,31 +207,96 @@ def list_similar(conn: Conn, listing: Listing, cluster: str):
     # TODO: add using TF/IDF
     tag_cluster = tag_table.alias("tcl")
     tag_coref = tag_table.alias("tco")
-    stmt_co = select(tag_coref.c.fingerprint.alias("fingerprint"))
+    stmt_co = select(func.distinct(tag_coref.c.fingerprint).label("fingerprint"))
     stmt_co = stmt_co.where(tag_cluster.c.article == tag_coref.c.article)
     stmt_co = stmt_co.where(tag_cluster.c.fingerprint != tag_coref.c.fingerprint)
     stmt_co = stmt_co.where(tag_cluster.c.cluster == cluster)
-    stmt_co = stmt_co.group_by(tag_coref.c.fingerprint)
+    # stmt_co = stmt_co.group_by(tag_coref.c.fingerprint)
     cte_co = stmt_co.cte("coref")
 
-    other_cluster = tag_table.alias("oc")
-    other_coref = tag_table.alias("oc")
+    other_cluster = tag_table.alias("ocl")
+    other_coref = tag_table.alias("oco")
     stmt = select(
         other_cluster.c.cluster.label("id"),
-        func.max(other_cluster.c.cluster_label).label("label"),
-        func.max(other_cluster.c.cluster_category).label("category"),
-        func.array_agg(other_coref.c.label).label("common"),
+        other_cluster.c.cluster_label.label("label"),
+        other_cluster.c.cluster_category.label("category"),
+        func.array_agg(func.distinct(other_coref.c.label)).label("common"),
         func.count(other_coref.c.id).label("common_count"),
     )
+    stmt = stmt.select_from(cte_co)
     stmt = stmt.join(other_coref, other_coref.c.fingerprint == cte_co.c.fingerprint)
     stmt = stmt.join(other_cluster, other_cluster.c.article == other_coref.c.article)
     stmt = stmt.join(cte_fp, cte_fp.c.fingerprint == other_cluster.c.fingerprint)
     stmt = stmt.where(other_cluster.c.cluster != cluster)
-    stmt = stmt.group_by(other_cluster.c.cluster)
+    stmt = stmt.group_by(
+        other_cluster.c.cluster,
+        other_cluster.c.cluster_label,
+        other_cluster.c.cluster_category,
+    )
     stmt = stmt.order_by(func.count(other_coref.c.id).desc())
 
     stmt = stmt.limit(listing.limit).offset(listing.offset)
     cursor = conn.execute(stmt)
+    results = [SimilarCluster.parse_obj(r) for r in cursor.fetchall()]
+    return ListingResponse[SimilarCluster](
+        debug_msg=str(stmt),
+        results=results,
+        limit=listing.limit,
+        offset=listing.offset,
+    )
+
+
+def list_related(
+    conn: Conn, listing: Listing, cluster: str, linked: Optional[bool] = None
+) -> ListingResponse[RelatedCluster]:
+    tag_t = tag_table.alias("t")
+    cluster_t = tag_table.alias("c")
+    link_t = link_table.alias("link")
+    articles = func.count(func.distinct(cluster_t.c.article))
+    stmt = select(
+        tag_t.c.cluster.label("id"),
+        tag_t.c.cluster_label.label("label"),
+        tag_t.c.cluster_category.label("category"),
+        articles.label("common_articles"),
+        func.array_remove(func.array_agg(func.distinct(link_t.c.type)), None).label(
+            "link_types"
+        ),
+    )
+    stmt = stmt.where(tag_t.c.article == cluster_t.c.article)
+    stmt = stmt.where(tag_t.c.cluster != cluster)
+    stmt = stmt.where(cluster_t.c.cluster == cluster)
+
+    link_in = and_(
+        link_t.c.target_cluster == cluster,
+        link_t.c.source_cluster == tag_t.c.cluster,
+    )
+    link_out = and_(
+        link_t.c.source_cluster == cluster,
+        link_t.c.target_cluster == tag_t.c.cluster,
+    )
+
+    stmt = stmt.outerjoin(link_t, or_(link_in, link_out))
+    if linked is True:
+        stmt = stmt.where(link_t.c.type != None)
+    if linked is False:
+        stmt = stmt.where(link_t.c.type == None)
+
+    stmt = stmt.group_by(
+        tag_t.c.cluster,
+        tag_t.c.cluster_label,
+        tag_t.c.cluster_category,
+    )
+    stmt = stmt.order_by(articles.desc())
+
+    stmt = stmt.limit(listing.limit).offset(listing.offset)
+    cursor = conn.execute(stmt)
+    results = [RelatedCluster.parse_obj(r) for r in cursor.fetchall()]
+    return ListingResponse[RelatedCluster](
+        debug_msg=str(stmt),
+        results=results,
+        limit=listing.limit,
+        offset=listing.offset,
+    )
 
 
 def list_links(
@@ -250,7 +315,10 @@ def list_links(
     cursor = conn.execute(stmt)
     results = [Link.parse_obj(r) for r in cursor.fetchall()]
     return LinkListingResponse(
-        limit=listing.limit, offset=listing.offset, results=results
+        debug_msg=str(stmt),
+        limit=listing.limit,
+        offset=listing.offset,
+        results=results,
     )
 
 

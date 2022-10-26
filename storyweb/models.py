@@ -1,16 +1,20 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import Generic, List, Optional, TypeVar
 from pydantic import BaseModel, Field
+from pydantic.generics import GenericModel
+
+R = TypeVar("R", bound=BaseModel)
 
 
-class Response(BaseModel):
+class Response(GenericModel):
     status: str = Field("ok")
     debug_msg: Optional[str] = Field(None)
 
 
-class ListingResponse(Response):
+class ListingResponse(Response, Generic[R]):
     limit: int = Field()
     offset: int = Field(0)
+    results: List[R]
 
 
 class Listing(BaseModel):
@@ -76,13 +80,27 @@ class Cluster(BaseModel):
     id: str
     category: str
     label: str
-    link_type: Optional[str]
-    count: int
-    tags: int
+    article: int
 
 
 class ClusterListingResponse(ListingResponse):
     results: List[Cluster]
+
+
+class RelatedCluster(BaseModel):
+    id: str
+    category: str
+    label: str
+    common_articles: int
+    link_types: List[str]
+
+
+class SimilarCluster(BaseModel):
+    id: str
+    category: str
+    label: str
+    common: List[str]
+    common_count: int
 
 
 class LinkBase(BaseModel):
@@ -120,7 +138,3 @@ class LinkTypeListingResponse(ListingResponse):
 class Site(BaseModel):
     site: str
     articles: int = 0
-
-
-class SiteListingResponse(ListingResponse):
-    results: List[Site]

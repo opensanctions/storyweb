@@ -10,19 +10,22 @@ from storyweb.logic import (
     list_articles,
     list_clusters,
     list_links,
+    list_related,
+    list_similar,
     list_sites,
     list_tags,
 )
 from storyweb.models import (
     ArticleListingResponse,
     ClusterListingResponse,
-    Link,
     LinkBase,
-    LinkListingResponse,
     LinkTypeListingResponse,
     ArticleTagListingResponse,
     Listing,
-    SiteListingResponse,
+    ListingResponse,
+    RelatedCluster,
+    SimilarCluster,
+    Site,
 )
 
 app = FastAPI(
@@ -58,7 +61,7 @@ def get_listing(
     )
 
 
-@app.get("/sites", response_model=SiteListingResponse)
+@app.get("/sites", response_model=ListingResponse[Site])
 def sites_index(
     conn: Conn = Depends(get_conn),
     listing: Listing = Depends(get_listing),
@@ -102,8 +105,27 @@ def get_tag(conn: Conn = Depends(get_conn), tag_id: str = Path()):
     return tag
 
 
+@app.get("/clusters/{cluster}/similar", response_model=ListingResponse[SimilarCluster])
+def route_cluster_similar(
+    conn: Conn = Depends(get_conn),
+    listing: Listing = Depends(get_listing),
+    cluster: str = Path(),
+):
+    return list_similar(conn, listing, cluster)
+
+
+@app.get("/clusters/{cluster}/related", response_model=ListingResponse[RelatedCluster])
+def route_cluster_related(
+    conn: Conn = Depends(get_conn),
+    listing: Listing = Depends(get_listing),
+    cluster: str = Path(),
+    linked: Optional[bool] = Query(None),
+):
+    return list_related(conn, listing, cluster, linked=linked)
+
+
 @app.get("/clusters", response_model=ClusterListingResponse)
-def clusters_index(
+def route_cluster_index(
     conn: Conn = Depends(get_conn),
     listing: Listing = Depends(get_listing),
     q: Optional[str] = Query(None),
@@ -115,7 +137,7 @@ def clusters_index(
 
 @app.get("/linktypes")
 def link_types_index():
-    return LinkTypeListingResponse(limit=0, offset=0, results=link_types.all())
+    return LinkTypeListingResponse(limit=10000, offset=0, results=link_types.all())
 
 
 @app.get("/links")

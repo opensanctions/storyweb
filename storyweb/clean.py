@@ -1,6 +1,7 @@
 import re
 import Levenshtein
-from typing import List
+from typing import List, Optional
+from normality import collapse_spaces
 
 PREFIXES_RAW_LIST = [
     "Mr",
@@ -34,11 +35,11 @@ NAME_PATTERN_ = NAME_PATTERN_ % PREFIXES_RAW
 PREFIXES = re.compile(NAME_PATTERN_, re.I | re.U)
 
 
-def clean_entity_name(name: str) -> str:
+def clean_entity_name(name: str) -> Optional[str]:
     match = PREFIXES.match(name)
     if match is not None:
         name = match.group("term")
-    return name
+    return collapse_spaces(name)
 
 
 def most_common(texts: List[str]) -> str:
