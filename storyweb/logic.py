@@ -71,6 +71,17 @@ def list_articles(
     )
 
 
+def fetch_article(conn: Conn, article_id: str) -> Optional[Article]:
+    stmt = select(article_table)
+    stmt = stmt.where(article_table.c.id == article_id)
+    stmt = stmt.limit(1)
+    cursor = conn.execute(stmt)
+    obj = cursor.fetchone()
+    if obj is None:
+        return None
+    return Article.parse_obj(obj)
+
+
 def list_clusters(
     conn: Conn,
     listing: Listing,

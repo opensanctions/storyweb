@@ -1,42 +1,53 @@
 import type { GetServerSidePropsContext } from 'next'
+import queryString from 'query-string';
 import Link from 'next/link';
 
 import Layout from '../../components/Layout'
 import { ITag, IListingResponse, ICluster, IClusterDetails, IRelatedCluster, ISimilarCluster } from '../../lib/types';
 
 import { getClusterLink, getLinkLoomLink } from '../../lib/util';
-import { SpacedList, TagCategory, TagLabel } from '../../components/util';
+import { SpacedList, Spacer, TagCategory, TagLabel } from '../../components/util';
 import { fetchJson } from '../../lib/data';
 import { HTMLTable, Tab, Tabs } from '@blueprintjs/core';
 import SimilarListing from '../../components/SimilarListing';
 import RelatedListing from '../../components/RelatedListing';
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
 
-interface TagProps {
+interface ClusterViewProps {
   cluster: IClusterDetails
   related: IListingResponse<IRelatedCluster>
   similar: IListingResponse<ISimilarCluster>
 }
 
-export default function ClusterView({ cluster, related, similar }: TagProps) {
+export default function ClusterView({ cluster, related, similar }: ClusterViewProps) {
+  const router = useRouter();
+  const [view, setView] = useState('related');
+
+  useEffect(() => {
+    const hash = queryString.parse(window?.location.hash);
+    setView(hash.view as string || view);
+  }, [router.asPath]);
+
+  const onTabChange = (newTabId: string) => {
+    window.location.hash = queryString.stringify({ view: newTabId });
+    setView(newTabId);
+  }
+
   return (
     <Layout title={cluster.label}>
       <h1>
         <TagLabel label={cluster.label} />
       </h1>
       <p>
-        <TagCategory category={cluster.category} />
-      </p>
-      <p>
+        <TagCategory category={cluster.category} /> <Spacer />
         Aliases:{' '}
         <SpacedList values={cluster.labels.map((l) => <TagLabel key={l} label={l} />)} />
       </p>
-      <p>
-        <Link href={getLinkLoomLink(cluster)}>Start matching</Link>
-      </p>
-      <Tabs>
-        <Tab id="ng" title="Related" panel={<RelatedListing cluster={cluster} response={related} />} />
+      <Tabs selectedTabId={view} onChange={onTabChange}>
+        <Tab id="related" title="Related" panel={<RelatedListing cluster={cluster} response={related} />} />
         {similar.results.length > 0 && (
-          <Tab id="rx" title="Similar" panel={<SimilarListing cluster={cluster} response={similar} />} />
+          <Tab id="similar" title="Similar" panel={<SimilarListing cluster={cluster} response={similar} />} />
         )}
       </Tabs>
     </Layout>

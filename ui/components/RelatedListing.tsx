@@ -1,8 +1,8 @@
-import { HTMLTable } from "@blueprintjs/core"
-import Link from "next/link"
-import { ICluster, IListingResponse, IRelatedCluster } from "../lib/types"
-import { getClusterLink, getLinkLoomLink } from "../lib/util"
-import { SpacedList, TagLabel } from "./util"
+import { AnchorButton, ButtonGroup, Classes, ControlGroup, HTMLTable } from "@blueprintjs/core";
+import Link from "next/link";
+import { Button } from "react-bootstrap";
+import { ICluster, IListingResponse, IRelatedCluster } from "../lib/types";
+import { getClusterLink, getLinkLoomLink } from "../lib/util";
 
 type RelatedListingProps = {
   cluster: ICluster,
@@ -10,8 +10,25 @@ type RelatedListingProps = {
 }
 
 export default function RelatedListing({ cluster, response }: RelatedListingProps) {
+  // const onSubmit = (e) => {
+  // }
+
   return (
     <>
+      {/* <form onSubmit={ }>
+        <ControlGroup fill>
+          <input
+            className={classnames(Classes.INPUT, Classes.FILL)}
+            defaultValue={query}
+            placeholder="Search for entities..."
+            name="q"
+          />
+          <Button type="submit">Search</Button>
+        </ControlGroup>
+      </form> */}
+      <ButtonGroup>
+        <AnchorButton href={getLinkLoomLink(cluster)}>Link tool</AnchorButton>
+      </ButtonGroup>
       <HTMLTable condensed bordered className="wide">
         <thead>
           <tr>

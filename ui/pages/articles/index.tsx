@@ -1,28 +1,30 @@
 import type { GetServerSidePropsContext } from 'next'
+import Link from 'next/link';
 import classnames from 'classnames';
 import { Button, Classes, ControlGroup, HTMLSelect, HTMLTable } from '@blueprintjs/core';
 
 import Layout from '../../components/Layout'
 import { IArticle, IListingResponse, ISite } from '../../lib/types';
 import { fetchJson } from '../../lib/data';
-import { useState } from 'react';
-import { ArticleDrawer } from '../../components/Article';
+// import { useState } from 'react';
+// import { ArticleDrawer } from '../../components/Article';
 
-interface TagsProps {
+
+interface ArticleIndexProps {
   response: IListingResponse<IArticle>,
   query: string,
   site: string,
   sites: string[]
 }
 
-export default function ArticleIndex({ response, query, site, sites }: TagsProps) {
-  const [previewArticle, setPreviewArticle] = useState<IArticle | undefined>(undefined);
+export default function ArticleIndex({ response, query, site, sites }: ArticleIndexProps) {
+  // const [previewArticle, setPreviewArticle] = useState<IArticle | undefined>(undefined);
 
-  const onArticleClick = (event: React.MouseEvent<HTMLAnchorElement>, article: IArticle) => {
-    event.preventDefault();
-    console.log(article);
-    setPreviewArticle(article)
-  }
+  // const onArticleClick = (event: React.MouseEvent<HTMLAnchorElement>, article: IArticle) => {
+  //   event.preventDefault();
+  //   console.log(article);
+  //   setPreviewArticle(article)
+  // }
 
   return (
     <Layout title="Articles">
@@ -52,7 +54,6 @@ export default function ArticleIndex({ response, query, site, sites }: TagsProps
         <thead>
           <tr>
             <th>Title</th>
-            <th></th>
             <th>Site</th>
             <th className="numeric">Entities</th>
           </tr>
@@ -61,10 +62,7 @@ export default function ArticleIndex({ response, query, site, sites }: TagsProps
           {response.results.map((article) => (
             <tr key={article.id}>
               <td>
-                <a href={article.url} target="_blank">{article.title}</a>
-              </td>
-              <td>
-                <a onClick={(e) => onArticleClick(e, article)} href={article.url}>[pop]</a>
+                <Link href={`/articles/${article.id}`}>{article.title}</Link>
               </td>
               <td>
                 {article.site}
@@ -76,11 +74,6 @@ export default function ArticleIndex({ response, query, site, sites }: TagsProps
           ))}
         </tbody>
       </HTMLTable>
-      <ArticleDrawer
-        isOpen={previewArticle !== undefined}
-        article={previewArticle}
-        onClose={() => setPreviewArticle(undefined)}
-      />
     </Layout >
   )
 }

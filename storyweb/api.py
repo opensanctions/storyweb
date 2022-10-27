@@ -6,6 +6,7 @@ from storyweb.links import link_types
 from storyweb.db import engine, Conn
 from storyweb.logic import (
     create_link,
+    fetch_article,
     fetch_cluster,
     list_articles,
     list_clusters,
@@ -80,6 +81,17 @@ def articles_index(
     q: Optional[str] = Query(None),
 ):
     return list_articles(conn, listing, site=site, query=q)
+
+
+@app.get("/articles/{article_id}", response_model=Article)
+def article_view(
+    conn: Conn = Depends(get_conn),
+    article_id: str = Path(),
+):
+    article = fetch_article(conn, article_id)
+    if article is None:
+        raise HTTPException(404)
+    return article
 
 
 @app.get("/clusters", response_model=ListingResponse[Cluster])

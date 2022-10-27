@@ -30,7 +30,7 @@ export default function SimilarListing({ cluster, response }: SimilarListingProp
     if (newCluster.id == cluster.id) {
       router.reload();
     } else {
-      router.push(`/clusters/${newCluster.id}`);
+      router.push(`/clusters/${newCluster.id}#view=similar`);
     }
   }
 
