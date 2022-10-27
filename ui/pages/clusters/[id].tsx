@@ -7,7 +7,9 @@ import { ITag, IListingResponse, ICluster, IClusterDetails, IRelatedCluster, ISi
 import { getClusterLink, getLinkLoomLink } from '../../lib/util';
 import { SpacedList, TagCategory, TagLabel } from '../../components/util';
 import { fetchJson } from '../../lib/data';
-import { HTMLTable } from '@blueprintjs/core';
+import { HTMLTable, Tab, Tabs } from '@blueprintjs/core';
+import SimilarListing from '../../components/SimilarListing';
+import RelatedListing from '../../components/RelatedListing';
 
 interface TagProps {
   cluster: IClusterDetails
@@ -31,69 +33,10 @@ export default function ClusterView({ cluster, related, similar }: TagProps) {
       <p>
         <Link href={getLinkLoomLink(cluster)}>Start matching</Link>
       </p>
-      <h3>Related</h3>
-      <HTMLTable condensed bordered className="wide">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Category</th>
-            <th>Link</th>
-            <th>Articles</th>
-          </tr>
-        </thead>
-        <tbody>
-          {related.results.map((related) => (
-            <tr key={related.id}>
-              <td>
-                <Link href={getClusterLink(related)}>{related.label}</Link>
-              </td>
-              <td><code>{related.category}</code></td>
-              <td>
-                {related.link_types.length > 0 && (
-                  <Link href={getLinkLoomLink(cluster, related)}><>{related.link_types}</></Link>
-                )}
-                {related.link_types.length === 0 && (
-                  <Link href={getLinkLoomLink(cluster, related)}>add</Link>
-                )}
-              </td>
-              <td>{related.articles}</td>
-            </tr>
-          ))}
-        </tbody>
-      </HTMLTable>
-      <code>{related.debug_msg}</code>
-      <h3>Similar</h3>
-      <HTMLTable condensed bordered className="wide">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Category</th>
-            <th>Common tags</th>
-            <th>Count</th>
-            <th>Same</th>
-          </tr>
-        </thead>
-        <tbody>
-          {similar.results.map((similar) => (
-            <tr key={similar.id}>
-              <td>
-                <Link href={getClusterLink(similar)}>{similar.label}</Link>
-              </td>
-              <td><code>{similar.category}</code></td>
-              <td>
-                <SpacedList values={similar.common.map((l) => <TagLabel key={l} label={l} />)} />
-              </td>
-              <td>
-                {similar.common_count}
-              </td>
-              <td>
-                {'[ ]'}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </HTMLTable>
-      <code>{related.debug_msg}</code>
+      <Tabs>
+        <Tab id="ng" title="Related" panel={<RelatedListing cluster={cluster} response={related} />} />
+        <Tab id="rx" title="Similar" panel={<SimilarListing cluster={cluster} response={similar} />} />
+      </Tabs>
     </Layout>
   )
 }
