@@ -1,7 +1,6 @@
 import type { GetServerSidePropsContext } from 'next'
 import classnames from 'classnames';
 import { Button, Classes, ControlGroup, HTMLSelect, HTMLTable } from '@blueprintjs/core';
-import Link from 'next/link';
 
 import Layout from '../../components/Layout'
 import { IArticle, IListingResponse, ISite } from '../../lib/types';

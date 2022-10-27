@@ -1,14 +1,13 @@
 import type { GetServerSidePropsContext } from 'next'
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import Form from 'react-bootstrap/Form';
-import Button from 'react-bootstrap/Button';
 
 import Layout from '../components/Layout'
 import { ILink, ILinkType, IListingResponse, ICluster } from '../lib/types';
-import { ChangeEvent, FormEvent, useState } from 'react';
+import { FormEvent, useState } from 'react';
 import { getClusterLink } from '../lib/util';
 import { fetchJson } from '../lib/data';
+import { Button, RadioGroup } from '@blueprintjs/core';
 
 interface IPageProps {
   initialType: string
@@ -28,6 +27,7 @@ export default function LinkLoom({ anchor, other, linkTypes, autoMode, initialTy
     type: initialType
   } as ILink);
   const linkType = linkTypes.find((lt) => lt.name == link.type) || linkTypes[0]
+  const linkOptions = linkTypes.map(l => ({ value: l.name, label: l.label }));
 
   const onSubmit = async function (event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -47,8 +47,8 @@ export default function LinkLoom({ anchor, other, linkTypes, autoMode, initialTy
     }
   }
 
-  const onChangeType = function (event: ChangeEvent<HTMLInputElement>, type: string) {
-    setLink({ ...link, type: type })
+  const onChangeType = function (event: FormEvent<HTMLInputElement>) {
+    setLink({ ...link, type: event.currentTarget.value })
   }
 
   return (
@@ -64,19 +64,17 @@ export default function LinkLoom({ anchor, other, linkTypes, autoMode, initialTy
           <Link href={getClusterLink(other)}>{other.label}</Link>
         </code>
       </h2>
-      <Form onSubmit={onSubmit}>
-        {linkTypes.map((type) => (
-          <Form.Check
-            type="radio"
-            name="type"
-            value={type.name}
-            label={type.label}
-            checked={type.name == link.type}
-            onChange={(e) => onChangeType(e, type.name)}
-          />
-        ))}
+      <form onSubmit={onSubmit}>
+        <RadioGroup
+          label="Link type"
+          name="type"
+          onChange={onChangeType}
+          selectedValue={link.type}
+          options={linkOptions}
+        >
+        </RadioGroup>
         <Button type="submit">Save</Button>
-      </Form>
+      </form>
     </Layout >
   )
 }
@@ -107,7 +105,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     return { redirect: { destination: `/clusters/${anchorId}`, permanent: false } };
   }
   const other = await fetchJson<ICluster>(`/clusters/${otherId}`);
-  const linkTypes = await fetchJson<IListingResponse<ILinkType>>('/linktypes')
+  const linkTypesResponse = await fetchJson<IListingResponse<ILinkType>>('/linktypes')
+  const linkTypes = linkTypesResponse.results;
   const existingParams = { cluster: [anchor.id, other.id], limit: 1 };
   const existingLink = await fetchJson<IListingResponse<ILink>>('/links', existingParams);
   let initialType = other.label === anchor.label ? 'SAME' : 'UNRELATED';
@@ -115,6 +114,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     initialType = link.type;
   }
   return {
-    props: { anchor, other, autoMode, linkTypes: linkTypes.results, initialType }
+    props: { anchor, other, autoMode, linkTypes, initialType }
   }
 }

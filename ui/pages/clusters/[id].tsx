@@ -5,10 +5,9 @@ import Layout from '../../components/Layout'
 import { ITag, IListingResponse, ICluster, IClusterDetails, IRelatedCluster } from '../../lib/types';
 
 import { getClusterLink, getLinkLoomLink } from '../../lib/util';
-import { TagCategory, TagLabel } from '../../components/util';
+import { SpacedList, TagCategory, TagLabel } from '../../components/util';
 import { fetchJson } from '../../lib/data';
 import { HTMLTable } from '@blueprintjs/core';
-import { Tag } from 'react-bootstrap-icons';
 
 interface TagProps {
   cluster: IClusterDetails
@@ -23,11 +22,10 @@ export default function ClusterView({ cluster, related }: TagProps) {
       </h1>
       <p>
         <TagCategory category={cluster.category} />
-        ID: <code>{cluster.id}</code>
       </p>
       <p>
-        Aliases:
-        {cluster.labels.map((l) => <span key={l}>{l}</span>)}
+        Aliases:{' '}
+        <SpacedList values={cluster.labels.map((l) => <TagLabel key={l} label={l} />)} />
       </p>
       <p>
         <Link href={getLinkLoomLink(cluster)}>Start matching</Link>

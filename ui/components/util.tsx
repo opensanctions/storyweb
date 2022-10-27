@@ -1,4 +1,7 @@
+import { ReactNode } from 'react';
+import { SPACER } from '../lib/constants';
 import styles from '../styles/util.module.scss';
+
 
 type TagLabelProps = {
   label: string
@@ -15,3 +18,27 @@ type TagCategoryProps = {
 export function TagCategory({ category }: TagCategoryProps) {
   return <span className={styles.tagCategory}>{category}</span>;
 }
+
+type SpacedListProps = {
+  values: Array<ReactNode>
+}
+
+export function SpacedList({ values }: SpacedListProps) {
+  if (values.length == 0) {
+    return null;
+  }
+  return (
+    <>
+      {values
+        .map<React.ReactNode>((t, idx) => <span key={idx}>{t}</span>)
+        .reduce((prev, curr, idx) => [prev, <Spacer key={`spacer-${idx}`} />, curr])}
+    </>
+  )
+}
+
+export function Spacer() {
+  return (
+    <span className={styles.spacer}>{SPACER}</span>
+  )
+}
+
