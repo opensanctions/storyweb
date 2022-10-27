@@ -5,15 +5,15 @@ import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 
 import Layout from '../components/Layout'
-import { ITag, ILink, ILinkType, IListingResponse, ICluster } from '../lib/types';
+import { ILink, ILinkType, IListingResponse, ICluster } from '../lib/types';
 import { ChangeEvent, FormEvent, useState } from 'react';
-import { getTagLink } from '../lib/util';
+import { getClusterLink } from '../lib/util';
 import { fetchJson } from '../lib/data';
 
 interface IPageProps {
   initialType: string
-  anchor: ITag
-  other: ITag
+  anchor: ICluster
+  other: ICluster
   autoMode: boolean
   linkTypes: ILinkType[]
 }
@@ -22,9 +22,9 @@ export default function LinkLoom({ anchor, other, linkTypes, autoMode, initialTy
   const router = useRouter();
   const [link, setLink] = useState({
     source: anchor.id,
-    source_cluster: anchor.cluster,
+    source_cluster: anchor.id,
     target: other.id,
-    target_cluster: other.cluster,
+    target_cluster: other.id,
     type: initialType
   } as ILink);
   const linkType = linkTypes.find((lt) => lt.name == link.type) || linkTypes[0]
@@ -43,7 +43,7 @@ export default function LinkLoom({ anchor, other, linkTypes, autoMode, initialTy
     if (autoMode) {
       router.reload();
     } else {
-      router.push(`/tags/${anchorCluster}`);
+      router.push(`/clusters/${anchorCluster}`);
     }
   }
 
@@ -55,13 +55,13 @@ export default function LinkLoom({ anchor, other, linkTypes, autoMode, initialTy
     <Layout title="Link loom">
       <h2>
         <code>
-          <Link href={getTagLink(anchor)}>{anchor.label}</Link>
+          <Link href={getClusterLink(anchor)}>{anchor.label}</Link>
         </code>
         {' '}
         {linkType.phrase}
         {' '}
         <code>
-          <Link href={getTagLink(other)}>{other.label}</Link>
+          <Link href={getClusterLink(other)}>{other.label}</Link>
         </code>
       </h2>
       <Form onSubmit={onSubmit}>
@@ -81,12 +81,12 @@ export default function LinkLoom({ anchor, other, linkTypes, autoMode, initialTy
   )
 }
 
-async function getOtherIdentity(anchor: ITag): Promise<string | undefined> {
-  const tagsParams = { coref: anchor.cluster, linked: false, limit: 1 };
-  const tags = await fetchJson<IListingResponse<ICluster>>('/clusters', tagsParams);
-  if (tags.results.length > 0) {
-    const reftag = tags.results[0];
-    return reftag.id;
+async function getOtherIdentity(anchor: ICluster): Promise<string | undefined> {
+  const params = { linked: false, limit: 1 };
+  const path = `/clusters/${anchor.id}/related`;
+  const related = await fetchJson<IListingResponse<ICluster>>(path, params);
+  if (related.results.length > 0) {
+    return related.results[0].id;
   }
   return undefined;
 }
@@ -94,9 +94,9 @@ async function getOtherIdentity(anchor: ITag): Promise<string | undefined> {
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const anchorId = context.query.anchor as (string | undefined);
   if (anchorId === undefined) {
-    return { redirect: { destination: '/tags', permanent: false } };
+    return { redirect: { destination: '/clusters', permanent: false } };
   }
-  const anchor = await fetchJson<ITag>(`/tags/${anchorId}`)
+  const anchor = await fetchJson<ICluster>(`/clusters/${anchorId}`)
 
   let otherId = context.query.other as (string | undefined);
   const autoMode = !otherId;
@@ -104,13 +104,13 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     otherId = await getOtherIdentity(anchor);
   }
   if (otherId === undefined) {
-    return { redirect: { destination: `/tags/${anchorId}`, permanent: false } };
+    return { redirect: { destination: `/clusters/${anchorId}`, permanent: false } };
   }
-  const other = await fetchJson<ITag>(`/tags/${otherId}`);
+  const other = await fetchJson<ICluster>(`/clusters/${otherId}`);
   const linkTypes = await fetchJson<IListingResponse<ILinkType>>('/linktypes')
-  const existingParams = { cluster: [anchor.cluster, other.cluster], limit: 1 };
+  const existingParams = { cluster: [anchor.id, other.id], limit: 1 };
   const existingLink = await fetchJson<IListingResponse<ILink>>('/links', existingParams);
-  let initialType = other.fingerprint === anchor.fingerprint ? 'SAME' : 'UNRELATED';
+  let initialType = other.label === anchor.label ? 'SAME' : 'UNRELATED';
   for (let link of existingLink.results) {
     initialType = link.type;
   }

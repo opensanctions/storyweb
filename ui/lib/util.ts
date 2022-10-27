@@ -1,21 +1,15 @@
 import queryString from 'query-string';
 
-import { IArticleTag, ICluster, ITag } from "./types";
+import { IClusterBase } from "./types";
 
-type Tagish = ITag | IArticleTag
-
-export function getTagLink(tag: Tagish): string {
-  return `/tags/${tag.cluster}`
-}
-
-export function getClusterLink(cluster: ICluster): string {
-  return `/tags/${cluster.id}`
+export function getClusterLink(cluster: IClusterBase): string {
+  return `/clusters/${cluster.id}`
 }
 
 
-export function getLinkLoomLink(anchor: Tagish, other?: ICluster): string {
+export function getLinkLoomLink(anchor: IClusterBase, other?: IClusterBase): string {
   return queryString.stringifyUrl({
     'url': `/linkloom/`,
-    'query': { anchor: anchor.cluster, other: other?.id }
+    'query': { anchor: anchor.id, other: other?.id }
   })
 }

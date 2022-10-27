@@ -1,5 +1,4 @@
 
-
 export interface IResponse {
   status: string
   debug_msg?: string
@@ -20,39 +19,39 @@ export interface IArticle {
   tags_mentions: number
 }
 
-
-export interface ITag {
+export interface IClusterBase {
   id: string
+  label: string
+  category: string
+}
+
+export interface ITag extends IClusterBase {
   cluster: string
   article: string
   fingerprint: string
-  category: string
-  label: string
   count: number
 }
 
-export interface IArticleTag {
+export interface IArticleTag extends IClusterBase {
   article: IArticle
-  id: string
   cluster: string
   fingerprint: string
-  category: string
-  label: string
   count: number
   link_type?: string
 }
 
+export interface ICluster extends IClusterBase {
+  articles: number
+}
 
-export interface ICluster {
-  id: string
-  category: string
-  label: string
+export interface IClusterDetails extends ICluster {
   labels: string[]
-  count: number
-  tags: number
-  link_type?: string
 }
 
+export interface IRelatedCluster extends IClusterBase {
+  articles: number
+  link_types: string[]
+}
 
 export interface ISite {
   site: string
@@ -68,7 +67,6 @@ export interface ILink {
   user?: string
   timestamp?: string
 }
-
 
 export interface ILinkType {
   name: string

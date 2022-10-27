@@ -2,12 +2,9 @@ import type { GetServerSidePropsContext } from 'next'
 import classnames from 'classnames';
 import { Button, Classes, ControlGroup, HTMLSelect, HTMLTable } from '@blueprintjs/core';
 import Link from 'next/link';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
 
 import Layout from '../../components/Layout'
 import { IArticle, IListingResponse, ISite } from '../../lib/types';
-import { getTagLink } from '../../lib/util';
 import { fetchJson } from '../../lib/data';
 import { useState } from 'react';
 import { ArticleDrawer } from '../../components/Article';
