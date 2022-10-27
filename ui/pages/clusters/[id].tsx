@@ -2,7 +2,7 @@ import type { GetServerSidePropsContext } from 'next'
 import Link from 'next/link';
 
 import Layout from '../../components/Layout'
-import { ITag, IListingResponse, ICluster, IClusterDetails, IRelatedCluster } from '../../lib/types';
+import { ITag, IListingResponse, ICluster, IClusterDetails, IRelatedCluster, ISimilarCluster } from '../../lib/types';
 
 import { getClusterLink, getLinkLoomLink } from '../../lib/util';
 import { SpacedList, TagCategory, TagLabel } from '../../components/util';
@@ -12,9 +12,10 @@ import { HTMLTable } from '@blueprintjs/core';
 interface TagProps {
   cluster: IClusterDetails
   related: IListingResponse<IRelatedCluster>
+  similar: IListingResponse<ISimilarCluster>
 }
 
-export default function ClusterView({ cluster, related }: TagProps) {
+export default function ClusterView({ cluster, related, similar }: TagProps) {
   return (
     <Layout title={cluster.label}>
       <h1>
@@ -30,19 +31,19 @@ export default function ClusterView({ cluster, related }: TagProps) {
       <p>
         <Link href={getLinkLoomLink(cluster)}>Start matching</Link>
       </p>
+      <h3>Related</h3>
       <HTMLTable condensed bordered className="wide">
         <thead>
           <tr>
-            <th>Articles</th>
             <th>Name</th>
             <th>Category</th>
             <th>Link</th>
+            <th>Articles</th>
           </tr>
         </thead>
         <tbody>
           {related.results.map((related) => (
             <tr key={related.id}>
-              <td>{related.articles}</td>
               <td>
                 <Link href={getClusterLink(related)}>{related.label}</Link>
               </td>
@@ -54,6 +55,39 @@ export default function ClusterView({ cluster, related }: TagProps) {
                 {related.link_types.length === 0 && (
                   <Link href={getLinkLoomLink(cluster, related)}>add</Link>
                 )}
+              </td>
+              <td>{related.articles}</td>
+            </tr>
+          ))}
+        </tbody>
+      </HTMLTable>
+      <code>{related.debug_msg}</code>
+      <h3>Similar</h3>
+      <HTMLTable condensed bordered className="wide">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Common tags</th>
+            <th>Count</th>
+            <th>Same</th>
+          </tr>
+        </thead>
+        <tbody>
+          {similar.results.map((similar) => (
+            <tr key={similar.id}>
+              <td>
+                <Link href={getClusterLink(similar)}>{similar.label}</Link>
+              </td>
+              <td><code>{similar.category}</code></td>
+              <td>
+                <SpacedList values={similar.common.map((l) => <TagLabel key={l} label={l} />)} />
+              </td>
+              <td>
+                {similar.common_count}
+              </td>
+              <td>
+                {'[ ]'}
               </td>
             </tr>
           ))}
@@ -75,7 +109,10 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
   const relatedPath = `/clusters/${cluster.id}/related`;
   const related = await fetchJson<IListingResponse<IRelatedCluster>>(relatedPath);
+
+  const similarPath = `/clusters/${cluster.id}/similar`;
+  const similar = await fetchJson<IListingResponse<ISimilarCluster>>(similarPath);
   return {
-    props: { cluster, related },
+    props: { cluster, related, similar },
   }
 }

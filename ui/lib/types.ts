@@ -53,6 +53,11 @@ export interface IRelatedCluster extends IClusterBase {
   link_types: string[]
 }
 
+export interface ISimilarCluster extends IClusterBase {
+  common: string[]
+  common_count: number
+}
+
 export interface ISite {
   site: string
   articles: number
