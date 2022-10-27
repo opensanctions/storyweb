@@ -35,7 +35,9 @@ export default function ClusterView({ cluster, related, similar }: TagProps) {
       </p>
       <Tabs>
         <Tab id="ng" title="Related" panel={<RelatedListing cluster={cluster} response={related} />} />
-        <Tab id="rx" title="Similar" panel={<SimilarListing cluster={cluster} response={similar} />} />
+        {similar.results.length > 0 && (
+          <Tab id="rx" title="Similar" panel={<SimilarListing cluster={cluster} response={similar} />} />
+        )}
       </Tabs>
     </Layout>
   )

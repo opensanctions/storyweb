@@ -1,5 +1,7 @@
-import { HTMLTable } from "@blueprintjs/core"
+import { Button, ButtonGroup, Checkbox, HTMLTable, Intent } from "@blueprintjs/core"
 import Link from "next/link"
+import { useRouter } from "next/router"
+import { useState } from "react"
 import { ICluster, IListingResponse, ISimilarCluster } from "../lib/types"
 import { getClusterLink } from "../lib/util"
 import { SpacedList, TagLabel } from "./util"
@@ -10,8 +12,61 @@ type SimilarListingProps = {
 }
 
 export default function SimilarListing({ cluster, response }: SimilarListingProps) {
+  const router = useRouter();
+  const [merges, setMerges] = useState([] as string[]);
+  const allSelected = merges.length == response.results.length;
+
+  const onMerge = async () => {
+    const mergeRequest = { anchor: cluster.id, other: merges };
+    const resp = await fetch(`/api/merge`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(mergeRequest),
+    });
+    setMerges([]);
+    const newCluster = await resp.json() as ICluster;
+    if (newCluster.id == cluster.id) {
+      router.reload();
+    } else {
+      router.push(`/clusters/${newCluster.id}`);
+    }
+  }
+
+  const toggleAll = async () => {
+    if (allSelected) {
+      setMerges([]);
+    } else {
+      setMerges(response.results.map(r => r.id));
+    }
+  }
+
+  const toggleOne = async (id: string) => {
+    if (merges.indexOf(id) === -1) {
+      setMerges([...merges, id]);
+    } else {
+      setMerges(merges.filter(x => x !== id));
+    }
+  }
+
   return (
     <>
+      <ButtonGroup>
+        <Button
+          disabled={merges.length == 0}
+          onClick={() => onMerge()}
+          intent={Intent.PRIMARY}
+        >
+          Merge ({merges.length})
+        </Button>
+        <Button
+          onClick={() => toggleAll()}
+        >
+          {allSelected && <>Select none</>}
+          {!allSelected && <>Select all</>}
+        </Button>
+      </ButtonGroup>
       <HTMLTable condensed bordered className="wide">
         <thead>
           <tr>
@@ -36,7 +91,10 @@ export default function SimilarListing({ cluster, response }: SimilarListingProp
                 {similar.common_count}
               </td>
               <td>
-                {'[ ]'}
+                <Checkbox
+                  checked={merges.indexOf(similar.id) !== -1}
+                  onClick={() => toggleOne(similar.id)}
+                />
               </td>
             </tr>
           ))}

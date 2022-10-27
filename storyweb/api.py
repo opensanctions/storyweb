@@ -13,6 +13,7 @@ from storyweb.logic import (
     list_related,
     list_similar,
     list_sites,
+    merge_cluster,
 )
 from storyweb.models import (
     Article,
@@ -23,6 +24,7 @@ from storyweb.models import (
     LinkType,
     Listing,
     ListingResponse,
+    MergeRequest,
     RelatedCluster,
     SimilarCluster,
     Site,
@@ -142,3 +144,12 @@ def links_save(
     #   * pick a relationship type
     result = create_link(conn, link.source, link.target, link.type)
     return result
+
+
+@app.post("/links/_merge", response_model=ClusterDetails)
+def merge_save(
+    merge: MergeRequest,
+    conn: Conn = Depends(get_conn),
+):
+    cluster = merge_cluster(conn, merge.anchor, merge.other)
+    return fetch_cluster(conn, cluster)

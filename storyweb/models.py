@@ -92,6 +92,11 @@ class Link(LinkBase):
     timestamp: datetime
 
 
+class MergeRequest(BaseModel):
+    anchor: str
+    other: List[str]
+
+
 class LinkType(BaseModel):
     name: str
     directed: bool

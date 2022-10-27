@@ -267,18 +267,33 @@ def create_link(conn: Conn, source: str, target: str, type: str) -> Link:
         user="web",
         timestamp=datetime.utcnow(),
     )
-    save_link(conn, link)
+    save_links(conn, [link])
     if link.type == link_types.SAME.name:
         update_cluster(conn, link.source)
         update_cluster(conn, link.target)
     return link
 
 
-def save_link(conn: Conn, link: Link) -> None:
-    # TODO: compute connected components on clusters
-    # generate a mapping table, or maybe a materialised view
-    # update identity and link tables from mapping table
-    istmt = upsert(link_table).values(link.dict())
+def merge_cluster(conn: Conn, anchor: str, others: List[str]) -> str:
+    timestamp = datetime.utcnow()
+    links: List[Link] = []
+    for other in others:
+        link = Link(
+            source=anchor,
+            source_cluster=anchor,
+            target=other,
+            target_cluster=other,
+            type=link_types.SAME.name,
+            user="web",
+            timestamp=timestamp,
+        )
+        links.append(link)
+    save_links(conn, links)
+    return update_cluster(conn, anchor)
+
+
+def save_links(conn: Conn, links: List[Link]) -> None:
+    istmt = upsert(link_table).values([l.dict() for l in links])
     values = dict(
         type=istmt.excluded.type,
         user=istmt.excluded.user,
@@ -288,7 +303,7 @@ def save_link(conn: Conn, link: Link) -> None:
     conn.execute(stmt)
 
 
-def update_cluster(conn: Conn, id: str) -> None:
+def update_cluster(conn: Conn, id: str) -> str:
     referents = compute_cluster(conn, id)
     cluster = max(referents)
 
@@ -326,6 +341,7 @@ def update_cluster(conn: Conn, id: str) -> None:
     stmt = stmt.where(link_table.c.target_cluster != cluster)
     stmt = stmt.values(target_cluster=cluster)
     conn.execute(stmt)
+    return cluster
 
 
 def compute_cluster(conn: Conn, id: str) -> Set[str]:
