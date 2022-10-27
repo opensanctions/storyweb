@@ -1,5 +1,4 @@
 from datetime import datetime
-from nntplib import ArticleInfo
 from typing import Iterable, List, Optional, Set
 from sqlalchemy.sql import select, delete, update, insert, func, and_, or_
 
@@ -11,9 +10,9 @@ from storyweb.links import link_types
 from storyweb.clean import most_common, pick_name
 from storyweb.models import (
     Cluster,
+    ClusterDetails,
     Link,
     Article,
-    ArticleTag,
     Listing,
     ListingResponse,
     RelatedCluster,
@@ -72,127 +71,68 @@ def list_articles(
     )
 
 
-def list_tags(
-    conn: Conn,
-    listing: Listing,
-    sites: List[str] = [],
-    query: Optional[str] = None,
-) -> ListingResponse[ArticleTag]:
-    tag_t = tag_table.alias("t")
-    article_t = article_table.alias("a")
-    stmt = select(
-        article_t.c.id.label("article_id"),
-        article_t.c.title.label("article_title"),
-        article_t.c.url.label("article_url"),
-        article_t.c.site.label("article_site"),
-        tag_t.c.id.label("id"),
-        tag_t.c.cluster.label("cluster"),
-        tag_t.c.fingerprint.label("fingerprint"),
-        tag_t.c.cluster_category.label("category"),
-        tag_t.c.cluster_label.label("label"),
-        tag_t.c.count.label("count"),
-    )
-    if len(sites):
-        stmt = stmt.filter(article_t.c.site.in_(sites))
-    if query is not None and len(query.strip()):
-        stmt = stmt.filter(tag_t.c.label.ilike(f"%{query}%"))
-
-    stmt = stmt.join(article_t, tag_t.c.article == article_t.c.id)
-    stmt = stmt.order_by(tag_t.c.count.desc())
-    stmt = stmt.limit(listing.limit).offset(listing.offset)
-    cursor = conn.execute(stmt)
-    response = ListingResponse[ArticleTag](
-        limit=listing.limit, offset=listing.offset, results=[]
-    )
-    response.debug_msg = str(stmt)
-    for row in cursor.fetchall():
-        article = Article(
-            id=row["article_id"],
-            site=row["article_site"],
-            url=row["article_url"],
-            title=row["article_title"],
-        )
-        tag = ArticleTag(
-            article=article,
-            id=row["id"],
-            cluster=row["cluster"],
-            fingerprint=row["fingerprint"],
-            category=row["category"],
-            label=row["label"],
-            count=row["count"],
-        )
-        response.results.append(tag)
-    return response
-
-
 def list_clusters(
     conn: Conn,
     listing: Listing,
     query: Optional[str] = None,
-    coref: str = None,
-    linked: Optional[bool] = None,
+    article: Optional[str] = None,
 ) -> ListingResponse[Cluster]:
-    tag_t = tag_table.alias("t")
-    link_t = link_table.alias("link")
+    cluster_t = tag_table.alias("c")
+    articles = func.count(func.distinct(cluster_t.c.article))
     stmt = select(
-        tag_t.c.cluster.label("id"),
-        func.max(tag_t.c.cluster_category).label("category"),
-        func.max(tag_t.c.cluster_label).label("label"),
-        func.count(func.distinct(tag_t.c.id)).label("tags"),
-        func.sum(tag_t.c.count).label("count"),
+        cluster_t.c.cluster.label("id"),
+        cluster_t.c.cluster_category.label("category"),
+        cluster_t.c.cluster_label.label("label"),
+        articles.label("articles"),
     )
     if query is not None and len(query.strip()):
         text_t = tag_table.alias("q")
-        stmt = stmt.where(text_t.c.cluster == tag_t.c.cluster)
+        stmt = stmt.where(text_t.c.cluster == cluster_t.c.cluster)
         stmt = stmt.where(text_t.c.label.ilike(f"%{query}%"))
 
-    if coref is not None:
-        coref_t = tag_table.alias("coref")
-        # local_t = tag_table.alias("local")
-        stmt = stmt.where(tag_t.c.cluster != coref)
-        stmt = stmt.where(coref_t.c.cluster == coref)
-        stmt = stmt.where(coref_t.c.article == tag_t.c.article)
-        link_in = and_(
-            link_t.c.target_cluster == coref,
-            link_t.c.source_cluster == tag_t.c.cluster,
-        )
-        link_out = and_(
-            link_t.c.source_cluster == coref,
-            link_t.c.target_cluster == tag_t.c.cluster,
-        )
+    if article is not None and len(article.strip()):
+        article_t = tag_table.alias("a")
+        stmt = stmt.where(article_t.c.cluster == cluster_t.c.cluster)
+        stmt = stmt.where(article_t.c.article == article)
 
-        stmt = stmt.outerjoin(link_t, or_(link_in, link_out))
-        if linked is True:
-            stmt = stmt.where(link_t.c.type != None)
-        if linked is False:
-            stmt = stmt.where(link_t.c.type == None)
-        stmt = stmt.add_columns(func.array_agg(link_t.c.type).label("link_types"))
-
-    stmt = stmt.group_by(tag_t.c.cluster)
-    stmt = stmt.order_by(
-        func.count(func.distinct(tag_t.c.id)).desc(),
-        func.sum(tag_t.c.count).desc(),
+    stmt = stmt.group_by(
+        cluster_t.c.cluster,
+        cluster_t.c.cluster_label,
+        cluster_t.c.cluster_category,
     )
+    stmt = stmt.order_by(articles.desc())
     stmt = stmt.limit(listing.limit).offset(listing.offset)
     cursor = conn.execute(stmt)
-    response = ListingResponse[Cluster](
-        limit=listing.limit, offset=listing.offset, results=[]
+    return ListingResponse[Cluster](
+        debug_msg=str(stmt),
+        limit=listing.limit,
+        offset=listing.offset,
+        results=[Cluster.parse_obj(r) for r in cursor.fetchall()],
     )
-    response.debug_msg = str(stmt)
+
+
+def fetch_cluster(conn: Conn, id: str) -> Optional[ClusterDetails]:
+    # TODO: should this do an OR on cluster ID?
+    cluster_t = tag_table.alias("c")
+    articles = func.count(func.distinct(cluster_t.c.article))
+    labels = func.array_agg(func.distinct(cluster_t.c.label))
+    stmt = select(
+        cluster_t.c.cluster.label("id"),
+        cluster_t.c.cluster_category.label("category"),
+        cluster_t.c.cluster_label.label("label"),
+        articles.label("articles"),
+        labels.label("labels"),
+    )
+    stmt = stmt.where(or_(cluster_t.c.id == id, cluster_t.c.cluster == id))
+    stmt = stmt.group_by(
+        cluster_t.c.cluster,
+        cluster_t.c.cluster_label,
+        cluster_t.c.cluster_category,
+    )
+    cursor = conn.execute(stmt)
     for row in cursor.fetchall():
-        link_type = None
-        if "link_types" in row:
-            link_type = most_common(row["link_types"])
-        cluster = Cluster(
-            id=row["id"],
-            category=row["category"],
-            label=row["label"],
-            count=row["count"],
-            tags=row["tags"],
-            link_type=link_type,
-        )
-        response.results.append(cluster)
-    return response
+        return ClusterDetails.parse_obj(row)
+    return None
 
 
 def list_similar(conn: Conn, listing: Listing, cluster: str):
@@ -254,7 +194,7 @@ def list_related(
         tag_t.c.cluster.label("id"),
         tag_t.c.cluster_label.label("label"),
         tag_t.c.cluster_category.label("category"),
-        articles.label("common_articles"),
+        articles.label("articles"),
         link_types.label("link_types"),
     )
     stmt = stmt.where(tag_t.c.article == cluster_t.c.article)
@@ -417,28 +357,6 @@ def compute_cluster(conn: Conn, id: str) -> Set[str]:
         connected.add(row.source)
         connected.add(row.target)
     return connected
-
-
-def get_tag_by_id(conn: Conn, id: str) -> Optional[Tag]:
-    # TODO: should this do an OR on cluster ID?
-    stmt = select(tag_table)
-    stmt = stmt.where(tag_table.c.id == id)
-    stmt = stmt.limit(1)
-    cursor = conn.execute(stmt)
-    for row in cursor.fetchall():
-        tag = Tag.parse_obj(row)
-        # tag.label = row.cluster_label
-        # tag.category = row.cluster_category
-        return tag
-    return None
-
-
-# def get_cluster(conn: Conn, cluster: str) -> List[Tag]:
-#     # Get all the parts of a clustered identity
-#     stmt = select(tag_table)
-#     stmt = stmt.where(tag_table.c.cluster == cluster)
-#     cursor = conn.execute(stmt)
-#     return [Tag.parse_obj(r) for r in cursor.fetchall()]
 
 
 def save_article(conn: Conn, article: Article) -> None:

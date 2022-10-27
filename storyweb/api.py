@@ -6,19 +6,18 @@ from storyweb.links import link_types
 from storyweb.db import engine, Conn
 from storyweb.logic import (
     create_link,
-    get_tag_by_id,
+    fetch_cluster,
     list_articles,
     list_clusters,
     list_links,
     list_related,
     list_similar,
     list_sites,
-    list_tags,
 )
 from storyweb.models import (
     Article,
-    ArticleTag,
     Cluster,
+    ClusterDetails,
     Link,
     LinkBase,
     LinkType,
@@ -81,29 +80,22 @@ def articles_index(
     return list_articles(conn, listing, site=site, query=q)
 
 
-@app.get("/tags", response_model=ListingResponse[ArticleTag])
-def tags_index(
+@app.get("/clusters", response_model=ListingResponse[Cluster])
+def route_cluster_index(
     conn: Conn = Depends(get_conn),
     listing: Listing = Depends(get_listing),
     q: Optional[str] = Query(None),
-    site: List[str] = Query([]),
+    article: Optional[str] = Query(None),
 ):
-    sites = [s for s in site if s is not None and len(s.strip())]
-    tags = list_tags(conn, listing, sites=sites, query=q)
-    return tags
+    return list_clusters(conn, listing, query=q, article=article)
 
 
-@app.get("/tags/{tag_id}")
-def get_tag(conn: Conn = Depends(get_conn), tag_id: str = Path()):
-    # TODO:
-    # * view an identity
-    #   * see all possible aliases (same name, different article tags)
-    #   * see all possible links
-    #   * see all existing links
-    tag = get_tag_by_id(conn, tag_id)
-    if tag is None:
+@app.get("/clusters/{cluster}", response_model=ClusterDetails)
+def route_cluster_view(conn: Conn = Depends(get_conn), cluster: str = Path()):
+    obj = fetch_cluster(conn, cluster)
+    if obj is None:
         raise HTTPException(404)
-    return tag
+    return obj
 
 
 @app.get("/clusters/{cluster}/similar", response_model=ListingResponse[SimilarCluster])
@@ -123,17 +115,6 @@ def route_cluster_related(
     linked: Optional[bool] = Query(None),
 ):
     return list_related(conn, listing, cluster, linked=linked)
-
-
-@app.get("/clusters", response_model=ListingResponse[Cluster])
-def route_cluster_index(
-    conn: Conn = Depends(get_conn),
-    listing: Listing = Depends(get_listing),
-    q: Optional[str] = Query(None),
-    coref: Optional[str] = Query(None),
-    linked: Optional[bool] = Query(None),
-):
-    return list_clusters(conn, listing, query=q, coref=coref, linked=linked)
 
 
 @app.get("/linktypes")

@@ -39,13 +39,16 @@ class Sentence(BaseModel):
     text: str
 
 
-class Tag(BaseModel):
+class ClusterBase(BaseModel):
     id: str
+    category: str
+    label: str
+
+
+class Tag(ClusterBase):
     cluster: str
     article: str
     fingerprint: str
-    category: str
-    label: str
     count: int
     frequency: float
     cluster_category: Optional[str]
@@ -58,35 +61,20 @@ class TagSentence(BaseModel):
     sentence: int
 
 
-class ArticleTag(BaseModel):
-    article: Article
-    id: str
-    cluster: str
-    fingerprint: str
-    category: str
-    label: str
-    count: int
+class Cluster(ClusterBase):
+    articles: int
 
 
-class Cluster(BaseModel):
-    id: str
-    category: str
-    label: str
-    article: int
+class ClusterDetails(Cluster):
+    labels: List[str]
 
 
-class RelatedCluster(BaseModel):
-    id: str
-    category: str
-    label: str
-    common_articles: int
+class RelatedCluster(ClusterBase):
+    articles: int
     link_types: List[str]
 
 
-class SimilarCluster(BaseModel):
-    id: str
-    category: str
-    label: str
+class SimilarCluster(ClusterBase):
     common: List[str]
     common_count: int
 
