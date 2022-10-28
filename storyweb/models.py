@@ -29,8 +29,13 @@ class Article(BaseModel):
     site: str
     url: str
     title: Optional[str]
+    language: Optional[str]
     tags_count: Optional[int]
     tags_mentions: Optional[int]
+
+
+class ArticleDetails(Article):
+    text: str
 
 
 class Sentence(BaseModel):

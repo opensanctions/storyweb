@@ -11,7 +11,7 @@ from pydantic import ValidationError
 
 from storyweb.db import engine
 from storyweb.clean import clean_entity_name, most_common, pick_name
-from storyweb.models import Article, Sentence, Tag, TagSentence
+from storyweb.models import Article, ArticleDetails, Sentence, Tag, TagSentence
 from storyweb.logic import save_extracted
 from storyweb.ontology import LOCATION, ORGANIZATION, PERSON, pick_category
 
@@ -52,13 +52,13 @@ def read_raw_articles(path: Path) -> Generator[Tuple[str, RawArticle], None, Non
                 log.warn("Article validation [%s]: %s", article.id, ve)
 
 
-def extract_tag(article_id: str, ent: Span) -> Optional[Tuple[str, str, str]]:
+def extract_tag(ent: Span) -> Optional[Tuple[str, str, str]]:
     category = NLP_CATEGORIES.get(ent.label_)
     if category is None:
         return None
     label = clean_entity_name(ent.text)
     fp = slugify(label, sep="-")
-    if fp is None:
+    if fp is None or label is None:
         return None
     fp = "-".join(sorted(fp.split("-")))
     if category == PERSON and " " not in label:
@@ -68,11 +68,13 @@ def extract_tag(article_id: str, ent: Span) -> Optional[Tuple[str, str, str]]:
 
 def load_article(doc: Doc, raw: RawArticle) -> None:
     log.info("Article [%s, %s]: %r", raw.id, raw.language, raw.title)
-    article = Article(
+    article = ArticleDetails(
         id=raw.id,
         site=raw.site,
         url=raw.url,
         title=raw.title,
+        language=raw.language,
+        text=raw.text,
     )
     sentences: List[Sentence] = []
     tag_sentences: Dict[str, Set[int]] = {}
@@ -81,7 +83,7 @@ def load_article(doc: Doc, raw: RawArticle) -> None:
     for seq, sent in enumerate(doc.sents):
         sent_tags = 0
         for ent in sent.ents:
-            extracted = extract_tag(article.id, ent)
+            extracted = extract_tag(ent)
             if extracted is None:
                 continue
             (label, category, fp) = extracted

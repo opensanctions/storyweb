@@ -25,6 +25,8 @@ article_table = Table(
     Column("site", Unicode(255), index=True, nullable=False),
     Column("url", Unicode, nullable=True),
     Column("title", Unicode, nullable=True),
+    Column("language", Unicode(10), nullable=True),
+    Column("text", Unicode, nullable=True),
     Column("tags_count", Integer, default=0),
     Column("tags_mentions", Integer, default=0),
 )

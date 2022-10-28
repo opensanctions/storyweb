@@ -9,6 +9,7 @@ from storyweb.db import fingerprint_idf_table
 from storyweb.links import link_types
 from storyweb.clean import most_common, pick_name
 from storyweb.models import (
+    ArticleDetails,
     Cluster,
     ClusterDetails,
     Link,
@@ -386,12 +387,14 @@ def compute_cluster(conn: Conn, id: str) -> Set[str]:
     return connected
 
 
-def save_article(conn: Conn, article: Article) -> None:
+def save_article(conn: Conn, article: ArticleDetails) -> None:
     istmt = upsert(article_table).values([article.dict()])
     values = dict(
         site=istmt.excluded.site,
         url=istmt.excluded.url,
         title=istmt.excluded.title,
+        language=istmt.excluded.language,
+        text=istmt.excluded.text,
     )
     stmt = istmt.on_conflict_do_update(index_elements=["id"], set_=values)
     conn.execute(stmt)
@@ -399,7 +402,7 @@ def save_article(conn: Conn, article: Article) -> None:
 
 def save_extracted(
     conn: Conn,
-    article: Article,
+    article: ArticleDetails,
     sentences: Iterable[Sentence],
     tag_sentences: Iterable[TagSentence],
     tags: Iterable[Tag],
