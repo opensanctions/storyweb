@@ -102,17 +102,6 @@ class MergeRequest(BaseModel):
     other: List[str]
 
 
-class LinkType(BaseModel):
-    name: str
-    directed: bool
-    label: str
-    phrase: str
-
-
-class LinkTypes(BaseModel):
-    types: List[LinkType]
-
-
 class Site(BaseModel):
     site: str
     articles: int = 0

@@ -6,8 +6,7 @@ from storyweb.db import Conn, upsert
 from storyweb.db import article_table, sentence_table
 from storyweb.db import tag_table, link_table, tag_sentence_table
 from storyweb.db import fingerprint_idf_table
-from storyweb.links import link_types
-from storyweb.clean import most_common, pick_name
+from storyweb.clean import most_common
 from storyweb.models import (
     ArticleDetails,
     Cluster,
@@ -23,7 +22,7 @@ from storyweb.models import (
     Tag,
     TagSentence,
 )
-from storyweb.ontology import pick_category
+from storyweb.ontology import ontology, LinkType
 
 
 def list_sites(conn: Conn, listing: Listing) -> ListingResponse[Site]:
@@ -286,7 +285,7 @@ def create_link(conn: Conn, source: str, target: str, type: str) -> Link:
         timestamp=datetime.utcnow(),
     )
     save_links(conn, [link])
-    if link.type == link_types.SAME.name:
+    if link.type == LinkType.SAME:
         update_cluster(conn, link.source)
         update_cluster(conn, link.target)
     return link
@@ -301,7 +300,7 @@ def merge_cluster(conn: Conn, anchor: str, others: List[str]) -> str:
             source_cluster=anchor,
             target=other,
             target_cluster=other,
-            type=link_types.SAME.name,
+            type=LinkType.SAME,
             user="web",
             timestamp=timestamp,
         )
@@ -367,10 +366,9 @@ def compute_cluster(conn: Conn, id: str) -> Set[str]:
     target = link_t.c.target
     source = link_t.c.source
     type_c = link_t.c.type
-    same_as = link_types.SAME.name
     stmt_t = select(target.label("target"), source.label("source"))
     init_clause = or_(source == id, target == id)
-    stmt_t = stmt_t.where(init_clause, type_c == same_as)
+    stmt_t = stmt_t.where(init_clause, type_c == LinkType.SAME)
     cte = stmt_t.cte("connected", recursive=True)
     cte_alias = cte.alias("c")
     stmt_r = select(target.label("target"), source.label("source"))
@@ -381,7 +379,7 @@ def compute_cluster(conn: Conn, id: str) -> Set[str]:
         cte_alias.c.target == target,
     )
     stmt_r = stmt_r.join(cte_alias, join_clause)
-    stmt_r = stmt_r.where(type_c == same_as)
+    stmt_r = stmt_r.where(type_c == LinkType.SAME)
     cte = cte.union(stmt_r)  # type: ignore
 
     stmt = select(cte.c.source, cte.c.target)

@@ -1,0 +1,81 @@
+node_types:
+  - name: ANY
+    label: "Thing"
+    plural: "Things"
+  - name: ENT
+    label: "Entity"
+    plural: "Entities"
+    parent: ANY
+  - name: LOC
+    label: "Location"
+    plural: "Locations"
+    parent: ANY
+  - name: PER
+    label: "Person"
+    plural: "People"
+    parent: ENT
+  - name: ORG
+    label: "Organization"
+    plural: "Organizations"
+    parent: ENT
+link_types:
+  - name: SAME
+    label: "Same as"
+    directed: false
+    phrase: "is the same as"
+    source_type: ANY
+    target_type: ANY
+  - name: OBSERVER
+    directed: true
+    label: "Observer"
+    phrase: "writes about"
+    source_type: ENT
+    target_type: ANY
+  - name: UNRELATED
+    directed: false
+    label: "Unrelated"
+    phrase: "has nothing to do with"
+    source_type: ANY
+    target_type: ANY
+  - name: ASSOCIATE
+    directed: false
+    label: "Associate"
+    phrase: "is an associate of"
+    source_type: PER
+    target_type: PER
+  - name: FAMILY
+    directed: false
+    label: "Family"
+    phrase: "is related to"
+    source_type: PER
+    target_type: PER
+  - name: LOCATED
+    directed: true
+    label: "Located"
+    phrase: "is located in"
+    source_type: ENT
+    target_type: LOC
+  - name: WITHIN
+    directed: true
+    label: "Within"
+    phrase: "is located in"
+    source_type: LOC
+    target_type: LOC
+  - name: INDIRECT
+    directed: false
+    label: "Indirect link"
+    phrase: "is indirectly linked to"
+    source_type: ANY
+    target_type: ANY
+  - name: OTHER
+    directed: false
+    label: "Other link"
+    phrase: "is linked to"
+    source_type: ANY
+    target_type: ANY
+# TYPES:
+#
+# * Owner
+# * Manager
+# * Member
+
