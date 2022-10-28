@@ -15,8 +15,13 @@ export interface IArticle {
   title: string
   site: string
   url: string
+  language: string
   tags_count: number
   tags_mentions: number
+}
+
+export interface IArticleDetails extends IArticle {
+  text: string
 }
 
 export interface IClusterBase {

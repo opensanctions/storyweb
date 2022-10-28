@@ -1,18 +1,15 @@
 import type { GetServerSidePropsContext } from 'next'
+import { useRouter } from 'next/router';
+import { Tab, Tabs } from '@blueprintjs/core';
+import { useEffect, useState } from 'react';
 import queryString from 'query-string';
-import Link from 'next/link';
 
 import Layout from '../../components/Layout'
-import { ITag, IListingResponse, ICluster, IClusterDetails, IRelatedCluster, ISimilarCluster } from '../../lib/types';
-
-import { getClusterLink, getLinkLoomLink } from '../../lib/util';
+import { IListingResponse, IClusterDetails, IRelatedCluster, ISimilarCluster } from '../../lib/types';
 import { SpacedList, Spacer, TagCategory, TagLabel } from '../../components/util';
 import { fetchJson } from '../../lib/data';
-import { HTMLTable, Tab, Tabs } from '@blueprintjs/core';
 import SimilarListing from '../../components/SimilarListing';
 import RelatedListing from '../../components/RelatedListing';
-import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
 
 interface ClusterViewProps {
   cluster: IClusterDetails
