@@ -50,7 +50,13 @@ def list_articles(
     site: Optional[str] = None,
     query: Optional[str] = None,
 ) -> ListingResponse[Article]:
-    stmt = select(article_table)
+    stmt = select(
+        article_table.c.id,
+        article_table.c.title,
+        article_table.c.url,
+        article_table.c.language,
+        article_table.c.site,
+    )
     if site is not None and len(site.strip()):
         stmt = stmt.where(article_table.c.site == site)
     if query is not None and len(query.strip()):
@@ -72,7 +78,7 @@ def list_articles(
     )
 
 
-def fetch_article(conn: Conn, article_id: str) -> Optional[Article]:
+def fetch_article(conn: Conn, article_id: str) -> Optional[ArticleDetails]:
     stmt = select(article_table)
     stmt = stmt.where(article_table.c.id == article_id)
     stmt = stmt.limit(1)
@@ -80,7 +86,7 @@ def fetch_article(conn: Conn, article_id: str) -> Optional[Article]:
     obj = cursor.fetchone()
     if obj is None:
         return None
-    return Article.parse_obj(obj)
+    return ArticleDetails.parse_obj(obj)
 
 
 def list_clusters(

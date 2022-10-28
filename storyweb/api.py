@@ -18,6 +18,7 @@ from storyweb.logic import (
 )
 from storyweb.models import (
     Article,
+    ArticleDetails,
     Cluster,
     ClusterDetails,
     Link,
@@ -83,7 +84,7 @@ def articles_index(
     return list_articles(conn, listing, site=site, query=q)
 
 
-@app.get("/articles/{article_id}", response_model=Article)
+@app.get("/articles/{article_id}", response_model=ArticleDetails)
 def article_view(
     conn: Conn = Depends(get_conn),
     article_id: str = Path(),
