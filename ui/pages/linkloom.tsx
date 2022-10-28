@@ -7,7 +7,7 @@ import { ILink, ILinkType, IListingResponse, ICluster } from '../lib/types';
 import { FormEvent, useState } from 'react';
 import { getClusterLink } from '../lib/util';
 import { fetchJson } from '../lib/data';
-import { Button, RadioGroup } from '@blueprintjs/core';
+import { Button, HotkeyConfig, HotkeysTarget2, RadioGroup, useHotkeys } from '@blueprintjs/core';
 
 interface IPageProps {
   initialType: string
@@ -29,8 +29,7 @@ export default function LinkLoom({ anchor, other, linkTypes, autoMode, initialTy
   const linkType = linkTypes.find((lt) => lt.name == link.type) || linkTypes[0]
   const linkOptions = linkTypes.map(l => ({ value: l.name, label: l.label }));
 
-  const onSubmit = async function (event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  const save = async function () {
     const resp = await fetch(`/api/link`, {
       method: 'POST',
       headers: {
@@ -47,35 +46,67 @@ export default function LinkLoom({ anchor, other, linkTypes, autoMode, initialTy
     }
   }
 
+  const onSubmit = async function (event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    await save()
+  }
+
   const onChangeType = function (event: FormEvent<HTMLInputElement>) {
     setLink({ ...link, type: event.currentTarget.value })
   }
 
+  const loomHotkeys: HotkeyConfig[] = [
+    {
+      combo: "s",
+      group: "Link editor",
+      global: true,
+      label: "Same",
+      onKeyDown: async () => {
+        setLink({ ...link, type: 'SAME' });
+        await save()
+      },
+    },
+    {
+      combo: "u",
+      group: "Link editor",
+      global: true,
+      label: "Unrelated",
+      onKeyDown: async () => {
+        setLink({ ...link, type: 'UNRELATED' });
+        await save()
+      },
+    },
+  ];
+
   return (
     <Layout title="Link loom">
-      <h2>
-        <code>
-          <Link href={getClusterLink(anchor)}>{anchor.label}</Link>
-        </code>
-        {' '}
-        {linkType.phrase}
-        {' '}
-        <code>
-          <Link href={getClusterLink(other)}>{other.label}</Link>
-        </code>
-      </h2>
-      <form onSubmit={onSubmit}>
-        <RadioGroup
-          label="Link type"
-          name="type"
-          onChange={onChangeType}
-          selectedValue={link.type}
-          options={linkOptions}
-        >
-        </RadioGroup>
-        <Button type="submit">Save</Button>
-      </form>
-    </Layout >
+      <HotkeysTarget2 hotkeys={loomHotkeys}>
+        <>
+          <h2>
+            <code>
+              <Link href={getClusterLink(anchor)}>{anchor.label}</Link>
+            </code>
+            {' '}
+            {linkType.phrase}
+            {' '}
+            <code>
+              <Link href={getClusterLink(other)}>{other.label}</Link>
+            </code>
+          </h2>
+          <form onSubmit={onSubmit}>
+            <RadioGroup
+              label="Link type"
+              name="type"
+              onChange={onChangeType}
+              selectedValue={link.type}
+              options={linkOptions}
+            >
+            </RadioGroup>
+            <Button type="submit">Save</Button>
+          </form>
+        </>
+      </HotkeysTarget2>
+    </Layout>
   )
 }
 

@@ -2,7 +2,7 @@ import React from 'react';
 import Head from 'next/head';
 import classnames from 'classnames'
 import { useRouter } from 'next/router';
-import { HotkeysProvider } from "@blueprintjs/core";
+import { HotkeyConfig, HotkeysProvider, HotkeysTarget2 } from "@blueprintjs/core";
 
 import Navbar from './Navbar';
 import Footer from './Footer';
@@ -19,6 +19,16 @@ export default function Layout({ title, description, children }: React.PropsWith
   const router = useRouter();
   // const url = `${BASE_URL}${router.asPath}`;
   const fullTitle = `${title} - ${SITE}`
+
+  const appHotkeys: HotkeyConfig[] = [
+    {
+      combo: "/",
+      global: true,
+      label: "Search entity",
+      onKeyDown: () => alert('tbd :)'),
+    },
+  ];
+
   return (
     <>
       <Head>
@@ -44,16 +54,16 @@ export default function Layout({ title, description, children }: React.PropsWith
         <meta name="og:site" content={SITE} />
       </Head>
       <HotkeysProvider>
-        <>
-          <div className={styles.page}>
-            <Navbar />
+        <div className={styles.page}>
+          <Navbar />
+          <HotkeysTarget2 hotkeys={appHotkeys}>
             <div className={classnames(styles.content, 'page-container')}>
               {children}
             </div>
-          </div>
-          <Footer />
-        </>
+          </HotkeysTarget2>
+        </div>
       </HotkeysProvider>
+      <Footer />
     </>
   )
 }
