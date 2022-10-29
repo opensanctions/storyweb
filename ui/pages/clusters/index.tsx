@@ -24,7 +24,7 @@ export default function ClusterIndex({ response, query, site, sites }: TagsProps
             <input
               className={classnames(Classes.INPUT, Classes.FILL)}
               defaultValue={query}
-              placeholder="Search in articles..."
+              placeholder="Search entities..."
               name="q"
             />
             <Button type="submit">Search</Button>
