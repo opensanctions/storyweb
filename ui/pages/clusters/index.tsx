@@ -4,7 +4,7 @@ import { Button, Classes, ControlGroup, HTMLTable } from '@blueprintjs/core';
 import Link from 'next/link';
 
 import Layout from '../../components/Layout'
-import { IListingResponse, IArticleTag, ISite, ICluster } from '../../lib/types';
+import { IListingResponse, ISite, ICluster } from '../../lib/types';
 import { fetchJson } from '../../lib/data';
 import { getClusterLink } from '../../lib/util';
 

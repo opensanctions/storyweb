@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 
 import Layout from '../components/Layout'
-import { ILink, ILinkType, IListingResponse, ICluster } from '../lib/types';
+import { ILink, ILinkType, IListingResponse, ICluster, IOntology, IClusterDetails } from '../lib/types';
 import { FormEvent, useState } from 'react';
 import { getClusterLink } from '../lib/util';
 import { fetchJson } from '../lib/data';
@@ -11,8 +11,8 @@ import { Button, HotkeyConfig, HotkeysTarget2, RadioGroup, useHotkeys } from '@b
 
 interface IPageProps {
   initialType: string
-  anchor: ICluster
-  other: ICluster
+  anchor: IClusterDetails
+  other: IClusterDetails
   autoMode: boolean
   linkTypes: ILinkType[]
 }
@@ -125,7 +125,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   if (anchorId === undefined) {
     return { redirect: { destination: '/clusters', permanent: false } };
   }
-  const anchor = await fetchJson<ICluster>(`/clusters/${anchorId}`)
+  const anchor = await fetchJson<IClusterDetails>(`/clusters/${anchorId}`)
 
   let otherId = context.query.other as (string | undefined);
   const autoMode = !otherId;
@@ -135,9 +135,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   if (otherId === undefined) {
     return { redirect: { destination: `/clusters/${anchorId}`, permanent: false } };
   }
-  const other = await fetchJson<ICluster>(`/clusters/${otherId}`);
-  const linkTypesResponse = await fetchJson<IListingResponse<ILinkType>>('/linktypes')
-  const linkTypes = linkTypesResponse.results;
+  const other = await fetchJson<IClusterDetails>(`/clusters/${otherId}`);
+  const ontology = await fetchJson<IOntology>('/ontology')
+  const linkTypes = ontology.link_types;
   const existingParams = { cluster: [anchor.id, other.id], limit: 1 };
   const existingLink = await fetchJson<IListingResponse<ILink>>('/links', existingParams);
   let initialType = other.label === anchor.label ? 'SAME' : 'UNRELATED';

@@ -49,6 +49,30 @@ link_types:
     phrase: "is related to"
     source_type: PER
     target_type: PER
+  - name: OWNER
+    directed: true
+    label: "Owner"
+    phrase: "owns"
+    source_type: ENT
+    target_type: ORG
+  - name: MANAGER
+    directed: true
+    label: "Manager"
+    phrase: "manages or directs"
+    source_type: ENT
+    target_type: ORG
+  - name: EMPLOYEE
+    directed: true
+    label: "Employer"
+    phrase: "works for"
+    source_type: PER
+    target_type: ORG
+  - name: BUSINESS
+    directed: false
+    label: "Business activity"
+    phrase: "does business with"
+    source_type: ENT
+    target_type: ENT
   - name: LOCATED
     directed: true
     label: "Located"
@@ -73,9 +97,3 @@ link_types:
     phrase: "is linked to"
     source_type: ANY
     target_type: ANY
-# TYPES:
-#
-# * Owner
-# * Manager
-# * Member
-

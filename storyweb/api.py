@@ -2,7 +2,7 @@ from typing import Generator, List, Optional
 from fastapi import FastAPI, Depends, Path, Query
 from fastapi.exceptions import HTTPException
 
-from storyweb.ontology import LinkTypeModel, ontology
+from storyweb.ontology import LinkTypeModel, OntologyModel, ontology
 from storyweb.db import engine, Conn
 from storyweb.logic import (
     create_link,
@@ -131,10 +131,9 @@ def route_cluster_related(
     return list_related(conn, listing, cluster, linked=linked)
 
 
-@app.get("/linktypes")
-def link_types_index():
-    link_types = ontology.link_types.values()
-    return ListingResponse[LinkTypeModel](limit=10000, offset=0, results=link_types)
+@app.get("/ontology", response_model=OntologyModel)
+def ontology_model() -> OntologyModel:
+    return ontology.model
 
 
 @app.get("/links", response_model=ListingResponse[Link])

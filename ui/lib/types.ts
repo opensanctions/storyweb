@@ -30,20 +30,20 @@ export interface IClusterBase {
   category: string
 }
 
-export interface ITag extends IClusterBase {
-  cluster: string
-  article: string
-  fingerprint: string
-  count: number
-}
+// export interface ITag extends IClusterBase {
+//   cluster: string
+//   article: string
+//   fingerprint: string
+//   count: number
+// }
 
-export interface IArticleTag extends IClusterBase {
-  article: IArticle
-  cluster: string
-  fingerprint: string
-  count: number
-  link_type?: string
-}
+// export interface IArticleTag extends IClusterBase {
+//   article: IArticle
+//   cluster: string
+//   fingerprint: string
+//   count: number
+//   link_type?: string
+// }
 
 export interface ICluster extends IClusterBase {
   articles: number
@@ -83,4 +83,10 @@ export interface ILinkType {
   directed: boolean
   label: string
   phrase: string
+  source_type: string
+  target_type: string
+}
+
+export interface IOntology {
+  link_types: ILinkType[]
 }
