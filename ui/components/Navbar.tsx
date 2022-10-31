@@ -1,10 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
 import { Navbar, Alignment, AnchorButton } from '@blueprintjs/core';
-
-import styles from '../styles/Navbar.module.scss';
-
 
 export default function NavbarSection() {
   return (

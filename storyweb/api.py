@@ -1,8 +1,9 @@
 from typing import Generator, List, Optional
 from fastapi import FastAPI, Depends, Path, Query
 from fastapi.exceptions import HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
-from storyweb.ontology import LinkTypeModel, OntologyModel, ontology
+from storyweb.ontology import OntologyModel, ontology
 from storyweb.db import engine, Conn
 from storyweb.logic import (
     create_link,
@@ -35,6 +36,13 @@ app = FastAPI(
     title="storyweb",
     description="make networks from text",
     redoc_url="/",
+)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
