@@ -5,7 +5,7 @@ export default function ArticleView() {
 
 
   return (
-    <div className="layout">
+    <div>
       <h1>
         <>
           An article: {params.articleId}

@@ -1,6 +1,5 @@
 import { AnchorButton, ButtonGroup, Classes, ControlGroup, HTMLTable } from "@blueprintjs/core";
 import Link from "next/link";
-import { Button } from "react-bootstrap";
 import { ICluster, IListingResponse, IRelatedCluster } from "../lib/types";
 import { getClusterLink, getLinkLoomLink } from "../lib/util";
 

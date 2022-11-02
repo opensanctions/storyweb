@@ -1,0 +1,9 @@
+@import "./variables.scss";
+
+.page {
+    min-height: 90vh;
+}
+
+.content {
+    margin-top: $spacer * 2;
+}
