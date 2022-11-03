@@ -55,6 +55,8 @@ def list_articles(
         article_table.c.url,
         article_table.c.language,
         article_table.c.site,
+        article_table.c.tags_count,
+        article_table.c.tags_mentions,
     )
     if site is not None and len(site.strip()):
         stmt = stmt.where(article_table.c.site == site)
