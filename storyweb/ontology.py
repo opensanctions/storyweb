@@ -1,13 +1,12 @@
-from optparse import Option
 from pathlib import Path
 from pydantic import BaseModel
 from pydantic_yaml import YamlModel
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
 from storyweb.clean import most_common
 
 
-class NodeTypeModel(BaseModel):
+class ClusterTypeModel(BaseModel):
     name: str
     label: str
     plural: str
@@ -24,16 +23,16 @@ class LinkTypeModel(BaseModel):
 
 
 class OntologyModel(YamlModel):
-    node_types: List[NodeTypeModel]
+    cluster_types: List[ClusterTypeModel]
     link_types: List[LinkTypeModel]
 
 
-class NodeType(object):
+class ClusterType(object):
     PERSON = "PER"
     ORGANIZATION = "ORG"
     LOCATION = "LOC"
 
-    def __init__(self, ontology: "Ontology", model: NodeTypeModel):
+    def __init__(self, ontology: "Ontology", model: ClusterTypeModel):
         self.ontology = ontology
         self.model = model
         self.name = model.name
@@ -41,10 +40,10 @@ class NodeType(object):
         self.plural = model.plural
 
     @property
-    def parent(self) -> Optional["NodeType"]:
+    def parent(self) -> Optional["ClusterType"]:
         if self.model.parent is None:
             return None
-        return self.ontology.get_node_type(self.model.parent)
+        return self.ontology.get_cluster_type(self.model.parent)
 
     def pick(self, names: List[str]) -> str:
         """Given a set of categories, pick the most descriptive one."""
@@ -74,26 +73,26 @@ class LinkType(object):
         self.model = model
 
     @property
-    def source_type(self) -> "NodeType":
-        return self.ontology.get_node_type(self.model.source_type)
+    def source_type(self) -> "ClusterType":
+        return self.ontology.get_cluster_type(self.model.source_type)
 
     @property
-    def target_type(self) -> "NodeType":
-        return self.ontology.get_node_type(self.model.target_type)
+    def target_type(self) -> "ClusterType":
+        return self.ontology.get_cluster_type(self.model.target_type)
 
 
 class Ontology(object):
     def __init__(self, model: OntologyModel):
         self.model = model
-        self.node_types = {n.name: NodeType(self, n) for n in model.node_types}
+        self.node_types = {n.name: ClusterType(self, n) for n in model.cluster_types}
         self.link_types = {l.name: LinkType(self, l) for l in model.link_types}
 
         assert LinkType.SAME in self.link_types, LinkType.SAME
-        assert NodeType.LOCATION in self.node_types, NodeType.LOCATION
-        assert NodeType.PERSON in self.node_types, NodeType.PERSON
-        assert NodeType.ORGANIZATION in self.node_types, NodeType.ORGANIZATION
+        assert ClusterType.LOCATION in self.node_types, ClusterType.LOCATION
+        assert ClusterType.PERSON in self.node_types, ClusterType.PERSON
+        assert ClusterType.ORGANIZATION in self.node_types, ClusterType.ORGANIZATION
 
-    def get_node_type(self, name: str) -> NodeType:
+    def get_cluster_type(self, name: str) -> ClusterType:
         return self.node_types[name]
 
     def get_link_type(self, name: str) -> LinkType:

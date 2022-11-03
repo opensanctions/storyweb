@@ -2,6 +2,7 @@ import { NonIdealState, NonIdealStateIconSize, Spinner, SpinnerSize } from '@blu
 import { ReactNode } from 'react';
 
 import { SPACER } from '..//constants';
+import { useFetchOntologyQuery } from '../services/ontology';
 import styles from '../styles/util.module.scss';
 
 
@@ -18,7 +19,9 @@ type TagCategoryProps = {
 }
 
 export function TagCategory({ category }: TagCategoryProps) {
-  return <span className={styles.tagCategory}>{category}</span>;
+  const { data: ontology } = useFetchOntologyQuery();
+  const meta = ontology?.cluster_types.find((t) => t.name == category)
+  return <span className={styles.tagCategory}>{meta?.label || category}</span>;
 }
 
 type SpacedListProps = {

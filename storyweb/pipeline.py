@@ -6,22 +6,22 @@ from pathlib import Path
 from typing import Dict, Generator, List, Optional, Set, Tuple
 from functools import cache
 from normality import slugify
-from articledata import Article as RawArticle
+from articledata import Article
 from pydantic import ValidationError
 
 from storyweb.db import engine
 from storyweb.clean import clean_entity_name, most_common, pick_name
-from storyweb.models import Article, ArticleDetails, Sentence, Tag, TagSentence
+from storyweb.models import ArticleDetails, Sentence, Tag, TagSentence
 from storyweb.logic import save_extracted
-from storyweb.ontology import LOCATION, ORGANIZATION, PERSON, pick_category
+from storyweb.ontology import ClusterType
 
 log = logging.getLogger(__name__)
 
-NLP_CATEGORIES = {
-    "PERSON": PERSON,
-    "PER": PERSON,
-    "ORG": ORGANIZATION,
-    "GPE": LOCATION,
+NLP_TYPES = {
+    "PERSON": ClusterType.PERSON,
+    "PER": ClusterType.PERSON,
+    "ORG": ClusterType.ORGANIZATION,
+    "GPE": ClusterType.LOCATION,
 }
 
 
@@ -38,11 +38,11 @@ def load_nlp():
     return nlp
 
 
-def read_raw_articles(path: Path) -> Generator[Tuple[str, RawArticle], None, None]:
+def read_raw_articles(path: Path) -> Generator[Tuple[str, Article], None, None]:
     with open(path, "rb") as fh:
         while line := fh.readline():
             try:
-                article = RawArticle.parse_raw(line)
+                article = Article.parse_raw(line)
                 if article.id is None:
                     continue
                 if article.language != "eng":
@@ -53,7 +53,7 @@ def read_raw_articles(path: Path) -> Generator[Tuple[str, RawArticle], None, Non
 
 
 def extract_tag(ent: Span) -> Optional[Tuple[str, str, str]]:
-    category = NLP_CATEGORIES.get(ent.label_)
+    category = NLP_TYPES.get(ent.label_)
     if category is None:
         return None
     label = clean_entity_name(ent.text)
@@ -61,12 +61,12 @@ def extract_tag(ent: Span) -> Optional[Tuple[str, str, str]]:
     if fp is None or label is None:
         return None
     fp = "-".join(sorted(fp.split("-")))
-    if category == PERSON and " " not in label:
+    if category == ClusterType.PERSON and " " not in label:
         return None
     return (label, category, fp)
 
 
-def load_article(doc: Doc, raw: RawArticle) -> None:
+def load_article(doc: Doc, raw: Article) -> None:
     log.info("Article [%s, %s]: %r", raw.id, raw.language, raw.title)
     article = ArticleDetails(
         id=raw.id,

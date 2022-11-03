@@ -1,4 +1,4 @@
-node_types:
+cluster_types:
   - name: ANY
     label: "Thing"
     plural: "Things"

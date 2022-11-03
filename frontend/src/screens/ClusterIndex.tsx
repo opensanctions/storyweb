@@ -3,7 +3,7 @@ import classnames from "classnames";
 import { FormEvent, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSearchParams } from "react-router-dom";
-import { ErrorSection, SectionLoading } from '../components/util';
+import { ErrorSection, SectionLoading, TagCategory } from '../components/util';
 
 import { useFetchClusterListingQuery } from '../services/clusters';
 import { asString, getClusterLink } from "../util";
@@ -57,7 +57,7 @@ export default function ClusterIndex() {
                 <td>
                   <Link to={getClusterLink(cluster)}>{cluster.label}</Link>
                 </td>
-                <td><code>{cluster.category}</code></td>
+                <td><TagCategory category={cluster.category} /></td>
                 <td>
                   {cluster.articles}
                 </td>

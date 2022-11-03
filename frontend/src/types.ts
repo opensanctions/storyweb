@@ -87,6 +87,14 @@ export interface ILinkType {
   target_type: string
 }
 
+export interface IClusterType {
+  name: string
+  label: string
+  plural: string
+  parent?: string
+}
+
 export interface IOntology {
   link_types: ILinkType[]
+  cluster_types: IClusterType[]
 }
