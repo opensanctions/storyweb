@@ -1,41 +1,32 @@
 import { Button, ButtonGroup, Checkbox, HTMLTable, Intent } from "@blueprintjs/core"
 import { useState } from "react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { useFetchSimilarClusterListingQuery, useMergeClustersMutation } from "../services/clusters"
 import { ICluster } from "../types"
 import { getClusterLink } from "../util"
-import { SectionLoading, SpacedList, TagLabel } from "./util"
+import { SectionLoading, SpacedList, TagCategory, TagLabel } from "./util"
 
 type SimilarListingProps = {
   cluster: ICluster,
 }
 
 export default function SimilarListing({ cluster }: SimilarListingProps) {
-  const { data: listing } = useFetchSimilarClusterListingQuery({ cluster, params: {} })
-  const [postMerge, { isLoading }] = useMergeClustersMutation()
+  const { data: listing } = useFetchSimilarClusterListingQuery({ clusterId: cluster.id, params: {} });
+  const navigate = useNavigate();
+  const [postMerge, { isLoading: isUpdating }] = useMergeClustersMutation()
   const [merges, setMerges] = useState([] as string[]);
 
   if (listing === undefined) {
     return <SectionLoading />
   }
-  const allSelected = merges.length == listing.results.length;
+  const allSelected = merges.length === listing.results.length;
 
   const onMerge = async () => {
     const response = await postMerge({ anchor: cluster.id, other: merges }).unwrap()
-    // const resp = await fetch(`/api/merge`, {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify(mergeRequest),
-    // });
     setMerges([]);
-    // const newCluster = await resp.json() as ICluster;
-    // if (newCluster.id == cluster.id) {
-    //   router.reload();
-    // } else {
-    //   router.push(`/clusters/${newCluster.id}#view=similar`);
-    // }
+    if (response.id !== cluster.id) {
+      navigate(`/clusters/${response.id}`);
+    }
   }
 
   const toggleAll = async () => {
@@ -58,7 +49,7 @@ export default function SimilarListing({ cluster }: SimilarListingProps) {
     <>
       <ButtonGroup>
         <Button
-          disabled={merges.length == 0}
+          disabled={merges.length === 0 || isUpdating}
           onClick={() => onMerge()}
           intent={Intent.PRIMARY}
         >
@@ -66,6 +57,7 @@ export default function SimilarListing({ cluster }: SimilarListingProps) {
         </Button>
         <Button
           onClick={() => toggleAll()}
+          disabled={isUpdating}
         >
           {allSelected && <>Select none</>}
           {!allSelected && <>Select all</>}
@@ -87,7 +79,7 @@ export default function SimilarListing({ cluster }: SimilarListingProps) {
               <td>
                 <Link to={getClusterLink(similar)}>{similar.label}</Link>
               </td>
-              <td><code>{similar.category}</code></td>
+              <td><TagCategory category={similar.category} /></td>
               <td>
                 <SpacedList values={similar.common.map((l) => <TagLabel key={l} label={l} />)} />
               </td>
@@ -98,6 +90,7 @@ export default function SimilarListing({ cluster }: SimilarListingProps) {
                 <Checkbox
                   checked={merges.indexOf(similar.id) !== -1}
                   onClick={() => toggleOne(similar.id)}
+                  disabled={isUpdating}
                 />
               </td>
             </tr>

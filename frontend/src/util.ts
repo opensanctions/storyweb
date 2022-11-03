@@ -26,8 +26,14 @@ export function getClusterLink(cluster: IClusterBase): string {
 }
 
 export function getLinkLoomLink(anchor: IClusterBase, other?: IClusterBase): string {
+  if (other === undefined) {
+    return queryString.stringifyUrl({
+      'url': `/linker/related`,
+      'query': { anchor: anchor.id }
+    })
+  }
   return queryString.stringifyUrl({
-    'url': `/linkloom/`,
-    'query': { anchor: anchor.id, other: other?.id }
+    'url': `/linker`,
+    'query': { anchor: anchor.id, other: other.id }
   })
 }

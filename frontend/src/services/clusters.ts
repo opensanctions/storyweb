@@ -5,7 +5,7 @@ import { API_URL } from '../constants'
 import { ICluster, IClusterDetails, IClusterMerge, IListingResponse, IRelatedCluster, ISimilarCluster } from '../types'
 
 type IClusterQueryParams = {
-  cluster: ICluster,
+  clusterId: string,
   params?: any
 }
 
@@ -26,18 +26,18 @@ export const clustersApi = createApi({
       providesTags: () => [{ type: "Cluster" }]
     }),
     fetchSimilarClusterListing: builder.query<IListingResponse<ISimilarCluster>, IClusterQueryParams>({
-      query: ({ cluster, params }) => queryString.stringifyUrl({
-        'url': `clusters/${cluster.id}/similar`,
+      query: ({ clusterId, params }) => queryString.stringifyUrl({
+        'url': `clusters/${clusterId}/similar`,
         'query': params
       }),
       providesTags: () => [{ type: "Cluster" }]
     }),
     fetchRelatedClusterListing: builder.query<IListingResponse<IRelatedCluster>, IClusterQueryParams>({
-      query: ({ cluster, params }) => queryString.stringifyUrl({
-        'url': `clusters/${cluster.id}/related`,
+      query: ({ clusterId, params }) => queryString.stringifyUrl({
+        'url': `clusters/${clusterId}/related`,
         'query': params
       }),
-      providesTags: () => [{ type: "Cluster" }]
+      providesTags: () => ["Cluster"]
     }),
     mergeClusters: builder.mutation<IClusterDetails, IClusterMerge>({
       query(merge) {

@@ -20,7 +20,7 @@ type TagCategoryProps = {
 
 export function TagCategory({ category }: TagCategoryProps) {
   const { data: ontology } = useFetchOntologyQuery();
-  const meta = ontology?.cluster_types.find((t) => t.name == category)
+  const meta = ontology?.cluster_types.find((t) => t.name === category)
   return <span className={styles.tagCategory}>{meta?.label || category}</span>;
 }
 

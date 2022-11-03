@@ -5,6 +5,8 @@ import ClusterIndex from "./screens/ClusterIndex";
 import ClusterView from "./screens/ClusterView";
 import HomePage from "./screens/Home";
 import Layout from "./screens/Layout";
+import Linker from "./screens/Linker";
+import LinkerRelated from "./screens/LinkerRelated";
 
 interface IRouteError {
   statusText?: string
@@ -50,6 +52,14 @@ export const router = createBrowserRouter([
       {
         path: "clusters/:clusterId",
         element: <ClusterView />,
+      },
+      {
+        path: "linker",
+        element: <Linker />,
+      },
+      {
+        path: "linker/related",
+        element: <LinkerRelated />,
       },
     ],
   },
