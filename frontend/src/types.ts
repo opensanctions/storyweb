@@ -63,6 +63,11 @@ export interface ISimilarCluster extends IClusterBase {
   common_count: number
 }
 
+export interface IClusterMerge {
+  anchor: string
+  other: string[]
+}
+
 export interface ISite {
   site: string
   articles: number

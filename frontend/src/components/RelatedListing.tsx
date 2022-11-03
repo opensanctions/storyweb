@@ -1,13 +1,19 @@
-import { AnchorButton, ButtonGroup, Classes, ControlGroup, HTMLTable } from "@blueprintjs/core";
-import Link from "next/link";
-import { ICluster, IListingResponse, IRelatedCluster } from "../lib/types";
-import { getClusterLink, getLinkLoomLink } from "../lib/util";
+import { AnchorButton, ButtonGroup, HTMLTable } from "@blueprintjs/core";
+import { Link } from "react-router-dom";
+import { useFetchRelatedClusterListingQuery } from "../services/clusters";
+import { ICluster } from "../types";
+import { getClusterLink, getLinkLoomLink } from "../util";
+import { SectionLoading } from "./util";
 
 type RelatedListingProps = {
   cluster: ICluster,
 }
 
 export default function RelatedListing({ cluster }: RelatedListingProps) {
+  const { data: listing } = useFetchRelatedClusterListingQuery({ cluster, params: {} })
+  if (listing === undefined) {
+    return <SectionLoading />
+  }
   return (
     <>
       <ButtonGroup>
@@ -23,18 +29,18 @@ export default function RelatedListing({ cluster }: RelatedListingProps) {
           </tr>
         </thead>
         <tbody>
-          {response.results.map((related) => (
+          {listing.results.map((related) => (
             <tr key={related.id}>
               <td>
-                <Link href={getClusterLink(related)}>{related.label}</Link>
+                <Link to={getClusterLink(related)}>{related.label}</Link>
               </td>
               <td><code>{related.category}</code></td>
               <td>
                 {related.link_types.length > 0 && (
-                  <Link href={getLinkLoomLink(cluster, related)}><>{related.link_types}</></Link>
+                  <Link to={getLinkLoomLink(cluster, related)}><>{related.link_types}</></Link>
                 )}
                 {related.link_types.length === 0 && (
-                  <Link href={getLinkLoomLink(cluster, related)}>add</Link>
+                  <Link to={getLinkLoomLink(cluster, related)}>add</Link>
                 )}
               </td>
               <td>{related.articles}</td>
@@ -42,7 +48,7 @@ export default function RelatedListing({ cluster }: RelatedListingProps) {
           ))}
         </tbody>
       </HTMLTable>
-      <code>{response.debug_msg}</code>
+      <code>{listing.debug_msg}</code>
     </>
   )
 }

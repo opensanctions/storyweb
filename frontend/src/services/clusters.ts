@@ -2,7 +2,12 @@ import queryString from 'query-string';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 
 import { API_URL } from '../constants'
-import type { ICluster, IClusterDetails, IListingResponse } from '../types'
+import { ICluster, IClusterDetails, IClusterMerge, IListingResponse, IRelatedCluster, ISimilarCluster } from '../types'
+
+type IClusterQueryParams = {
+  cluster: ICluster,
+  params?: any
+}
 
 export const clustersApi = createApi({
   reducerPath: 'clustersApi',
@@ -20,7 +25,37 @@ export const clustersApi = createApi({
       }),
       providesTags: () => [{ type: "Cluster" }]
     }),
+    fetchSimilarClusterListing: builder.query<IListingResponse<ISimilarCluster>, IClusterQueryParams>({
+      query: ({ cluster, params }) => queryString.stringifyUrl({
+        'url': `clusters/${cluster.id}/similar`,
+        'query': params
+      }),
+      providesTags: () => [{ type: "Cluster" }]
+    }),
+    fetchRelatedClusterListing: builder.query<IListingResponse<IRelatedCluster>, IClusterQueryParams>({
+      query: ({ cluster, params }) => queryString.stringifyUrl({
+        'url': `clusters/${cluster.id}/related`,
+        'query': params
+      }),
+      providesTags: () => [{ type: "Cluster" }]
+    }),
+    mergeClusters: builder.mutation<IClusterDetails, IClusterMerge>({
+      query(merge) {
+        return {
+          url: `links/_merge`,
+          method: 'POST',
+          body: merge,
+        }
+      },
+      invalidatesTags: () => ['Cluster'],
+    })
   }),
 })
 
-export const { useFetchClusterListingQuery, useFetchClusterQuery } = clustersApi
+export const {
+  useFetchClusterListingQuery,
+  useFetchClusterQuery,
+  useFetchSimilarClusterListingQuery,
+  useFetchRelatedClusterListingQuery,
+  useMergeClustersMutation
+} = clustersApi
