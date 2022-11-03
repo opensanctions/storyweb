@@ -9,7 +9,7 @@ type ArticleTextProps = {
 export default function ArticleText({ text, tags }: ArticleTextProps) {
   let html = text;
   tags.forEach((forms, index) => {
-    const alternatives = forms.map(f => f.trim().replace(' ', '\s')).join('|');
+    const alternatives = forms.map(f => f.trim().replace(' ', '\\s')).join('|');
     const altRx = new RegExp(`(${alternatives})`, 'muig')
     console.log(altRx)
     html = html.replaceAll(altRx, (m) => `<span class="markup">${m}</span>`);

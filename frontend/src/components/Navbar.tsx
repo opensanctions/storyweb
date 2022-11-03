@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Navbar, Alignment, AnchorButton, Icon } from '@blueprintjs/core';
+import { Navbar, Alignment, Icon } from '@blueprintjs/core';
 
 
 export default function NavbarSection() {
