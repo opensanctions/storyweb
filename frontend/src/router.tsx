@@ -1,6 +1,7 @@
 import { createBrowserRouter, useRouteError } from "react-router-dom";
 import ArticleIndex from "./screens/ArticleIndex";
 import ArticleView from "./screens/ArticleView";
+import ClusterIndex from "./screens/ClusterIndex";
 import HomePage from "./screens/Home";
 import Layout from "./screens/Layout";
 
@@ -40,6 +41,10 @@ export const router = createBrowserRouter([
       {
         path: "articles/:articleId",
         element: <ArticleView />,
+      },
+      {
+        path: "clusters",
+        element: <ClusterIndex />,
       },
     ],
   },

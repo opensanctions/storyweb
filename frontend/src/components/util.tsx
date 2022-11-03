@@ -45,7 +45,30 @@ export function Spacer() {
 }
 
 
+export function SectionLoading() {
+  return (
+    <NonIdealState
+      icon={<Spinner size={SpinnerSize.STANDARD} />}
+      iconSize={NonIdealStateIconSize.STANDARD}
+    />
+  )
+}
 
+type ErrorSectionProps = {
+  title: string
+  description?: string
+}
+
+export function ErrorSection({ title, description }: ErrorSectionProps) {
+  return (
+    <NonIdealState
+      title={title}
+      description={description}
+      icon="warning-sign"
+      iconSize={NonIdealStateIconSize.STANDARD}
+    />
+  )
+}
 
 export function ScreenLoading() {
   return (

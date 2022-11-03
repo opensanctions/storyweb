@@ -3,6 +3,7 @@ import classnames from "classnames";
 import { FormEvent, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSearchParams } from "react-router-dom";
+import { SectionLoading } from '../components/util';
 
 
 import { useFetchArticleListingQuery } from "../services/articles"
@@ -19,10 +20,6 @@ export default function ArticleIndex() {
     site: params.get('site'),
     sort: 'tags_count:desc'
   });
-
-  if (listing === undefined) {
-    return null;
-  }
   const sites = sitesResponse === undefined ? [] : sitesResponse.results.map(s => s.site);
 
   const onSubmit = function (e: FormEvent<HTMLFormElement>) {
@@ -55,30 +52,35 @@ export default function ArticleIndex() {
           </ControlGroup>
         </form>
       </section>
-      <HTMLTable condensed bordered className="wide">
-        <thead>
-          <tr>
-            <th>Title</th>
-            <th>Site</th>
-            <th className="numeric">Entities</th>
-          </tr>
-        </thead>
-        <tbody>
-          {listing.results.map((article) => (
-            <tr key={article.id}>
-              <td>
-                <Link to={article.id}>{article.title}</Link>
-              </td>
-              <td>
-                {article.site}
-              </td>
-              <td className="numeric">
-                {article.tags_count}
-              </td>
+      {listing === undefined && (
+        <SectionLoading />
+      )}
+      {listing !== undefined && (
+        <HTMLTable condensed bordered className="wide">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Site</th>
+              <th className="numeric">Entities</th>
             </tr>
-          ))}
-        </tbody>
-      </HTMLTable>
+          </thead>
+          <tbody>
+            {listing.results.map((article) => (
+              <tr key={article.id}>
+                <td>
+                  <Link to={article.id}>{article.title}</Link>
+                </td>
+                <td>
+                  {article.site}
+                </td>
+                <td className="numeric">
+                  {article.tags_count}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </HTMLTable>
+      )}
     </div>
   )
 }

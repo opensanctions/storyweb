@@ -1,6 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit'
 import { setupListeners } from '@reduxjs/toolkit/query'
 import { articlesApi } from './services/articles'
+import { clustersApi } from './services/clusters'
 import { ontologyApi } from './services/ontology'
 import { sitesApi } from './services/sites'
 
@@ -8,13 +9,16 @@ export const store = configureStore({
   reducer: {
     [ontologyApi.reducerPath]: ontologyApi.reducer,
     [articlesApi.reducerPath]: articlesApi.reducer,
+    [clustersApi.reducerPath]: clustersApi.reducer,
     [sitesApi.reducerPath]: sitesApi.reducer,
+
 
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
       .concat(ontologyApi.middleware)
       .concat(articlesApi.middleware)
+      .concat(clustersApi.middleware)
       .concat(sitesApi.middleware),
 })
 
