@@ -25,9 +25,7 @@ export default function Linker() {
   }
   const [link, setLink] = useState({
     source: anchorId,
-    source_cluster: anchorId,
     target: otherId,
-    target_cluster: otherId,
     type: 'UNRELATED'
   } as ILink);
   const { data: anchor, isLoading: anchorLoading } = useFetchClusterQuery(anchorId || '');
@@ -43,27 +41,32 @@ export default function Linker() {
   }, [linksListing]);
 
   if (anchor === undefined || other === undefined || linksListing === undefined ||
-    anchorLoading || otherLoading || ontology === undefined) {
+    anchorLoading || otherLoading || ontology === undefined || isSaving) {
     return <SectionLoading />
   }
 
   const linkType = ontology.link_types.find((lt) => lt.name === link.type) || ontology.link_types[0]
   const linkOptions = ontology.link_types.map(l => ({ value: l.name, label: l.label }));
+  const source = link.source == anchorId ? anchor : other;
+  const target = link.target == anchorId ? anchor : other;
 
   const save = async function () {
-    console.log("SAVE")
     const saved = await saveLink(link).unwrap();
-    console.log("SAVED", `/linker/related?anchor=${saved.source_cluster}`)
+    const newAnchor = link.source == anchorId ? saved.source_cluster : saved.target_cluster;
     if (relatedMode) {
-      navigate(`/linker/related?anchor=${saved.source_cluster}&previous=${otherId}`);
+      navigate(`/linker/related?anchor=${newAnchor}&previous=${otherId}`);
     } else {
-      navigate(`/clusters/${saved.source_cluster}`)
+      navigate(`/clusters/${newAnchor}`)
     }
   }
 
   const onSubmit = async function (event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     await save()
+  }
+
+  const onFlip = function () {
+    setLink({ ...link, source: link.target, target: link.source })
   }
 
   const onChangeType = (event: FormEvent<HTMLInputElement>) => {
@@ -91,6 +94,13 @@ export default function Linker() {
         await save()
       },
     },
+    {
+      combo: "f",
+      group: "Link editor",
+      global: true,
+      label: "Flip direction",
+      onKeyDown: onFlip,
+    },
   ];
 
   return (
@@ -99,13 +109,13 @@ export default function Linker() {
         <>
           <h2>
             <code>
-              <Link to={getClusterLink(anchor)}>{anchor.label}</Link>
+              <Link to={getClusterLink(source)}>{source.label}</Link>
             </code>
             {' '}
             {linkType.phrase}
             {' '}
             <code>
-              <Link to={getClusterLink(other)}>{other.label}</Link>
+              <Link to={getClusterLink(target)}>{target.label}</Link>
             </code>
           </h2>
           <form onSubmit={onSubmit}>
@@ -118,6 +128,7 @@ export default function Linker() {
             >
             </RadioGroup>
             <Button type="submit">Save</Button>
+            <Button onClick={onFlip}>Flip direction</Button>
           </form>
         </>
       </HotkeysTarget2>
