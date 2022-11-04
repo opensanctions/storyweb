@@ -1,9 +1,9 @@
 
-import { ILink, ILinkType, IListingResponse, ICluster, IOntology, IClusterDetails } from '../types';
+import { ILink } from '../types';
 import { FormEvent, useEffect, useState } from 'react';
-import { getClusterLink, getLinkLoomLink } from '..//util';
-import { Button, HotkeyConfig, HotkeysTarget2, RadioGroup, useHotkeys } from '@blueprintjs/core';
-import { useFetchClusterQuery, useFetchRelatedClusterListingQuery } from '../services/clusters';
+import { getClusterLink } from '..//util';
+import { Button, HotkeyConfig, HotkeysTarget2, RadioGroup } from '@blueprintjs/core';
+import { useFetchClusterQuery } from '../services/clusters';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { SectionLoading } from '../components/util';
 import { useFetchOntologyQuery } from '../services/ontology';
@@ -36,7 +36,7 @@ export default function Linker() {
 
   useEffect(() => {
     if (linksListing !== undefined && linksListing.results.length) {
-      setLink({ ...link, type: linksListing.results[0].type })
+      setLink((l) => ({ ...l, type: linksListing.results[0].type }))
     }
   }, [linksListing]);
 
@@ -47,12 +47,12 @@ export default function Linker() {
 
   const linkType = ontology.link_types.find((lt) => lt.name === link.type) || ontology.link_types[0]
   const linkOptions = ontology.link_types.map(l => ({ value: l.name, label: l.label }));
-  const source = link.source == anchorId ? anchor : other;
-  const target = link.target == anchorId ? anchor : other;
+  const source = link.source === anchorId ? anchor : other;
+  const target = link.target === anchorId ? anchor : other;
 
   const save = async function () {
     const saved = await saveLink(link).unwrap();
-    const newAnchor = link.source == anchorId ? saved.source_cluster : saved.target_cluster;
+    const newAnchor = link.source === anchorId ? saved.source_cluster : saved.target_cluster;
     if (relatedMode) {
       navigate(`/linker/related?anchor=${newAnchor}&previous=${otherId}`);
     } else {
