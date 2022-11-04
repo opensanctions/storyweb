@@ -6,7 +6,7 @@ import { useEffect } from 'react';
 
 export default function LinkerRelated() {
   const navigate = useNavigate();
-  const params = useSearchParams()[0];
+  const [params] = useSearchParams();
   const anchorId = params.get('anchor');
   if (anchorId === null) {
     navigate('/clusters');

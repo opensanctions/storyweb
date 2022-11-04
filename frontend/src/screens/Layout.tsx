@@ -3,7 +3,7 @@ import classnames from "classnames";
 import { HotkeyConfig, HotkeysTarget2, HotkeysProvider } from '@blueprintjs/core';
 import Helmet from "react-helmet";
 
-import { ScreenLoading, ScrollToTop } from "../components/util";
+import { ErrorSection, ScreenLoading, ScrollToTop } from "../components/util";
 import { SITE } from "../constants";
 import { useFetchOntologyQuery } from "../services/ontology";
 import Footer from "../components/Footer";
@@ -14,8 +14,12 @@ import styles from "../styles/Layout.module.scss";
 export default function Layout() {
   const { data: ontology, error: ontologyError } = useFetchOntologyQuery();
 
+  if (ontologyError !== undefined) {
+    return <ErrorSection title="Could not load ontology metadata" />;
+  }
+
   if (ontology === undefined) {
-    return <ScreenLoading />
+    return <ScreenLoading />;
   }
 
   const appHotkeys: HotkeyConfig[] = [

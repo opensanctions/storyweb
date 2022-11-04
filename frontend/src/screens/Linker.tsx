@@ -13,7 +13,7 @@ import { useFetchLinksQuery, useSaveLinkMutation } from '../services/links';
 export default function Linker() {
   const navigate = useNavigate();
   const { data: ontology } = useFetchOntologyQuery();
-  const [params, setParams] = useSearchParams();
+  const [params] = useSearchParams();
   const anchorId = params.get('anchor');
   const otherId = params.get('other');
   const relatedMode = params.get('related') !== null;
