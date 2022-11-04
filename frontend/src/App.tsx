@@ -10,7 +10,6 @@ import './styles/App.scss';
 
 FocusStyleManager.onlyShowFocusOnTabs();
 
-
 function App() {
   return (
     <Provider store={store}>

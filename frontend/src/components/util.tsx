@@ -1,4 +1,6 @@
 import { NonIdealState, NonIdealStateIconSize, Spinner, SpinnerSize } from '@blueprintjs/core';
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { ReactNode } from 'react';
 
 import { SPACER } from '..//constants';
@@ -81,4 +83,15 @@ export function ScreenLoading() {
       iconSize={NonIdealStateIconSize.STANDARD}
     />
   )
+}
+
+
+export function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
 }

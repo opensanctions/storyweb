@@ -3,7 +3,7 @@ import classnames from "classnames";
 import { HotkeyConfig, HotkeysTarget2, HotkeysProvider } from '@blueprintjs/core';
 import Helmet from "react-helmet";
 
-import { ScreenLoading } from "../components/util";
+import { ScreenLoading, ScrollToTop } from "../components/util";
 import { SITE } from "../constants";
 import { useFetchOntologyQuery } from "../services/ontology";
 import Footer from "../components/Footer";
@@ -41,6 +41,7 @@ export default function Layout() {
       <HotkeysProvider>
         <div className={styles.page}>
           <NavbarSection />
+          <ScrollToTop />
           <HotkeysTarget2 hotkeys={appHotkeys}>
             <div className={classnames(styles.content, 'page-container')}>
               <Outlet />
