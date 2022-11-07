@@ -26,6 +26,6 @@ export default function LinkerRelated() {
         navigate(`/clusters/${anchorId}`, { replace: true });
       }
     }
-  }, [data]);
+  });
   return <SectionLoading />;
 }
