@@ -11,12 +11,12 @@ type SimilarListingProps = {
 }
 
 export default function SimilarListing({ cluster }: SimilarListingProps) {
-  const { data: listing } = useFetchSimilarClusterListingQuery({ clusterId: cluster.id, params: {} });
+  const { data: listing, isLoading } = useFetchSimilarClusterListingQuery({ clusterId: cluster.id, params: {} });
   const navigate = useNavigate();
   const [postMerge, { isLoading: isUpdating }] = useMergeClustersMutation()
   const [merges, setMerges] = useState([] as string[]);
 
-  if (listing === undefined) {
+  if (listing === undefined || isLoading) {
     return <SectionLoading />
   }
   const allSelected = merges.length === listing.results.length;

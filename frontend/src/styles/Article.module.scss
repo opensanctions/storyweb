@@ -8,12 +8,31 @@
 
     :global {
         .markup {
-            background-color: $red5;
             margin-top: -2px;
             margin-bottom: -2px;
             padding-top: 2px;
             padding-bottom: 2px;
             display: inline-block;
+        }
+
+        .markup1 {
+            background-color: $blue5;
+        }
+
+        .markup2 {
+            background-color: $green5;
+        }
+
+        .markup3 {
+            background-color: $orange5;
+        }
+
+        .markup4 {
+            background-color: $indigo5;
+        }
+
+        .markup5 {
+            background-color: $lime5;
         }
     }
 }

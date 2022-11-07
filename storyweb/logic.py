@@ -48,6 +48,7 @@ def list_articles(
     listing: Listing,
     site: Optional[str] = None,
     query: Optional[str] = None,
+    clusters: List[str] = [],
 ) -> ListingResponse[Article]:
     stmt = select(
         article_table.c.id,
@@ -62,12 +63,25 @@ def list_articles(
         stmt = stmt.where(article_table.c.site == site)
     if query is not None and len(query.strip()):
         stmt = stmt.where(article_table.c.title.ilike(f"%{query}%"))
+    for cluster in clusters:
+        cluster_t = tag_table.alias()
+        stmt = stmt.join(cluster_t, cluster_t.c.article == article_table.c.id)
+        stmt = stmt.where(cluster_t.c.cluster == cluster)
     if listing.sort_field is not None:
         column = article_table.c[listing.sort_field]
         if listing.sort_direction == "desc":
             stmt = stmt.order_by(column.desc())
         else:
             stmt = stmt.order_by(column.asc())
+    stmt = stmt.group_by(
+        article_table.c.id,
+        article_table.c.title,
+        article_table.c.url,
+        article_table.c.language,
+        article_table.c.site,
+        article_table.c.tags_count,
+        article_table.c.tags_mentions,
+    )
     stmt = stmt.limit(listing.limit).offset(listing.offset)
     cursor = conn.execute(stmt)
     results = [Article.parse_obj(r) for r in cursor.fetchall()]

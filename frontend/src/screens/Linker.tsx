@@ -8,7 +8,10 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { SectionLoading } from '../components/util';
 import { useFetchOntologyQuery } from '../services/ontology';
 import { useFetchLinksQuery, useSaveLinkMutation } from '../services/links';
+import ArticleCorefList from '../components/ArticleCorefList';
+import ArticlePreview from '../components/ArticlePreview';
 
+import styles from '../styles/Linker.module.scss';
 
 export default function Linker() {
   const navigate = useNavigate();
@@ -16,12 +19,13 @@ export default function Linker() {
   const [params] = useSearchParams();
   const anchorId = params.get('anchor');
   const otherId = params.get('other');
+  const articleId = params.get('article');
   const relatedMode = params.get('related') !== null;
   if (anchorId === null) {
     navigate('/clusters');
   }
   if (otherId === null) {
-    navigate(`/clusters/${otherId}`);
+    navigate(`/clusters/${anchorId}`);
   }
   const [link, setLink] = useState({
     source: anchorId,
@@ -107,7 +111,7 @@ export default function Linker() {
     <div>
       <HotkeysTarget2 hotkeys={loomHotkeys}>
         <>
-          <h2>
+          <h3>
             <code>
               <Link to={getClusterLink(source)}>{source.label}</Link>
             </code>
@@ -117,19 +121,33 @@ export default function Linker() {
             <code>
               <Link to={getClusterLink(target)}>{target.label}</Link>
             </code>
-          </h2>
-          <form onSubmit={onSubmit}>
-            <RadioGroup
-              label="Link type"
-              name="type"
-              onChange={onChangeType}
-              selectedValue={link.type}
-              options={linkOptions}
-            >
-            </RadioGroup>
-            <Button type="submit">Save</Button>
-            <Button onClick={onFlip}>Flip direction</Button>
-          </form>
+          </h3>
+          <div className="page-column-area">
+            <div className="page-column">
+              <form onSubmit={onSubmit}>
+                <RadioGroup
+                  label="Link type"
+                  name="type"
+                  onChange={onChangeType}
+                  selectedValue={link.type}
+                  options={linkOptions}
+                >
+                </RadioGroup>
+                <Button type="submit">Save</Button>
+                <Button onClick={onFlip}>Flip direction</Button>
+              </form>
+            </div>
+            <div className="page-column">
+              <ArticleCorefList clusters={[source.id, target.id]} />
+            </div>
+            <div className="page-column">
+              {articleId && (
+                <div className={styles.articlePreview}>
+                  <ArticlePreview articleId={articleId} tags={[anchor.labels, other.labels]} />
+                </div>
+              )}
+            </div>
+          </div>
         </>
       </HotkeysTarget2>
     </div>

@@ -87,8 +87,10 @@ def articles_index(
     listing: Listing = Depends(get_listing),
     site: Optional[str] = Query(None),
     q: Optional[str] = Query(None),
+    cluster: List[str] = Query([]),
 ):
-    return list_articles(conn, listing, site=site, query=q)
+    clusters = [i for i in cluster if i is not None and len(i.strip())]
+    return list_articles(conn, listing, site=site, query=q, clusters=clusters)
 
 
 @app.get("/articles/{article_id}", response_model=ArticleDetails)
