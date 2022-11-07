@@ -49,6 +49,12 @@ link_types:
     phrase: "is related to"
     source_type: PER
     target_type: PER
+  - name: ANTAGONIST
+    directed: false
+    label: "Antagonist"
+    phrase: "is in conflict with"
+    source_type: ENT
+    target_type: ENT
   - name: OWNER
     directed: true
     label: "Owner"
