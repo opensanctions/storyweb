@@ -17,7 +17,7 @@ export default function ArticleIndex() {
   const { data: listing } = useFetchArticleListingQuery({
     q: params.get('q'),
     site: params.get('site'),
-    sort: 'tags_count:desc'
+    sort: 'tags:desc'
   });
   const sites = sitesResponse === undefined ? [] : sitesResponse.results.map(s => s.site);
 
@@ -73,7 +73,7 @@ export default function ArticleIndex() {
                   {article.site}
                 </td>
                 <td className="numeric">
-                  {article.tags_count}
+                  {article.tags}
                 </td>
               </tr>
             ))}

@@ -59,8 +59,8 @@ def list_articles(
         article_table.c.url,
         article_table.c.language,
         article_table.c.site,
-        article_table.c.tags_count,
-        article_table.c.tags_mentions,
+        article_table.c.tags,
+        article_table.c.mentions,
     )
     if site is not None and len(site.strip()):
         stmt = stmt.where(article_table.c.site == site)
@@ -82,8 +82,8 @@ def list_articles(
         article_table.c.url,
         article_table.c.language,
         article_table.c.site,
-        article_table.c.tags_count,
-        article_table.c.tags_mentions,
+        article_table.c.tags,
+        article_table.c.mentions,
     )
     stmt = stmt.limit(listing.limit).offset(listing.offset)
     cursor = conn.execute(stmt)
@@ -117,7 +117,7 @@ def list_clusters(
     articles = func.count(func.distinct(cluster_t.c.article))
     stmt = select(
         cluster_t.c.cluster.label("id"),
-        cluster_t.c.cluster_category.label("category"),
+        cluster_t.c.cluster_type.label("type"),
         cluster_t.c.cluster_label.label("label"),
         articles.label("articles"),
     )
@@ -134,7 +134,7 @@ def list_clusters(
     stmt = stmt.group_by(
         cluster_t.c.cluster,
         cluster_t.c.cluster_label,
-        cluster_t.c.cluster_category,
+        cluster_t.c.cluster_type,
     )
     stmt = stmt.order_by(articles.desc())
     stmt = stmt.limit(listing.limit).offset(listing.offset)
@@ -154,7 +154,7 @@ def fetch_cluster(conn: Conn, id: str) -> Optional[ClusterDetails]:
     labels = func.array_agg(func.distinct(cluster_t.c.label))
     stmt = select(
         cluster_t.c.cluster.label("id"),
-        cluster_t.c.cluster_category.label("category"),
+        cluster_t.c.cluster_type.label("type"),
         cluster_t.c.cluster_label.label("label"),
         articles.label("articles"),
         labels.label("labels"),
@@ -163,7 +163,7 @@ def fetch_cluster(conn: Conn, id: str) -> Optional[ClusterDetails]:
     stmt = stmt.group_by(
         cluster_t.c.cluster,
         cluster_t.c.cluster_label,
-        cluster_t.c.cluster_category,
+        cluster_t.c.cluster_type,
     )
     cursor = conn.execute(stmt)
     for row in cursor.fetchall():
@@ -191,7 +191,7 @@ def list_similar(conn: Conn, listing: Listing, cluster: str):
     stmt = select(
         other_cluster.c.cluster.label("id"),
         other_cluster.c.cluster_label.label("label"),
-        other_cluster.c.cluster_category.label("category"),
+        other_cluster.c.cluster_type.label("type"),
         func.array_agg(func.distinct(other_coref.c.label)).label("common"),
         func.count(other_coref.c.id).label("common_count"),
     )
@@ -203,7 +203,7 @@ def list_similar(conn: Conn, listing: Listing, cluster: str):
     stmt = stmt.group_by(
         other_cluster.c.cluster,
         other_cluster.c.cluster_label,
-        other_cluster.c.cluster_category,
+        other_cluster.c.cluster_type,
     )
     stmt = stmt.order_by(func.count(other_coref.c.id).desc())
 
@@ -229,7 +229,7 @@ def list_related(
     stmt = select(
         tag_t.c.cluster.label("id"),
         tag_t.c.cluster_label.label("label"),
-        tag_t.c.cluster_category.label("category"),
+        tag_t.c.cluster_type.label("type"),
         articles.label("articles"),
         link_types.label("link_types"),
     )
@@ -255,10 +255,9 @@ def list_related(
     stmt = stmt.group_by(
         tag_t.c.cluster,
         tag_t.c.cluster_label,
-        tag_t.c.cluster_category,
+        tag_t.c.cluster_type,
     )
     stmt = stmt.order_by(articles.desc())
-
     stmt = stmt.limit(listing.limit).offset(listing.offset)
     cursor = conn.execute(stmt)
     results = [RelatedCluster.parse_obj(r) for r in cursor.fetchall()]
@@ -361,7 +360,7 @@ def update_cluster(conn: Conn, id: str) -> str:
     res = conn.execute(sstmt)
     rows = res.fetchall()
     cluster_label = most_common([r.label for r in rows])
-    cluster_category = most_common([r.category for r in rows])
+    cluster_type = most_common([r.type for r in rows])
 
     stmt = update(tag_table)
     stmt = stmt.where(tag_table.c.id.in_(referents))
@@ -369,13 +368,13 @@ def update_cluster(conn: Conn, id: str) -> str:
         or_(
             tag_table.c.cluster != cluster,
             tag_table.c.cluster_label != cluster_label,
-            tag_table.c.cluster_category != cluster_category,
+            tag_table.c.cluster_type != cluster_type,
         )
     )
     stmt = stmt.values(
         cluster=cluster,
         cluster_label=cluster_label,
-        cluster_category=cluster_category,
+        cluster_type=cluster_type,
     )
     conn.execute(stmt)
 
@@ -464,7 +463,7 @@ def save_extracted(
     if len(tag_values):
         istmt = upsert(tag_table).values(tag_values)
         updates = dict(
-            category=istmt.excluded.category,
+            type=istmt.excluded.type,
             label=istmt.excluded.label,
             count=istmt.excluded.count,
             frequency=istmt.excluded.frequency,

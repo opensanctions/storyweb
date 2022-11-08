@@ -53,17 +53,17 @@ def read_raw_articles(path: Path) -> Generator[Tuple[str, Article], None, None]:
 
 
 def extract_tag(ent: Span) -> Optional[Tuple[str, str, str]]:
-    category = NLP_TYPES.get(ent.label_)
-    if category is None:
+    tag_type = NLP_TYPES.get(ent.label_)
+    if tag_type is None:
         return None
     label = clean_entity_name(ent.text)
     fp = slugify(label, sep="-")
     if fp is None or label is None:
         return None
     fp = "-".join(sorted(fp.split("-")))
-    if category == ClusterType.PERSON and " " not in label:
+    if tag_type == ClusterType.PERSON and " " not in label:
         return None
-    return (label, category, fp)
+    return (label, tag_type, fp)
 
 
 def load_article(doc: Doc, raw: Article) -> None:
@@ -78,7 +78,7 @@ def load_article(doc: Doc, raw: Article) -> None:
     )
     sentences: List[Sentence] = []
     tag_sentences: Dict[str, Set[int]] = {}
-    tag_categories: Dict[str, List[str]] = {}
+    tag_types: Dict[str, List[str]] = {}
     tag_labels: Dict[str, List[str]] = {}
     for seq, sent in enumerate(doc.sents):
         sent_tags = 0
@@ -86,11 +86,11 @@ def load_article(doc: Doc, raw: Article) -> None:
             extracted = extract_tag(ent)
             if extracted is None:
                 continue
-            (label, category, fp) = extracted
+            (label, type_, fp) = extracted
             tag_labels.setdefault(fp, [])
             tag_labels[fp].append(label)
-            tag_categories.setdefault(fp, [])
-            tag_categories[fp].append(category)
+            tag_types.setdefault(fp, [])
+            tag_types[fp].append(type_)
             tag_sentences.setdefault(fp, set())
             tag_sentences[fp].add(seq)
             sent_tags += 1
@@ -99,25 +99,25 @@ def load_article(doc: Doc, raw: Article) -> None:
             sentence = Sentence(article=article.id, sequence=seq, text=sent.text)
             sentences.append(sentence)
 
-    article.tags_count = len(tag_labels)
-    article.tags_mentions = sum([len(v) for v in tag_labels.values()])
+    article.tags = len(tag_labels)
+    article.mentions = sum([len(v) for v in tag_labels.values()])
     tags: List[Tag] = []
     tag_sentence_objs: List[TagSentence] = []
     for fp, labels in tag_labels.items():
         key = f"{article.id}>{fp}".encode("utf-8")
         tag_id = hashlib.sha1(key).hexdigest()
-        category = most_common(tag_categories[fp])
+        type_ = most_common(tag_types[fp])
         label = pick_name(labels)
         tag = Tag(
             id=tag_id,
             cluster=tag_id,
             article=article.id,
             fingerprint=fp,
-            category=category,
+            type=type_,
             label=label,
             count=len(labels),
             frequency=float(len(labels)) / article.tags_mentions,
-            cluster_category=category,
+            cluster_type=type_,
             cluster_label=label,
         )
         tags.append(tag)

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useFetchRelatedClusterListingQuery } from "../services/clusters";
 import { ICluster } from "../types";
 import { getClusterLink, getLinkLoomLink } from "../util";
-import { SectionLoading, TagCategory } from "./util";
+import { SectionLoading, TagType } from "./util";
 
 type RelatedListingProps = {
   cluster: ICluster,
@@ -23,7 +23,7 @@ export default function RelatedListing({ cluster }: RelatedListingProps) {
         <thead>
           <tr>
             <th>Name</th>
-            <th>Category</th>
+            <th>Type</th>
             <th>Link</th>
             <th>Articles</th>
           </tr>
@@ -34,7 +34,7 @@ export default function RelatedListing({ cluster }: RelatedListingProps) {
               <td>
                 <Link to={getClusterLink(related)}>{related.label}</Link>
               </td>
-              <td><TagCategory category={related.category} /></td>
+              <td><TagType type={related.type} /></td>
               <td>
                 {related.link_types.length > 0 && (
                   <Link to={getLinkLoomLink(cluster, related)}><>{related.link_types}</></Link>

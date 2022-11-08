@@ -3,7 +3,7 @@ import { Tabs, Tab } from "@blueprintjs/core";
 
 import RelatedListing from "../components/RelatedListing";
 import SimilarListing from "../components/SimilarListing";
-import { ErrorSection, SectionLoading, SpacedList, Spacer, TagCategory, TagLabel } from "../components/util";
+import { ErrorSection, SectionLoading, SpacedList, Spacer, TagType, TagLabel } from "../components/util";
 import { useFetchClusterQuery } from "../services/clusters";
 
 export default function ClusterView() {
@@ -21,7 +21,7 @@ export default function ClusterView() {
         <TagLabel label={cluster.label} />
       </h1>
       <p>
-        <TagCategory category={cluster.category} /> <Spacer />
+        <TagType type={cluster.type} /> <Spacer />
         Aliases:{' '}
         <SpacedList values={cluster.labels.map((l) => <TagLabel key={l} label={l} />)} />
       </p>

@@ -16,14 +16,14 @@ export function TagLabel({ label }: TagLabelProps) {
   return <span className={styles.tagLabel}>{label}</span>;
 }
 
-type TagCategoryProps = {
-  category: string
+type TagTypeProps = {
+  type: string
 }
 
-export function TagCategory({ category }: TagCategoryProps) {
+export function TagType({ type }: TagTypeProps) {
   const { data: ontology } = useFetchOntologyQuery();
-  const meta = ontology?.cluster_types.find((t) => t.name === category)
-  return <span className={styles.tagCategory}>{meta?.label || category}</span>;
+  const meta = ontology?.cluster_types.find((t) => t.name === type)
+  return <span className={styles.tagType}>{meta?.label || type}</span>;
 }
 
 type SpacedListProps = {

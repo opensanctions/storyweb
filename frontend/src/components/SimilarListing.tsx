@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom"
 import { useFetchSimilarClusterListingQuery, useMergeClustersMutation } from "../services/clusters"
 import { ICluster } from "../types"
 import { getClusterLink } from "../util"
-import { SectionLoading, SpacedList, TagCategory, TagLabel } from "./util"
+import { SectionLoading, SpacedList, TagType, TagLabel } from "./util"
 
 type SimilarListingProps = {
   cluster: ICluster,
@@ -67,7 +67,7 @@ export default function SimilarListing({ cluster }: SimilarListingProps) {
         <thead>
           <tr>
             <th>Name</th>
-            <th>Category</th>
+            <th>Type</th>
             <th>Common tags</th>
             <th>Count</th>
             <th>Same</th>
@@ -79,7 +79,7 @@ export default function SimilarListing({ cluster }: SimilarListingProps) {
               <td>
                 <Link to={getClusterLink(similar)}>{similar.label}</Link>
               </td>
-              <td><TagCategory category={similar.category} /></td>
+              <td><TagType type={similar.type} /></td>
               <td>
                 <SpacedList values={similar.common.map((l) => <TagLabel key={l} label={l} />)} />
               </td>

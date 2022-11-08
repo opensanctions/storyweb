@@ -27,8 +27,8 @@ article_table = Table(
     Column("title", Unicode, nullable=True),
     Column("language", Unicode(10), nullable=True),
     Column("text", Unicode, nullable=True),
-    Column("tags_count", Integer, default=0),
-    Column("tags_mentions", Integer, default=0),
+    Column("tags", Integer, default=0),
+    Column("mentions", Integer, default=0),
 )
 
 sentence_table = Table(
@@ -46,12 +46,12 @@ tag_table = Table(
     Column("cluster", Unicode(KEY_LEN), index=True),
     Column("article", Unicode(255), index=True),
     Column("fingerprint", Unicode(1024), index=True),
-    Column("category", Unicode(10)),
-    Column("cluster_category", Unicode(10)),
+    Column("type", Unicode(10)),
+    Column("cluster_type", Unicode(10)),
     Column("label", Unicode),
     Column("cluster_label", Unicode),
     Column("count", Integer),
-    Column("frequency", Float),
+    # Column("frequency", Float),
 )
 
 tag_sentence_table = Table(

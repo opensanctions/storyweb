@@ -16,8 +16,8 @@ export interface IArticle {
   site: string
   url: string
   language: string
-  tags_count: number
-  tags_mentions: number
+  tags: number
+  mentions: number
 }
 
 export interface IArticleDetails extends IArticle {
@@ -27,7 +27,7 @@ export interface IArticleDetails extends IArticle {
 export interface IClusterBase {
   id: string
   label: string
-  category: string
+  type: string
 }
 
 // export interface ITag extends IClusterBase {

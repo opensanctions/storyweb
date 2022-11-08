@@ -30,8 +30,8 @@ class Article(BaseModel):
     url: str
     title: Optional[str]
     language: Optional[str]
-    tags_count: Optional[int]
-    tags_mentions: Optional[int]
+    tags: Optional[int]
+    mentions: Optional[int]
 
 
 class ArticleDetails(Article):
@@ -46,7 +46,7 @@ class Sentence(BaseModel):
 
 class ClusterBase(BaseModel):
     id: str
-    category: str
+    type: str
     label: str
 
 
@@ -56,7 +56,7 @@ class Tag(ClusterBase):
     fingerprint: str
     count: int
     frequency: float
-    cluster_category: Optional[str]
+    cluster_type: Optional[str]
     cluster_label: Optional[str]
 
 
