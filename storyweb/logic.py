@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import datetime
 import logging
 from typing import Dict, Iterable, List, Optional, Set, Tuple
 from sqlalchemy.sql import select, delete, update, insert, func, and_, or_
@@ -6,7 +6,6 @@ from sqlalchemy.sql import select, delete, update, insert, func, and_, or_
 from storyweb.db import Conn, upsert, engine
 from storyweb.db import article_table, sentence_table
 from storyweb.db import tag_table, link_table, tag_sentence_table
-from storyweb.db import fingerprint_idf_table
 from storyweb.clean import most_common
 from storyweb.models import (
     ArticleDetails,
@@ -472,22 +471,22 @@ def save_extracted(
         conn.execute(ustmt)
 
 
-def compute_idf(conn: Conn):
-    cstmt = select(func.count(article_table.c.id))
-    article_count = float(conn.execute(cstmt).scalar())
-    print("Article count", article_count)
+# def compute_idf(conn: Conn):
+#     cstmt = select(func.count(article_table.c.id))
+#     article_count = float(conn.execute(cstmt).scalar())
+#     print("Article count", article_count)
 
-    conn.execute(delete(fingerprint_idf_table))
-    gstmt = select(
-        tag_table.c.fingerprint,
-        func.count(tag_table.c.article),
-        func.log(article_count / func.count(tag_table.c.article)),
-    )
-    gstmt = gstmt.group_by(tag_table.c.fingerprint)
-    stmt = fingerprint_idf_table.insert()
-    stmt = stmt.from_select(["fingerprint", "count", "frequency"], gstmt)
-    print("Update tf/idf", stmt)
-    conn.execute(stmt)
+#     conn.execute(delete(fingerprint_idf_table))
+#     gstmt = select(
+#         tag_table.c.fingerprint,
+#         func.count(tag_table.c.article),
+#         func.log(article_count / func.count(tag_table.c.article)),
+#     )
+#     gstmt = gstmt.group_by(tag_table.c.fingerprint)
+#     stmt = fingerprint_idf_table.insert()
+#     stmt = stmt.from_select(["fingerprint", "count", "frequency"], gstmt)
+#     print("Update tf/idf", stmt)
+#     conn.execute(stmt)
 
 
 def auto_merge(conn: Conn):

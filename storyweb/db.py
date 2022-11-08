@@ -62,13 +62,13 @@ tag_sentence_table = Table(
     Column("tag", Unicode(KEY_LEN), primary_key=True),
 )
 
-fingerprint_idf_table = Table(
-    "fingerprint_idf",
-    meta,
-    Column("fingerprint", Unicode(1024), index=True),
-    Column("count", Integer),
-    Column("frequency", Float),
-)
+# fingerprint_idf_table = Table(
+#     "fingerprint_idf",
+#     meta,
+#     Column("fingerprint", Unicode(1024), index=True),
+#     Column("count", Integer),
+#     Column("frequency", Float),
+# )
 
 link_table = Table(
     "link",
