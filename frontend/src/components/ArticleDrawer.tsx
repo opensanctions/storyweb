@@ -1,6 +1,6 @@
 import { Drawer, DrawerSize } from "@blueprintjs/core"
 import { SyntheticEvent } from "react"
-import { IArticle } from "../lib/types"
+import { IArticle } from "../types"
 
 type ArticleDrawerProps = {
   article?: IArticle,
@@ -8,7 +8,7 @@ type ArticleDrawerProps = {
   onClose: (event: SyntheticEvent<HTMLElement>) => void
 }
 
-export function ArticleDrawer({ article, isOpen, onClose }: ArticleDrawerProps) {
+export default function ArticleDrawer({ article, isOpen, onClose }: ArticleDrawerProps) {
   return (
     <Drawer
       size={DrawerSize.STANDARD}
