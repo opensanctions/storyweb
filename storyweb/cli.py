@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 
 from storyweb.db import create_db, engine
-from storyweb.logic import compute_idf
+from storyweb.logic import auto_merge, compute_idf
 from storyweb.pipeline import load_articles
 
 
@@ -29,6 +29,12 @@ def parse(articles: Path) -> None:
 def compute() -> None:
     with engine.begin() as conn:
         compute_idf(conn)
+
+
+@cli.command("auto-merge", help="Automatically merge on fingerprints")
+def auto_merge_() -> None:
+    with engine.begin() as conn:
+        auto_merge(conn)
 
 
 @cli.command("init", help="Initialize the database")

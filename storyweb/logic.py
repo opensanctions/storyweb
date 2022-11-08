@@ -1,8 +1,9 @@
-from datetime import datetime
-from typing import Iterable, List, Optional, Set
+from datetime import date, datetime
+import logging
+from typing import Dict, Iterable, List, Optional, Set, Tuple
 from sqlalchemy.sql import select, delete, update, insert, func, and_, or_
 
-from storyweb.db import Conn, upsert
+from storyweb.db import Conn, upsert, engine
 from storyweb.db import article_table, sentence_table
 from storyweb.db import tag_table, link_table, tag_sentence_table
 from storyweb.db import fingerprint_idf_table
@@ -23,6 +24,8 @@ from storyweb.models import (
     TagSentence,
 )
 from storyweb.ontology import ontology, LinkType
+
+log = logging.getLogger(__name__)
 
 
 def list_sites(conn: Conn, listing: Listing) -> ListingResponse[Site]:
@@ -290,6 +293,19 @@ def list_links(
     )
 
 
+def get_links(conn: Conn, left: str, right: str) -> List[Link]:
+    link_t = link_table.alias("l")
+    stmt = select(link_t)
+    stmt = stmt.filter(
+        or_(
+            and_(link_t.c.source_cluster == left, link_t.c.target_cluster == right),
+            and_(link_t.c.target_cluster == left, link_t.c.source_cluster == right),
+        )
+    )
+    cursor = conn.execute(stmt)
+    return [Link.parse_obj(r) for r in cursor.fetchall()]
+
+
 def create_link(conn: Conn, source: str, target: str, type: str) -> Link:
     link = Link(
         source=source,
@@ -473,3 +489,55 @@ def compute_idf(conn: Conn):
     stmt = stmt.from_select(["fingerprint", "count", "frequency"], gstmt)
     print("Update tf/idf", stmt)
     conn.execute(stmt)
+
+
+def auto_merge(conn: Conn):
+    stmt = select(
+        tag_table.c.fingerprint.label("fingerprint"),
+        func.array_agg(tag_table.c.cluster).label("clusters"),
+    )
+    stmt = stmt.group_by(tag_table.c.fingerprint)
+    stmt = stmt.order_by(func.count(tag_table.c.id).desc())
+    stmt = stmt.having(func.count(tag_table.c.id) > 1)
+    cursor = conn.execute(stmt)
+
+    now = datetime.utcnow()
+    while True:
+        results = cursor.fetchmany(10000)
+        if not results:
+            break
+        for row in results:
+            with engine.begin() as inner:
+                canonical = max(row["clusters"])
+                links: Dict[Tuple[str, str], Link] = {}
+                for ref in row["clusters"]:
+                    if ref == canonical or ref is None:
+                        continue
+                    if len(get_links(inner, ref, canonical)) > 0:
+                        continue
+                    link = Link(
+                        source=ref,
+                        source_cluster=ref,
+                        target=canonical,
+                        target_cluster=canonical,
+                        type=LinkType.SAME,
+                        user="auto-merge",
+                        timestamp=now,
+                    )
+                    links[(ref, canonical)] = link
+                links_objs = list(links.values())
+                if len(links_objs):
+                    save_links(inner, links_objs)
+                    log.info(
+                        "Clusters: %s (%s merge %s)"
+                        % (row["fingerprint"], canonical, len(links))
+                    )
+                    update_cluster(inner, canonical)
+
+    # cstmt = select(tag_table.c.cluster.label("cluster"))
+    # cstmt = cstmt.where(tag_table.c.id != tag_table.c.cluster)
+    # cstmt = cstmt.group_by(tag_table.c.cluster)
+    # cursor = conn.execute(cstmt)
+    # clusters = [r.cluster for r in cursor.fetchall()]
+    # for cluster in clusters:
+    #     update_cluster(conn, cluster)
