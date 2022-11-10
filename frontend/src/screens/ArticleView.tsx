@@ -23,13 +23,25 @@ export default function ArticleView() {
     return <SectionLoading />
   }
 
+  const tags = clusters.results
+    .filter((c) => showClusters.indexOf(c.id) !== -1)
+    .map((c) => [c.label]);
+  const allSelected = tags.length === clusters.results.length;
+  const someSelected = !allSelected && tags.length > 0;
+
   const toggleShowCluster = (cluster: ICluster) => {
     const nextClusters = listToggle(params.getAll('show'), cluster.id);
     console.log(nextClusters)
     setParams({ show: nextClusters });
   };
 
-  const tags = clusters.results.filter((c) => showClusters.indexOf(c.id) !== -1).map((c) => [c.label])
+  const toggleAll = () => {
+    if (allSelected) {
+      setParams({ show: [] });
+    } else {
+      setParams({ show: clusters.results.map(c => c.id) });
+    }
+  }
 
   return (
     <div>
@@ -46,6 +58,23 @@ export default function ArticleView() {
         </div>
         <div className="page-column">
           <HTMLTable condensed bordered className="wide">
+            <thead>
+              <tr>
+                <th>
+                  <Checkbox
+                    checked={allSelected}
+                    indeterminate={someSelected}
+                    onChange={() => toggleAll()}
+                  />
+                </th>
+                <th>
+                  Name
+                </th>
+                <th>
+                  Type
+                </th>
+              </tr>
+            </thead>
             <tbody>
               {clusters.results.map((cluster) =>
                 <tr key={cluster.id}>
