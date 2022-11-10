@@ -307,6 +307,18 @@ def get_links(conn: Conn, left: str, right: str) -> List[Link]:
     return [Link.parse_obj(r) for r in cursor.fetchall()]
 
 
+def clear_links(conn: Conn, left: str, right: str) -> None:
+    link_t = link_table.alias("l")
+    stmt = delete(link_t)
+    stmt = stmt.filter(
+        or_(
+            and_(link_t.c.source_cluster == left, link_t.c.target_cluster == right),
+            and_(link_t.c.target_cluster == left, link_t.c.source_cluster == right),
+        )
+    )
+    conn.execute(stmt)
+
+
 def create_link(conn: Conn, source: str, target: str, type: str) -> Link:
     link = Link(
         source=source,
@@ -317,6 +329,7 @@ def create_link(conn: Conn, source: str, target: str, type: str) -> Link:
         user="web",
         timestamp=datetime.utcnow(),
     )
+    clear_links(conn, source, target)
     save_links(conn, [link])
     if link.type == LinkType.SAME:
         update_cluster(conn, link.source)
@@ -338,6 +351,7 @@ def merge_cluster(conn: Conn, anchor: str, others: List[str]) -> str:
             timestamp=timestamp,
         )
         links.append(link)
+        clear_links(conn, anchor, other)
     save_links(conn, links)
     return update_cluster(conn, anchor)
 
@@ -366,13 +380,13 @@ def update_cluster(conn: Conn, id: str) -> str:
 
     stmt = update(tag_table)
     stmt = stmt.where(tag_table.c.id.in_(referents))
-    stmt = stmt.where(
-        or_(
-            tag_table.c.cluster != cluster,
-            tag_table.c.cluster_label != cluster_label,
-            tag_table.c.cluster_type != cluster_type,
-        )
-    )
+    # stmt = stmt.where(
+    #     or_(
+    #         tag_table.c.cluster != cluster,
+    #         tag_table.c.cluster_label != cluster_label,
+    #         tag_table.c.cluster_type != cluster_type,
+    #     )
+    # )
     stmt = stmt.values(
         cluster=cluster,
         cluster_label=cluster_label,
@@ -398,29 +412,40 @@ def compute_cluster(conn: Conn, id: str) -> Set[str]:
     link_t = link_table.alias("l")
     target = link_t.c.target
     source = link_t.c.source
-    type_c = link_t.c.type
-    stmt_t = select(target.label("target"), source.label("source"))
-    init_clause = or_(source == id, target == id)
-    stmt_t = stmt_t.where(init_clause, type_c == LinkType.SAME)
-    cte = stmt_t.cte("connected", recursive=True)
-    cte_alias = cte.alias("c")
-    stmt_r = select(target.label("target"), source.label("source"))
-    join_clause = or_(
-        cte_alias.c.source == source,
-        cte_alias.c.source == target,
-        cte_alias.c.target == source,
-        cte_alias.c.target == target,
-    )
-    stmt_r = stmt_r.join(cte_alias, join_clause)
-    stmt_r = stmt_r.where(type_c == LinkType.SAME)
-    cte = cte.union(stmt_r)  # type: ignore
+    # type_c = link_t.c.type
+    # init_clause = or_(source == id, target == id)
+    # stmt_t = stmt_t.where(init_clause, type_c == LinkType.SAME)
+    # cte = stmt_t.cte("connected", recursive=True)
+    # cte_alias = cte.alias("c")
+    # stmt_r = select(target.label("target"), source.label("source"))
+    # join_clause = or_(
+    #     cte_alias.c.source == source,
+    #     cte_alias.c.source == target,
+    #     cte_alias.c.target == source,
+    #     cte_alias.c.target == target,
+    # )
+    # stmt_r = stmt_r.join(cte_alias, join_clause)
+    # stmt_r = stmt_r.where(type_c == LinkType.SAME)
+    # cte = cte.union(stmt_r)  # type: ignore
 
-    stmt = select(cte.c.source, cte.c.target)
-    # print(stmt)
+    # stmt = select(cte.c.source, cte.c.target)
+    # connected = set([id])
+    # for row in conn.execute(stmt).fetchall():
+    #     connected.add(row.source)
+    #     connected.add(row.target)
+    # return connected
     connected = set([id])
-    for row in conn.execute(stmt).fetchall():
-        connected.add(row.source)
-        connected.add(row.target)
+    fresh = set([id])
+    while len(fresh):
+        stmt = select(target.label("target"), source.label("source"))
+        stmt = stmt.filter(link_t.c.type == LinkType.SAME)
+        stmt = stmt.filter(or_(source.in_(fresh), target.in_(fresh)))
+        fresh = set()
+        for row in conn.execute(stmt):
+            for node in (row.source, row.target):
+                if node not in connected:
+                    fresh.add(node)
+                    connected.add(node)
     return connected
 
 

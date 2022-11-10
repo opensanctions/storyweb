@@ -26,7 +26,8 @@ def parse(articles: Path) -> None:
 @cli.command("compute", help="Run backend computations")
 def compute() -> None:
     with engine.begin() as conn:
-        print(compute_cluster(conn, "ffd364472a999c3d1001f5910398a53997ae0afe"))
+        # print(compute_cluster(conn, "ffd364472a999c3d1001f5910398a53997ae0afe"))
+        compute_cluster(conn, "ffd364472a999c3d1001f5910398a53997ae0afe")
 
 
 @cli.command("auto-merge", help="Automatically merge on fingerprints")
