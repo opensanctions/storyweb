@@ -32,8 +32,11 @@ export default function ArticleText({ text, tags }: ArticleTextProps) {
     const clazz = CLASSES[index % CLASSES.length];
     html = html.replaceAll(altRx, (m) => `<span class="markup ${clazz}">${m}</span>`);
   })
-  html = html.replaceAll(/\n/g, '<br />\n');
+  // html = html.replaceAll(/\n/g, '<br />\n');
+  const paragraphs = html.split('\n').filter((p) => p.trim().length > 1);
+  const paraHtml = paragraphs.join('</p><p>')
+
   return (
-    <p className={styles.articleText} dangerouslySetInnerHTML={{ __html: html }} />
+    <p className={styles.articleText} dangerouslySetInnerHTML={{ __html: `<p>${paraHtml}</p>` }} />
   )
 }

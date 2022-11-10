@@ -53,7 +53,7 @@ def get_conn() -> Generator[Conn, None, None]:
 
 
 def get_listing(
-    limit: int = Query(50, description="Number of objects to return", le=500),
+    limit: int = Query(50, description="Number of objects to return", le=5000),
     offset: int = Query(0, description="Skip the first N objects in response"),
     sort: Optional[str] = Query(
         None, description="Sort criterion, format: field:direction"

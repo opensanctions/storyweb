@@ -21,6 +21,16 @@ export function asString(value: any): string | undefined {
   return undefined;
 }
 
+export function listToggle<T>(items: T[], value: T): T[] {
+  const index = items.indexOf(value);
+  if (index === -1) {
+    items.push(value);
+  } else {
+    items.splice(index, 1);
+  }
+  return items;
+}
+
 export function getClusterLink(cluster: IClusterBase): string {
   return `/clusters/${cluster.id}`
 }
