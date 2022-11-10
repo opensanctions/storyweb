@@ -18,12 +18,12 @@ export default function ClusterArticles({ cluster }: ClusterArticlesProps) {
   const [params, setParams] = useSearchParams();
   const articleId = params.get('article');
 
-  useEffect(() => {
-    const paramsObj = Object.fromEntries(params.entries());
-    if (listing !== undefined && articleId === null && listing.results.length > 0) {
-      setParams({ ...paramsObj, article: listing.results[0].id });
-    }
-  }, [articleId, params, setParams])
+  // useEffect(() => {
+  //   const paramsObj = Object.fromEntries(params.entries());
+  //   if (listing !== undefined && articleId === null && listing.results.length > 0) {
+  //     setParams({ ...paramsObj, article: listing.results[0].id });
+  //   }
+  // }, [articleId, params, setParams])
 
   if (listing === undefined || isLoading) {
     return <SectionLoading />
