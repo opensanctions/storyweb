@@ -27,6 +27,9 @@ data/articles.ijson: fetch
 load: data/articles.ijson
 	storyweb import data/articles.ijson
 
+serve:
+	uvicorn --reload storyweb.api:app
+
 reset:
 	dropdb storyweb
 	createdb -E utf-8 storyweb
