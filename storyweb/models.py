@@ -76,7 +76,7 @@ class ClusterDetails(Cluster):
 
 class RelatedCluster(ClusterBase):
     articles: int
-    link_types: List[str]
+    link_types: List[str] = []
 
 
 class SimilarCluster(ClusterBase):

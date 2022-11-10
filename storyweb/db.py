@@ -1,3 +1,4 @@
+import logging
 from sqlalchemy import MetaData, create_engine
 from sqlalchemy import Table, Column, Integer, Unicode, DateTime, Float
 from sqlalchemy.engine import Connection
@@ -8,6 +9,7 @@ from storyweb import settings
 Conn = Connection
 KEY_LEN = 40
 
+log = logging.getLogger(__name__)
 engine = create_engine(settings.DB_URL)
 meta = MetaData(bind=engine)
 
@@ -16,6 +18,18 @@ __all__ = ["Conn", "upsert", "create_db"]
 
 def create_db() -> None:
     meta.create_all(checkfirst=True)
+
+
+# @event.listens_for(Engine, "before_cursor_execute")
+# def before_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+#     conn.info.setdefault("query_start_time", []).append(time.time())
+#     # log.debug("Start Query: %s" % statement)
+
+
+# @event.listens_for(Engine, "after_cursor_execute")
+# def after_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+#     total = time.time() - conn.info["query_start_time"].pop(-1)
+#     log.debug("Query [%s] total time: %f" % (statement, total))
 
 
 article_table = Table(

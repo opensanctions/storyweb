@@ -2,6 +2,7 @@ from datetime import datetime
 import logging
 from typing import Dict, Iterable, List, Optional, Set, Tuple
 from sqlalchemy.sql import select, delete, update, insert, func, and_, or_
+from sqlalchemy.sql.expression import literal
 
 from storyweb.db import Conn, upsert, engine
 from storyweb.db import article_table, sentence_table
@@ -220,36 +221,38 @@ def list_similar(conn: Conn, listing: Listing, cluster: str):
 def list_related(
     conn: Conn, listing: Listing, cluster: str, linked: Optional[bool] = None
 ) -> ListingResponse[RelatedCluster]:
+    link_fwd = link_table.alias("fwd")
+    link_bck = link_table.alias("bck")
+    stmt_fwd = select(link_fwd.c.target_cluster.label("cluster"), link_fwd.c.type)
+    stmt_fwd = stmt_fwd.filter(link_fwd.c.source_cluster == cluster)
+    stmt_bck = select(link_bck.c.source_cluster.label("cluster"), link_bck.c.type)
+    stmt_bck = stmt_bck.filter(link_bck.c.target_cluster == cluster)
+    cte = stmt_fwd.cte("links").union(stmt_bck)
+
     tag_t = tag_table.alias("t")
     cluster_t = tag_table.alias("c")
-    link_t = link_table.alias("link")
+
     articles = func.count(func.distinct(cluster_t.c.article))
-    link_types = func.array_remove(func.array_agg(func.distinct(link_t.c.type)), None)
+
     stmt = select(
         tag_t.c.cluster.label("id"),
         tag_t.c.cluster_label.label("label"),
         tag_t.c.cluster_type.label("type"),
         articles.label("articles"),
-        link_types.label("link_types"),
     )
+    if linked is not False:
+        link_types = func.array_remove(func.array_agg(func.distinct(cte.c.type)), None)
+        stmt = stmt.add_columns(link_types.label("link_types"))
     stmt = stmt.where(tag_t.c.article == cluster_t.c.article)
     stmt = stmt.where(tag_t.c.cluster != cluster)
     stmt = stmt.where(cluster_t.c.cluster == cluster)
 
-    link_in = and_(
-        link_t.c.target_cluster == cluster,
-        link_t.c.source_cluster == tag_t.c.cluster,
-    )
-    link_out = and_(
-        link_t.c.source_cluster == cluster,
-        link_t.c.target_cluster == tag_t.c.cluster,
-    )
-
-    stmt = stmt.outerjoin(link_t, or_(link_in, link_out))
-    if linked is True:
-        stmt = stmt.where(link_t.c.type != None)
     if linked is False:
-        stmt = stmt.where(link_t.c.type == None)
+        stmt = stmt.where(tag_t.c.cluster.not_in(select(cte.c.cluster)))
+    else:
+        stmt = stmt.outerjoin(cte, cte.c.cluster == tag_t.c.cluster)
+        if linked is True:
+            stmt = stmt.where(cte.c.type != None)
 
     stmt = stmt.group_by(
         tag_t.c.cluster,
