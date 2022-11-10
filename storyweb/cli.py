@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 
 from storyweb.db import create_db, engine
-from storyweb.logic import auto_merge
+from storyweb.logic import auto_merge, compute_cluster
 from storyweb.pipeline import load_articles
 
 
@@ -23,10 +23,10 @@ def parse(articles: Path) -> None:
     load_articles(articles)
 
 
-# @cli.command("compute", help="Run backend computations")
-# def compute() -> None:
-#     with engine.begin() as conn:
-#         compute_idf(conn)
+@cli.command("compute", help="Run backend computations")
+def compute() -> None:
+    with engine.begin() as conn:
+        print(compute_cluster(conn, "ffd364472a999c3d1001f5910398a53997ae0afe"))
 
 
 @cli.command("auto-merge", help="Automatically merge on fingerprints")
