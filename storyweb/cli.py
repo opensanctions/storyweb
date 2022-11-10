@@ -30,9 +30,17 @@ def parse(articles: Path) -> None:
 
 
 @cli.command("auto-merge", help="Automatically merge on fingerprints")
-def auto_merge_() -> None:
+@click.option(
+    "-f",
+    "--force",
+    "force",
+    help="Do not check existing links",
+    default=False,
+    is_flag=True,
+)
+def auto_merge_(force: bool) -> None:
     with engine.begin() as conn:
-        auto_merge(conn)
+        auto_merge(conn, check_links=force)
 
 
 @cli.command("init", help="Initialize the database")

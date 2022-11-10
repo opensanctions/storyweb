@@ -489,7 +489,7 @@ def save_extracted(
 #     conn.execute(stmt)
 
 
-def auto_merge(conn: Conn):
+def auto_merge(conn: Conn, check_links: bool = True):
     stmt = select(
         tag_table.c.fingerprint.label("fingerprint"),
         func.array_agg(tag_table.c.cluster).label("clusters"),
@@ -511,7 +511,7 @@ def auto_merge(conn: Conn):
                 for ref in row["clusters"]:
                     if ref == canonical or ref is None:
                         continue
-                    if len(get_links(inner, ref, canonical)) > 0:
+                    if check_links and len(get_links(inner, ref, canonical)) > 0:
                         continue
                     link = Link(
                         source=ref,

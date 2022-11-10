@@ -5,11 +5,11 @@ import { Navbar, Alignment, Icon } from '@blueprintjs/core';
 
 export default function NavbarSection() {
   return (
-    <Navbar>
+    <Navbar className='bp4-dark'>
       <div className='page-container'>
         <Navbar.Group align={Alignment.LEFT}>
           <Navbar.Heading>
-            <Link to="/">StoryWeb</Link>
+            StoryWeb
           </Navbar.Heading>
           <Navbar.Divider />
           <Link to="/clusters" role="button" className="bp4-minimal bp4-button">

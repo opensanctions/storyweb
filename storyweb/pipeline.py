@@ -116,7 +116,7 @@ def load_article(doc: Doc, raw: Article) -> None:
             type=type_,
             label=label,
             count=len(labels),
-            frequency=float(len(labels)) / article.tags_mentions,
+            frequency=float(len(labels)) / article.mentions,
             cluster_type=type_,
             cluster_label=label,
         )

@@ -51,7 +51,7 @@ tag_table = Table(
     Column("label", Unicode),
     Column("cluster_label", Unicode),
     Column("count", Integer),
-    # Column("frequency", Float),
+    Column("frequency", Float),
 )
 
 tag_sentence_table = Table(
