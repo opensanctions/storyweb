@@ -28,7 +28,7 @@ load: data/articles.ijson
 	storyweb import data/articles.ijson
 
 serve:
-	uvicorn --reload storyweb.api:app
+	uvicorn --reload storyweb.server:app
 
 reset:
 	dropdb storyweb
