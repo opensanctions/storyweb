@@ -5,6 +5,7 @@ import RelatedListing from "../components/RelatedListing";
 import SimilarListing from "../components/SimilarListing";
 import { ErrorSection, SectionLoading, SpacedList, Spacer, TagType, TagLabel } from "../components/util";
 import { useFetchClusterQuery } from "../services/clusters";
+import ClusterArticles from "../components/ClusterArticles";
 
 export default function ClusterView() {
   const { clusterId } = useParams();
@@ -28,6 +29,7 @@ export default function ClusterView() {
       <Tabs>
         <Tab id="related" title="Related" panel={<RelatedListing cluster={cluster} />} />
         <Tab id="similar" title="Similar" panel={<SimilarListing cluster={cluster} />} />
+        <Tab id="articles" title="Articles" panel={<ClusterArticles cluster={cluster} />} />
       </Tabs>
     </div>
   )

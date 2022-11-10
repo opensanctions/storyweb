@@ -25,8 +25,6 @@ export default function ArticleCorefList({ clusters }: ArticleCorefListProps) {
     return null;
   }
 
-
-
   const onSelect = (e: React.MouseEvent<HTMLElement>, article: IArticle) => {
     e.preventDefault();
     setParams({ ...paramsObj, article: article.id });
