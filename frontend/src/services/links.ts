@@ -7,7 +7,7 @@ import { ILink, IListingResponse } from '../types'
 
 export const linksApi = createApi({
   reducerPath: 'linksApi',
-  tagTypes: ['Cluster'],
+  tagTypes: ['Cluster', 'Link'],
   baseQuery: fetchBaseQuery({ baseUrl: API_URL }),
   endpoints: (builder) => ({
     fetchLinks: builder.query<IListingResponse<ILink>, any>({
@@ -15,7 +15,7 @@ export const linksApi = createApi({
         'url': `links`,
         'query': params
       }),
-      providesTags: () => ["Cluster"]
+      providesTags: ['Link'],
     }),
     saveLink: builder.mutation<ILink, Partial<ILink>>({
       query(link) {
@@ -25,7 +25,7 @@ export const linksApi = createApi({
           body: link,
         }
       },
-      invalidatesTags: ['Cluster'],
+      invalidatesTags: ['Cluster', 'Link'],
     })
   }),
 })

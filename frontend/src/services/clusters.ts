@@ -11,33 +11,33 @@ type IClusterQueryParams = {
 
 export const clustersApi = createApi({
   reducerPath: 'clustersApi',
-  tagTypes: ['Cluster'],
+  tagTypes: ['Cluster', 'Link'],
   baseQuery: fetchBaseQuery({ baseUrl: API_URL }),
   endpoints: (builder) => ({
     fetchCluster: builder.query<IClusterDetails, string>({
       query: (clusterId) => `clusters/${clusterId}`,
-      providesTags: () => [{ type: "Cluster" }]
+      providesTags: ["Cluster"]
     }),
     fetchClusterListing: builder.query<IListingResponse<ICluster>, any>({
       query: (params) => queryString.stringifyUrl({
         'url': `clusters`,
         'query': params
       }),
-      providesTags: () => [{ type: "Cluster" }]
+      providesTags: ["Cluster"]
     }),
     fetchSimilarClusterListing: builder.query<IListingResponse<ISimilarCluster>, IClusterQueryParams>({
       query: ({ clusterId, params }) => queryString.stringifyUrl({
         'url': `clusters/${clusterId}/similar`,
         'query': params
       }),
-      providesTags: () => [{ type: "Cluster" }]
+      providesTags: ["Cluster", "Link"]
     }),
     fetchRelatedClusterListing: builder.query<IListingResponse<IRelatedCluster>, IClusterQueryParams>({
       query: ({ clusterId, params }) => queryString.stringifyUrl({
         'url': `clusters/${clusterId}/related`,
         'query': params
       }),
-      providesTags: () => ["Cluster"]
+      providesTags: ["Cluster", "Link"]
     }),
     mergeClusters: builder.mutation<IClusterDetails, IClusterMerge>({
       query(merge) {
@@ -47,7 +47,7 @@ export const clustersApi = createApi({
           body: merge,
         }
       },
-      invalidatesTags: () => ['Cluster'],
+      invalidatesTags: ['Cluster', 'Link'],
     })
   }),
 })

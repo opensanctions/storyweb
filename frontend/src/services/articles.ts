@@ -6,19 +6,19 @@ import type { IArticle, IArticleDetails, IListingResponse } from '../types'
 
 export const articlesApi = createApi({
   reducerPath: 'articlesApi',
-  // tagTypes: ['Article'],
+  tagTypes: ['Article'],
   baseQuery: fetchBaseQuery({ baseUrl: API_URL }),
   endpoints: (builder) => ({
     fetchArticle: builder.query<IArticleDetails, string>({
       query: (articleId) => `articles/${articleId}`,
-      // providesTags: () => [{ type: "Article" }]
+      providesTags: ["Article"]
     }),
     fetchArticleListing: builder.query<IListingResponse<IArticle>, any>({
       query: (params) => queryString.stringifyUrl({
         'url': `articles`,
         'query': params
       }),
-      // providesTags: () => [{ type: "Article" }]
+      providesTags: ["Article"]
     }),
   }),
 })
