@@ -10,6 +10,10 @@ type ArticleTextProps = {
 
 function cleanName(text: string): string {
   return text.trim().replace(' ', '\\s')
+  // https://stackoverflow.com/questions/3446170/escape-string-for-use-in-javascript-regex:
+  // function escapeRegExp(string) {
+  //   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+  // }
 }
 
 function checkName(text: string): boolean {
