@@ -6,22 +6,37 @@
 @import "~@blueprintjs/select/lib/css/blueprint-select.css";
 
 .page-container {
-    margin: 0 auto;
-    max-width: $max-container-width;
+    // margin: 0 auto;
+    // max-width: $max-container-width;
+    margin-left: $spacer * 2;
+    margin-right: $spacer * 2;
+    line-height: 1.4;
 }
 
 .section {
     // padding-left: $spacer;
     // padding-right: $spacer;
-    padding-bottom: $spacer * 2;
+    padding-bottom: $spacer * 1;
 }
 
 html {
-    // scroll-behavior: smooth;
+    scroll-behavior: smooth;
     font-size: $default-font-size;
     color: $default-text-color;
+    background-color: $light-gray4;
 }
 
 table.wide {
     width: 100%;
+}
+
+.page-column-area {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+}
+
+.page-column {
+    min-width: 30%;
+    max-width: 50%;
 }
