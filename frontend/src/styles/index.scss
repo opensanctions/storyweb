@@ -30,6 +30,12 @@ table.wide {
     width: 100%;
 }
 
+td .bp4-control,
+th .bp4-control {
+    margin-bottom: 0 !important;
+    // padding: 0 !important;
+}
+
 .page-column-area {
     display: flex;
     flex-direction: row;
