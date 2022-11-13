@@ -1,7 +1,7 @@
 from datetime import datetime
 import logging
 from typing import Dict, Iterable, List, Optional, Set, Tuple
-from sqlalchemy.sql import Select
+from sqlalchemy.sql import Select, Selectable, ColumnElement
 from sqlalchemy.sql import select, delete, update, insert, func, and_, or_
 
 from storyweb.db import Conn, upsert, engine
@@ -30,11 +30,10 @@ from storyweb.ontology import ontology, LinkType
 log = logging.getLogger(__name__)
 
 
-def count_stmt(conn: Conn, stmt: Select) -> int:
-    # count_stmt = stmt.with_only_columns(func.count())
-    # count_stmt = select(func.count(stmt.subquery()))
-    # return conn.execute(count_stmt).scalar_one()
-    return 0
+def count_stmt(conn: Conn, stmt: Select, col: Selectable | ColumnElement) -> int:
+    count_stmt = stmt.with_only_columns(func.count(col))
+    cursor = conn.execute(count_stmt)
+    return cursor.scalar_one()
 
 
 def list_sites(conn: Conn, listing: Listing) -> ListingResponse[Site]:
@@ -42,13 +41,14 @@ def list_sites(conn: Conn, listing: Listing) -> ListingResponse[Site]:
         article_table.c.site,
         func.count(article_table.c.id).label("articles"),
     )
+    total = count_stmt(conn, stmt, func.distinct(article_table.c.site))
     stmt = stmt.group_by(article_table.c.site)
     stmt = stmt.order_by(article_table.c.site)
     stmt = stmt.limit(listing.limit).offset(listing.offset)
     cursor = conn.execute(stmt)
     results = [Site.parse_obj(r) for r in cursor.fetchall()]
     return ListingResponse[Site](
-        # total=total,
+        total=total,
         debug_msg=str(stmt),
         limit=listing.limit,
         offset=listing.offset,
@@ -94,6 +94,7 @@ def list_articles(
             stmt = stmt.order_by(column.desc())
         else:
             stmt = stmt.order_by(column.asc())
+    total = count_stmt(conn, stmt, func.distinct(article_table.c.id))
     stmt = stmt.group_by(
         article_table.c.id,
         article_table.c.title,
@@ -103,7 +104,6 @@ def list_articles(
         article_table.c.tags,
         article_table.c.mentions,
     )
-    total = count_stmt(conn, stmt)
     stmt = stmt.limit(listing.limit).offset(listing.offset)
     cursor = conn.execute(stmt)
     results = [Article.parse_obj(r) for r in cursor.fetchall()]
@@ -133,7 +133,7 @@ def list_stories(
     stmt = select(story_table)
     if query is not None and len(query.strip()):
         stmt = stmt.where(story_table.c.title.ilike(f"%{query}%"))
-    total = count_stmt(conn, stmt)
+    total = count_stmt(conn, stmt, story_table.c.id)
     stmt = stmt.limit(listing.limit).offset(listing.offset)
     cursor = conn.execute(stmt)
     results = [Story.parse_obj(r) for r in cursor.fetchall()]
@@ -181,6 +181,7 @@ def list_clusters(
         stmt = stmt.where(article_t.c.cluster == cluster_t.c.cluster)
         stmt = stmt.where(article_t.c.article == article)
 
+    total = count_stmt(conn, stmt, func.distinct(cluster_t.c.cluster))
     stmt = stmt.group_by(
         cluster_t.c.cluster,
         cluster_t.c.cluster_label,
@@ -190,6 +191,7 @@ def list_clusters(
     stmt = stmt.limit(listing.limit).offset(listing.offset)
     cursor = conn.execute(stmt)
     return ListingResponse[Cluster](
+        total=total,
         debug_msg=str(stmt),
         limit=listing.limit,
         offset=listing.offset,
@@ -250,6 +252,7 @@ def list_similar(conn: Conn, listing: Listing, cluster: str):
     stmt = stmt.join(other_cluster, other_cluster.c.article == other_coref.c.article)
     stmt = stmt.join(cte_fp, cte_fp.c.fingerprint == other_cluster.c.fingerprint)
     stmt = stmt.where(other_cluster.c.cluster != cluster)
+    total = count_stmt(conn, stmt, func.distinct(other_cluster.c.cluster))
     stmt = stmt.group_by(
         other_cluster.c.cluster,
         other_cluster.c.cluster_label,
@@ -261,6 +264,7 @@ def list_similar(conn: Conn, listing: Listing, cluster: str):
     cursor = conn.execute(stmt)
     results = [SimilarCluster.parse_obj(r) for r in cursor.fetchall()]
     return ListingResponse[SimilarCluster](
+        total=total,
         debug_msg=str(stmt),
         results=results,
         limit=listing.limit,
@@ -304,6 +308,7 @@ def list_related(
         if linked is True:
             stmt = stmt.where(cte.c.type != None)
 
+    total = count_stmt(conn, stmt, func.distinct(tag_t.c.cluster))
     stmt = stmt.group_by(
         tag_t.c.cluster,
         tag_t.c.cluster_label,
@@ -314,6 +319,7 @@ def list_related(
     cursor = conn.execute(stmt)
     results = [RelatedCluster.parse_obj(r) for r in cursor.fetchall()]
     return ListingResponse[RelatedCluster](
+        total=total,
         debug_msg=str(stmt),
         results=results,
         limit=listing.limit,
@@ -333,10 +339,12 @@ def list_links(
                 link_t.c.target_cluster == cluster,
             )
         )
+    total = count_stmt(conn, stmt, link_t.c.type)
     stmt = stmt.limit(listing.limit).offset(listing.offset)
     cursor = conn.execute(stmt)
     results = [Link.parse_obj(r) for r in cursor.fetchall()]
     return ListingResponse[Link](
+        total=total,
         debug_msg=str(stmt),
         limit=listing.limit,
         offset=listing.offset,

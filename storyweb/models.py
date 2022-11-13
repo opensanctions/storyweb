@@ -12,6 +12,7 @@ class Response(GenericModel):
 
 
 class ListingResponse(Response, Generic[R]):
+    total: int = Field(0)
     limit: int = Field()
     offset: int = Field(0)
     results: List[R]
