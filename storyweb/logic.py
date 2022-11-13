@@ -1,18 +1,20 @@
 from datetime import datetime
 import logging
 from typing import Dict, Iterable, List, Optional, Set, Tuple
+from sqlalchemy.sql import Select
 from sqlalchemy.sql import select, delete, update, insert, func, and_, or_
-from sqlalchemy.sql.expression import literal
 
 from storyweb.db import Conn, upsert, engine
-from storyweb.db import article_table, sentence_table
+from storyweb.db import article_table, sentence_table, story_table
 from storyweb.db import tag_table, link_table, tag_sentence_table
+from storyweb.db import story_article_table
 from storyweb.clean import most_common
 from storyweb.models import (
     ArticleDetails,
     Cluster,
     ClusterDetails,
     Link,
+    Story,
     Article,
     Listing,
     ListingResponse,
@@ -28,6 +30,13 @@ from storyweb.ontology import ontology, LinkType
 log = logging.getLogger(__name__)
 
 
+def count_stmt(conn: Conn, stmt: Select) -> int:
+    # count_stmt = stmt.with_only_columns(func.count())
+    # count_stmt = select(func.count(stmt.subquery()))
+    # return conn.execute(count_stmt).scalar_one()
+    return 0
+
+
 def list_sites(conn: Conn, listing: Listing) -> ListingResponse[Site]:
     stmt = select(
         article_table.c.site,
@@ -39,6 +48,7 @@ def list_sites(conn: Conn, listing: Listing) -> ListingResponse[Site]:
     cursor = conn.execute(stmt)
     results = [Site.parse_obj(r) for r in cursor.fetchall()]
     return ListingResponse[Site](
+        # total=total,
         debug_msg=str(stmt),
         limit=listing.limit,
         offset=listing.offset,
@@ -50,6 +60,7 @@ def list_articles(
     conn: Conn,
     listing: Listing,
     site: Optional[str] = None,
+    story: Optional[int] = None,
     query: Optional[str] = None,
     clusters: List[str] = [],
 ) -> ListingResponse[Article]:
@@ -62,10 +73,17 @@ def list_articles(
         article_table.c.tags,
         article_table.c.mentions,
     )
+    stmt = stmt.select_from(article_table)
     if site is not None and len(site.strip()):
         stmt = stmt.where(article_table.c.site == site)
     if query is not None and len(query.strip()):
         stmt = stmt.where(article_table.c.title.ilike(f"%{query}%"))
+    if story is not None:
+        stmt = stmt.join(
+            story_article_table,
+            story_article_table.c.article == article_table.c.id,
+        )
+        stmt = stmt.where(story_article_table.c.story == story)
     for cluster in clusters:
         cluster_t = tag_table.alias()
         stmt = stmt.join(cluster_t, cluster_t.c.article == article_table.c.id)
@@ -85,10 +103,12 @@ def list_articles(
         article_table.c.tags,
         article_table.c.mentions,
     )
+    total = count_stmt(conn, stmt)
     stmt = stmt.limit(listing.limit).offset(listing.offset)
     cursor = conn.execute(stmt)
     results = [Article.parse_obj(r) for r in cursor.fetchall()]
     return ListingResponse[Article](
+        total=total,
         debug_msg=str(stmt),
         limit=listing.limit,
         offset=listing.offset,
@@ -105,6 +125,36 @@ def fetch_article(conn: Conn, article_id: str) -> Optional[ArticleDetails]:
     if obj is None:
         return None
     return ArticleDetails.parse_obj(obj)
+
+
+def list_stories(
+    conn: Conn, listing: Listing, query: Optional[str]
+) -> ListingResponse[Story]:
+    stmt = select(story_table)
+    if query is not None and len(query.strip()):
+        stmt = stmt.where(story_table.c.title.ilike(f"%{query}%"))
+    total = count_stmt(conn, stmt)
+    stmt = stmt.limit(listing.limit).offset(listing.offset)
+    cursor = conn.execute(stmt)
+    results = [Story.parse_obj(r) for r in cursor.fetchall()]
+    return ListingResponse[Story](
+        total=total,
+        debug_msg=str(stmt),
+        limit=listing.limit,
+        offset=listing.offset,
+        results=results,
+    )
+
+
+def fetch_story(conn: Conn, story_id: str) -> Optional[Story]:
+    stmt = select(story_table)
+    stmt = stmt.where(story_table.c.id == story_id)
+    stmt = stmt.limit(1)
+    cursor = conn.execute(stmt)
+    obj = cursor.fetchone()
+    if obj is None:
+        return None
+    return Story.parse_obj(obj)
 
 
 def list_clusters(

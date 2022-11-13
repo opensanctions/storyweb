@@ -45,6 +45,20 @@ article_table = Table(
     Column("mentions", Integer, default=0),
 )
 
+story_table = Table(
+    "story",
+    meta,
+    Column("id", Integer, primary_key=True),
+    Column("title", Unicode, nullable=True),
+)
+
+story_article_table = Table(
+    "story_article",
+    meta,
+    Column("article", Unicode(255), primary_key=True),
+    Column("story", Integer, primary_key=True),
+)
+
 sentence_table = Table(
     "sentence",
     meta,
@@ -75,14 +89,6 @@ tag_sentence_table = Table(
     Column("sentence", Integer, primary_key=True),
     Column("tag", Unicode(KEY_LEN), primary_key=True),
 )
-
-# fingerprint_idf_table = Table(
-#     "fingerprint_idf",
-#     meta,
-#     Column("fingerprint", Unicode(1024), index=True),
-#     Column("count", Integer),
-#     Column("frequency", Float),
-# )
 
 link_table = Table(
     "link",

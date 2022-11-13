@@ -38,6 +38,11 @@ class ArticleDetails(Article):
     text: str
 
 
+class Story(BaseModel):
+    id: int
+    title: str
+
+
 class Sentence(BaseModel):
     article: str
     sequence: int

@@ -9,7 +9,9 @@ from storyweb.logic import (
     create_link,
     fetch_article,
     fetch_cluster,
+    fetch_story,
     list_articles,
+    list_stories,
     list_clusters,
     list_links,
     list_related,
@@ -21,6 +23,7 @@ from storyweb.logic import (
 from storyweb.models import (
     Article,
     ArticleDetails,
+    Story,
     Cluster,
     ClusterDetails,
     Link,
@@ -88,11 +91,19 @@ def articles_index(
     conn: Conn = Depends(get_conn),
     listing: Listing = Depends(get_listing),
     site: Optional[str] = Query(None),
+    story: Optional[int] = Query(None),
     q: Optional[str] = Query(None),
     cluster: List[str] = Query([]),
 ):
     clusters = [i for i in cluster if i is not None and len(i.strip())]
-    return list_articles(conn, listing, site=site, query=q, clusters=clusters)
+    return list_articles(
+        conn,
+        listing,
+        site=site,
+        story=story,
+        query=q,
+        clusters=clusters,
+    )
 
 
 @app.get("/articles/{article_id}", response_model=ArticleDetails)
@@ -104,6 +115,26 @@ def article_view(
     if article is None:
         raise HTTPException(404)
     return article
+
+
+@app.get("/stories", response_model=ListingResponse[Story])
+def story_index(
+    conn: Conn = Depends(get_conn),
+    listing: Listing = Depends(get_listing),
+    q: Optional[str] = Query(None),
+):
+    return list_stories(conn, listing, query=q)
+
+
+@app.get("/stories/{story_id}", response_model=Story)
+def article_view(
+    conn: Conn = Depends(get_conn),
+    story_id: str = Path(),
+):
+    story = fetch_story(conn, story_id)
+    if story is None:
+        raise HTTPException(404)
+    return story
 
 
 @app.get("/clusters", response_model=ListingResponse[Cluster])
