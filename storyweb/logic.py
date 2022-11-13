@@ -88,13 +88,14 @@ def list_articles(
         cluster_t = tag_table.alias()
         stmt = stmt.join(cluster_t, cluster_t.c.article == article_table.c.id)
         stmt = stmt.where(cluster_t.c.cluster == cluster)
+
+    total = count_stmt(conn, stmt, func.distinct(article_table.c.id))
     if listing.sort_field is not None:
         column = article_table.c[listing.sort_field]
         if listing.sort_direction == "desc":
             stmt = stmt.order_by(column.desc())
         else:
             stmt = stmt.order_by(column.asc())
-    total = count_stmt(conn, stmt, func.distinct(article_table.c.id))
     stmt = stmt.group_by(
         article_table.c.id,
         article_table.c.title,
@@ -425,6 +426,10 @@ def explode_cluster(conn: Conn, cluster: str) -> str:
     for ref in referents:
         update_cluster(conn, ref)
     return cluster
+
+
+def untag_article(conn: Conn, cluster: str, article: str) -> str:
+    pass
 
 
 def save_links(conn: Conn, links: List[Link]) -> None:

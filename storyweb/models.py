@@ -112,6 +112,11 @@ class ExplodeRequest(BaseModel):
     cluster: str
 
 
+class UntagRequest(BaseModel):
+    cluster: str
+    article: str
+
+
 class Site(BaseModel):
     site: str
     articles: int = 0

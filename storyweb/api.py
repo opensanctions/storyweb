@@ -32,6 +32,7 @@ from storyweb.models import (
     ListingResponse,
     MergeRequest,
     ExplodeRequest,
+    UntagRequest,
     RelatedCluster,
     SimilarCluster,
     Site,
@@ -216,4 +217,13 @@ def explode_cluster_save(
     conn: Conn = Depends(get_conn),
 ):
     cluster = explode_cluster(conn, data.cluster)
+    return fetch_cluster(conn, cluster)
+
+
+@app.post("/links/_untag", response_model=ClusterDetails)
+def untag_article_save(
+    data: UntagRequest,
+    conn: Conn = Depends(get_conn),
+):
+    cluster = untag_article(conn, data.cluster, data.article)
     return fetch_cluster(conn, cluster)
