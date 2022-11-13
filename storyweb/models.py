@@ -102,6 +102,10 @@ class MergeRequest(BaseModel):
     other: List[str]
 
 
+class ExplodeRequest(BaseModel):
+    cluster: str
+
+
 class Site(BaseModel):
     site: str
     articles: int = 0

@@ -356,6 +356,19 @@ def merge_cluster(conn: Conn, anchor: str, others: List[str]) -> str:
     return update_cluster(conn, anchor)
 
 
+def explode_cluster(conn: Conn, cluster: str) -> str:
+    referents = compute_cluster(conn, cluster)
+    link_t = link_table.alias("l")
+    stmt = delete(link_t)
+    stmt = stmt.filter(
+        or_(link_t.c.source_cluster == cluster, link_t.c.target_cluster == cluster)
+    )
+    conn.execute(stmt)
+    for ref in referents:
+        update_cluster(conn, ref)
+    return cluster
+
+
 def save_links(conn: Conn, links: List[Link]) -> None:
     istmt = upsert(link_table).values([l.dict() for l in links])
     values = dict(

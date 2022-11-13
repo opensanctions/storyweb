@@ -2,7 +2,7 @@ import queryString from 'query-string';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 
 import { API_URL } from '../constants'
-import { ILink, IListingResponse } from '../types'
+import { IClusterDetails, ILink, IListingResponse } from '../types'
 
 
 export const linksApi = createApi({
@@ -26,11 +26,22 @@ export const linksApi = createApi({
         }
       },
       invalidatesTags: ['Cluster', 'Link'],
-    })
+    }),
+    explodeCluster: builder.mutation<IClusterDetails, string>({
+      query(clusterId) {
+        return {
+          url: `links/_explode`,
+          method: 'POST',
+          body: { cluster: clusterId },
+        }
+      },
+      invalidatesTags: ['Cluster', 'Link'],
+    }),
   }),
 })
 
 export const {
   useSaveLinkMutation,
+  useExplodeClusterMutation,
   useFetchLinksQuery
 } = linksApi

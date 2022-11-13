@@ -16,6 +16,7 @@ from storyweb.logic import (
     list_similar,
     list_sites,
     merge_cluster,
+    explode_cluster,
 )
 from storyweb.models import (
     Article,
@@ -27,6 +28,7 @@ from storyweb.models import (
     Listing,
     ListingResponse,
     MergeRequest,
+    ExplodeRequest,
     RelatedCluster,
     SimilarCluster,
     Site,
@@ -169,9 +171,18 @@ def links_save(
 
 
 @app.post("/links/_merge", response_model=ClusterDetails)
-def merge_save(
-    merge: MergeRequest,
+def merge_cluster_save(
+    data: MergeRequest,
     conn: Conn = Depends(get_conn),
 ):
-    cluster = merge_cluster(conn, merge.anchor, merge.other)
+    cluster = merge_cluster(conn, data.anchor, data.other)
+    return fetch_cluster(conn, cluster)
+
+
+@app.post("/links/_explode", response_model=ClusterDetails)
+def explode_cluster_save(
+    data: ExplodeRequest,
+    conn: Conn = Depends(get_conn),
+):
+    cluster = explode_cluster(conn, data.cluster)
     return fetch_cluster(conn, cluster)
