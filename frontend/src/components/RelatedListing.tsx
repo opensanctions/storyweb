@@ -24,8 +24,8 @@ export default function RelatedListing({ cluster }: RelatedListingProps) {
   return (
     <>
       <ButtonGroup>
-        <AnchorButton href={getLinkLoomLink(cluster)}>Link tool</AnchorButton>
-        <Button onClick={onExplode}>Explode</Button>
+        <AnchorButton icon="new-link" href={getLinkLoomLink(cluster)}>Link tool</AnchorButton>
+        <Button icon="graph-remove" onClick={onExplode}>Explode</Button>
       </ButtonGroup>
       <HTMLTable condensed bordered className="wide">
         <thead>
@@ -56,7 +56,7 @@ export default function RelatedListing({ cluster }: RelatedListingProps) {
           ))}
         </tbody>
       </HTMLTable>
-      <code>{listing.debug_msg}</code>
+      {/* <code>{listing.debug_msg}</code> */}
     </>
   )
 }

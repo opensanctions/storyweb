@@ -7,6 +7,7 @@ export interface IResponse {
 export interface IListingResponse<T> extends IResponse {
   limit: number
   offset: number
+  total: number
   results: T[]
 }
 

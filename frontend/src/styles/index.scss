@@ -45,4 +45,9 @@ th .bp4-control {
 .page-column {
     min-width: 30%;
     max-width: 50%;
+    padding-right: 2 * $spacer
+}
+
+.page-column-full {
+    width: 100%;
 }

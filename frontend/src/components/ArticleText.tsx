@@ -1,3 +1,4 @@
+import classnames from 'classnames';
 
 import styles from '../styles/Article.module.scss'
 
@@ -41,6 +42,8 @@ export default function ArticleText({ text, tags }: ArticleTextProps) {
   const paraHtml = paragraphs.join('</p><p>')
 
   return (
-    <p className={styles.articleText} dangerouslySetInnerHTML={{ __html: `<p>${paraHtml}</p>` }} />
+    <div className="bp4-card">
+      <p className={classnames('bp4-running-text', styles.articleText)} dangerouslySetInnerHTML={{ __html: `<p>${paraHtml}</p>` }} />
+    </div>
   )
 }

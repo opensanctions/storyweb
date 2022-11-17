@@ -97,7 +97,7 @@ export default function SimilarListing({ cluster }: SimilarListingProps) {
           ))}
         </tbody>
       </HTMLTable>
-      <code>{listing.debug_msg}</code>
+      {/* <code>{listing.debug_msg}</code> */}
     </>
   )
 }

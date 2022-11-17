@@ -28,6 +28,13 @@ export default function ArticleIndex() {
 
   return (
     <div>
+      {listing === undefined || sites === undefined && (
+        <h1>Articles in the StoryWeb database</h1>
+      )}
+      {listing !== undefined && sites !== undefined && (
+        <h1>{listing.total} articles from {sites.length} sources</h1>
+      )}
+
       <section className="section">
         <form onSubmit={onSubmit}>
           <ControlGroup fill>
