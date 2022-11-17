@@ -429,7 +429,24 @@ def explode_cluster(conn: Conn, cluster: str) -> str:
 
 
 def untag_article(conn: Conn, cluster: str, article: str) -> str:
-    pass
+    sstmt = select(func.count(tag_table))
+    sstmt = sstmt.filter(tag_table.c.article == article)
+    sstmt = sstmt.filter(tag_table.c.cluster == cluster)
+    row = conn.execute(sstmt).fetchone()
+    if row is None:
+        return cluster
+    if row["id"] == cluster:
+        raise ValueError("This is the root article for the cluster")
+
+    stmt = update(tag_table)
+    stmt = stmt.values({"cluster": row["id"]})
+    stmt = stmt.where(tag_table.c.cluster == cluster)
+    stmt = stmt.where(tag_table.c.article == article)
+    stmt = stmt.where(tag_table.c.id != cluster)
+    conn.execute(stmt)
+    update_cluster(conn, cluster)
+    update_cluster(conn, row["id"])
+    return cluster
 
 
 def save_links(conn: Conn, links: List[Link]) -> None:

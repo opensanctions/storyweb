@@ -19,6 +19,7 @@ from storyweb.logic import (
     list_sites,
     merge_cluster,
     explode_cluster,
+    untag_article,
 )
 from storyweb.models import (
     Article,
