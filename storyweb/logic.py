@@ -372,10 +372,13 @@ def clear_links(conn: Conn, left: str, right: str) -> None:
     stmt = stmt.filter(
         or_(
             and_(link_t.c.source_cluster == left, link_t.c.target_cluster == right),
+            and_(link_t.c.source == left, link_t.c.target_cluster == right),
             and_(link_t.c.target_cluster == left, link_t.c.source_cluster == right),
+            and_(link_t.c.target == left, link_t.c.source_cluster == right),
         )
     )
-    conn.execute(stmt)
+    res = conn.execute(stmt)
+    print("CLEAR LINK", res.rowcount)
 
 
 def create_link(conn: Conn, source: str, target: str, type: str) -> Link:
@@ -429,23 +432,25 @@ def explode_cluster(conn: Conn, cluster: str) -> str:
 
 
 def untag_article(conn: Conn, cluster: str, article: str) -> str:
-    sstmt = select(func.count(tag_table))
+    sstmt = select(tag_table)
     sstmt = sstmt.filter(tag_table.c.article == article)
     sstmt = sstmt.filter(tag_table.c.cluster == cluster)
     row = conn.execute(sstmt).fetchone()
     if row is None:
         return cluster
-    if row["id"] == cluster:
+    tag_id = row["id"]
+    if tag_id == cluster:
         raise ValueError("This is the root article for the cluster")
 
-    stmt = update(tag_table)
-    stmt = stmt.values({"cluster": row["id"]})
-    stmt = stmt.where(tag_table.c.cluster == cluster)
-    stmt = stmt.where(tag_table.c.article == article)
-    stmt = stmt.where(tag_table.c.id != cluster)
-    conn.execute(stmt)
+    # stmt = update(tag_table)
+    # stmt = stmt.values({"cluster": tag_id})
+    # stmt = stmt.where(tag_table.c.cluster == cluster)
+    # stmt = stmt.where(tag_table.c.article == article)
+    # print("STMT", stmt, tag_id, cluster, article)
+    # conn.execute(stmt)
+    clear_links(conn, tag_id, cluster)
     update_cluster(conn, cluster)
-    update_cluster(conn, row["id"])
+    update_cluster(conn, tag_id)
     return cluster
 
 

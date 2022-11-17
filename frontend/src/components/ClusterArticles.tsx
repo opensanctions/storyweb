@@ -1,8 +1,9 @@
-import { AnchorButton, ButtonGroup, HTMLTable } from "@blueprintjs/core";
+import { AnchorButton, Button, ButtonGroup, HTMLTable } from "@blueprintjs/core";
 import { useEffect, MouseEvent } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useFetchArticleListingQuery } from "../services/articles";
 import { useFetchRelatedClusterListingQuery } from "../services/clusters";
+import { useUntagArticleMutation } from "../services/links";
 import { IArticle, ICluster, IClusterDetails } from "../types";
 import { getClusterLink, getLinkLoomLink } from "../util";
 import ArticlePreview from "./ArticlePreview";
@@ -16,6 +17,7 @@ export default function ClusterArticles({ cluster }: ClusterArticlesProps) {
   const query = { cluster: cluster.id };
   const { data: listing, isLoading } = useFetchArticleListingQuery(query);
   const [params, setParams] = useSearchParams();
+  const [untagArticleMutation, { isLoading: isUntagging }] = useUntagArticleMutation();
   const articleId = params.get('article');
 
   // useEffect(() => {
@@ -25,7 +27,7 @@ export default function ClusterArticles({ cluster }: ClusterArticlesProps) {
   //   }
   // }, [articleId, params, setParams])
 
-  if (listing === undefined || isLoading) {
+  if (listing === undefined || isLoading || isUntagging) {
     return <SectionLoading />
   }
 
@@ -33,6 +35,10 @@ export default function ClusterArticles({ cluster }: ClusterArticlesProps) {
     e.preventDefault();
     const paramsObj = Object.fromEntries(params.entries());
     setParams({ ...paramsObj, article: article.id });
+  }
+
+  const untagArticle = async (article: IArticle) => {
+    await untagArticleMutation({ cluster: cluster.id, article: article.id }).unwrap()
   }
 
   return (
@@ -43,6 +49,7 @@ export default function ClusterArticles({ cluster }: ClusterArticlesProps) {
             <tr>
               <th>Title</th>
               <th>Site</th>
+              <th>Split</th>
             </tr>
           </thead>
           <tbody>
@@ -57,6 +64,14 @@ export default function ClusterArticles({ cluster }: ClusterArticlesProps) {
                   </Link>
                 </td>
                 <td>{article.site}</td>
+                <td>
+                  <Button
+                    onClick={() => untagArticle(article)}
+                    icon="unresolve"
+                    minimal
+                    small
+                  />
+                </td>
               </tr>
             ))}
           </tbody>

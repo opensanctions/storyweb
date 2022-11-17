@@ -68,6 +68,11 @@ export interface IClusterMerge {
   other: string[]
 }
 
+export interface IUntagArticle {
+  cluster: string
+  article: string
+}
+
 export interface ISite {
   site: string
   articles: number

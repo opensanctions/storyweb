@@ -2,7 +2,7 @@ import queryString from 'query-string';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 
 import { API_URL } from '../constants'
-import { IClusterDetails, ILink, IListingResponse } from '../types'
+import { IClusterDetails, ILink, IListingResponse, IUntagArticle } from '../types'
 
 
 export const linksApi = createApi({
@@ -37,11 +37,22 @@ export const linksApi = createApi({
       },
       invalidatesTags: ['Cluster', 'Link'],
     }),
+    untagArticle: builder.mutation<IClusterDetails, IUntagArticle>({
+      query(untag) {
+        return {
+          url: `links/_untag`,
+          method: 'POST',
+          body: untag,
+        }
+      },
+      invalidatesTags: ['Cluster', 'Link'],
+    }),
   }),
 })
 
 export const {
   useSaveLinkMutation,
   useExplodeClusterMutation,
-  useFetchLinksQuery
+  useUntagArticleMutation,
+  useFetchLinksQuery,
 } = linksApi
