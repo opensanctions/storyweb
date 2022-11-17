@@ -1,13 +1,11 @@
-import { AnchorButton, Button, ButtonGroup, HTMLTable } from "@blueprintjs/core";
-import { useEffect, MouseEvent } from "react";
+import { Button, HTMLTable } from "@blueprintjs/core";
+import { MouseEvent } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useFetchArticleListingQuery } from "../services/articles";
-import { useFetchRelatedClusterListingQuery } from "../services/clusters";
 import { useUntagArticleMutation } from "../services/links";
-import { IArticle, ICluster, IClusterDetails } from "../types";
-import { getClusterLink, getLinkLoomLink } from "../util";
+import { IArticle, IClusterDetails } from "../types";
 import ArticlePreview from "./ArticlePreview";
-import { SectionLoading, TagType } from "./util";
+import { SectionLoading } from "./util";
 
 type ClusterArticlesProps = {
   cluster: IClusterDetails,
