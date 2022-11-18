@@ -3,7 +3,7 @@ import classnames from "classnames";
 import { FormEvent, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSearchParams } from "react-router-dom";
-import { ErrorSection, SectionLoading, TagType } from '../components/util';
+import { ErrorSection, Numeric, SectionLoading, TagType } from '../components/util';
 
 import { useFetchClusterListingQuery } from '../services/clusters';
 import { asString, getClusterLink } from "../util";
@@ -26,6 +26,13 @@ export default function ClusterIndex() {
 
   return (
     <div>
+      {listing === undefined && (
+        <h1>Entities in the StoryWeb database</h1>
+      )}
+      {listing !== undefined && (
+        <h1><Numeric value={listing.total} /> entities in the StoryWeb database</h1>
+      )}
+
       <section className="section">
         <form onSubmit={onSubmit}>
           <ControlGroup fill>
@@ -48,7 +55,7 @@ export default function ClusterIndex() {
             <tr>
               <th>Label</th>
               <th>Type</th>
-              <th>Articles</th>
+              <th className="numeric">Articles</th>
             </tr>
           </thead>
           <tbody>
@@ -58,8 +65,8 @@ export default function ClusterIndex() {
                   <Link to={getClusterLink(cluster)}>{cluster.label}</Link>
                 </td>
                 <td><TagType type={cluster.type} /></td>
-                <td>
-                  {cluster.articles}
+                <td className="numeric">
+                  <Numeric value={cluster.articles} />
                 </td>
               </tr>
             ))}

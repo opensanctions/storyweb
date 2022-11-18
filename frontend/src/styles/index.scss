@@ -36,6 +36,11 @@ th .bp4-control {
     // padding: 0 !important;
 }
 
+td.numeric,
+th.numeric {
+    text-align: right;
+}
+
 .page-column-area {
     display: flex;
     flex-direction: row;

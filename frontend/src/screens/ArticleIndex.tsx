@@ -3,7 +3,7 @@ import classnames from "classnames";
 import { FormEvent, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSearchParams } from "react-router-dom";
-import { SectionLoading } from '../components/util';
+import { Numeric, SectionLoading } from '../components/util';
 
 import { useFetchArticleListingQuery } from "../services/articles"
 import { useFetchSitesQuery } from '../services/sites';
@@ -28,11 +28,11 @@ export default function ArticleIndex() {
 
   return (
     <div>
-      {listing === undefined || sites === undefined && (
+      {(listing === undefined || sites === undefined) && (
         <h1>Articles in the StoryWeb database</h1>
       )}
-      {listing !== undefined && sites !== undefined && (
-        <h1>{listing.total} articles from {sites.length} sources</h1>
+      {(listing !== undefined && sites !== undefined) && (
+        <h1><Numeric value={listing.total} /> articles from <Numeric value={sites.length} /> sources in the StoryWeb database</h1>
       )}
 
       <section className="section">
@@ -80,7 +80,7 @@ export default function ArticleIndex() {
                   {article.site}
                 </td>
                 <td className="numeric">
-                  {article.tags}
+                  <Numeric value={article.tags} />
                 </td>
               </tr>
             ))}

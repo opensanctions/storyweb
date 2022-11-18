@@ -1,4 +1,4 @@
-import { AnchorButton, Button } from "@blueprintjs/core";
+import { AnchorButton } from "@blueprintjs/core";
 import { useFetchArticleQuery } from "../services/articles"
 import ArticleText from "./ArticleText";
 
@@ -16,10 +16,8 @@ export default function ArticlePreview({ articleId, tags }: ArticlePreviewProps)
   return (
     <div>
       <h3>
-        <AnchorButton icon="document" minimal href={`/articles/${articleId}`}>
-          {data.title}
-        </AnchorButton>
-
+        <AnchorButton icon="document" minimal href={`/articles/${articleId}`} />
+        {data.title}
       </h3>
       <ArticleText text={data.text} tags={tags} />
     </div>

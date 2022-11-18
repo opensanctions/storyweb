@@ -2,9 +2,11 @@ import { NonIdealState, NonIdealStateIconSize, Spinner, SpinnerSize } from '@blu
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { ReactNode } from 'react';
+import classnames from 'classnames';
 
 import { SPACER } from '..//constants';
 import { useFetchOntologyQuery } from '../services/ontology';
+
 import styles from '../styles/util.module.scss';
 
 
@@ -23,8 +25,22 @@ type TagTypeProps = {
 export function TagType({ type }: TagTypeProps) {
   const { data: ontology } = useFetchOntologyQuery();
   const meta = ontology?.cluster_types.find((t) => t.name === type)
-  return <span className={styles.tagType}>{meta?.label || type}</span>;
+  return <span className={classnames(styles[type], styles.tagType)}>{meta?.label || type}</span>;
 }
+
+type NumericProps = {
+  value?: number | null
+}
+
+export function Numeric({ value }: NumericProps) {
+  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat
+  if (value === undefined || value === null) {
+    return null;
+  }
+  const fmt = new Intl.NumberFormat('en-US');
+  return <>{fmt.format(value)}</>;
+}
+
 
 type SpacedListProps = {
   values: Array<ReactNode>

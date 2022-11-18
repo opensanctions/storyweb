@@ -1,4 +1,4 @@
-import { Button, ButtonGroup, Checkbox, HTMLTable, Intent } from "@blueprintjs/core"
+import { Button, ButtonGroup, Checkbox, HTMLTable, Intent, NonIdealState } from "@blueprintjs/core"
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { useFetchSimilarClusterListingQuery, useMergeClustersMutation } from "../services/clusters"
@@ -63,40 +63,50 @@ export default function SimilarListing({ cluster }: SimilarListingProps) {
           {!allSelected && <>Select all</>}
         </Button>
       </ButtonGroup>
-      <HTMLTable condensed bordered className="wide">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Common tags</th>
-            <th>Count</th>
-            <th>Same</th>
-          </tr>
-        </thead>
-        <tbody>
-          {listing.results.map((similar) => (
-            <tr key={similar.id}>
-              <td>
-                <Link to={getClusterLink(similar)}>{similar.label}</Link>
-              </td>
-              <td><TagType type={similar.type} /></td>
-              <td>
-                <SpacedList values={similar.common.map((l) => <TagLabel key={l} label={l} />)} />
-              </td>
-              <td>
-                {similar.common_count}
-              </td>
-              <td>
-                <Checkbox
-                  checked={merges.indexOf(similar.id) !== -1}
-                  onClick={() => toggleOne(similar.id)}
-                  disabled={isUpdating}
-                />
-              </td>
+      {listing.total < 1 && (
+        <NonIdealState
+          icon="heart-broken"
+          title="No similar entities"
+          description="There are no un-linked entities in other articles with the same name."
+        />
+      )}
+      {listing.total > 0 && (
+        <HTMLTable condensed bordered className="wide">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Common tags</th>
+              <th>Count</th>
+              <th>Same</th>
             </tr>
-          ))}
-        </tbody>
-      </HTMLTable>
+          </thead>
+          <tbody>
+            {listing.results.map((similar) => (
+              <tr key={similar.id}>
+                <td>
+                  <Link to={getClusterLink(similar)}>{similar.label}</Link>
+                </td>
+                <td><TagType type={similar.type} /></td>
+                <td>
+                  <SpacedList values={similar.common.map((l) => <TagLabel key={l} label={l} />)} />
+                </td>
+                <td>
+                  {similar.common_count}
+                </td>
+                <td>
+                  <Checkbox
+                    checked={merges.indexOf(similar.id) !== -1}
+                    onClick={() => toggleOne(similar.id)}
+                    disabled={isUpdating}
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </HTMLTable>
+      )}
+
       {/* <code>{listing.debug_msg}</code> */}
     </>
   )

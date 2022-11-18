@@ -1,0 +1,29 @@
+@import "./variables.scss";
+
+.tagType {
+    font-size: 0.8em;
+    font-weight: bold;
+    display: inline-block;
+    padding: $spacer * 0.2;
+    padding-left: $spacer * 0.5;
+    padding-right: $spacer * 0.5;
+    border-radius: $spacer * 0.5;
+    color: $light-gray4;
+
+}
+
+.LOC {
+    background-color: $forest3;
+}
+
+.PER {
+    background-color: $violet3;
+}
+
+.ORG {
+    background-color: $cerulean3;
+}
+
+.ENT {
+    background-color: $turquoise3;
+}
