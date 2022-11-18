@@ -15,6 +15,7 @@ from storyweb.models import (
     ClusterDetails,
     Link,
     Story,
+    StoryCreate,
     Article,
     Listing,
     ListingResponse,
@@ -156,6 +157,16 @@ def fetch_story(conn: Conn, story_id: str) -> Optional[Story]:
     if obj is None:
         return None
     return Story.parse_obj(obj)
+
+
+def create_story(conn: Conn, data: StoryCreate) -> Story:
+    stmt = insert(story_table)
+    stmt = stmt.values(title=data.title)
+    cursor = conn.execute(stmt)
+    story = fetch_story(conn, cursor.inserted_primary_key[0])
+    if story is None:
+        raise Exception("Story was not saved.")
+    return story
 
 
 def list_clusters(

@@ -10,6 +10,7 @@ from storyweb.logic import (
     fetch_article,
     fetch_cluster,
     fetch_story,
+    create_story,
     list_articles,
     list_stories,
     list_clusters,
@@ -24,6 +25,7 @@ from storyweb.logic import (
 from storyweb.models import (
     Article,
     ArticleDetails,
+    StoryCreate,
     Story,
     Cluster,
     ClusterDetails,
@@ -128,8 +130,13 @@ def story_index(
     return list_stories(conn, listing, query=q)
 
 
+@app.post("/stories", response_model=Story)
+def story_index(story: StoryCreate, conn: Conn = Depends(get_conn)):
+    return create_story(conn, story)
+
+
 @app.get("/stories/{story_id}", response_model=Story)
-def article_view(
+def story_view(
     conn: Conn = Depends(get_conn),
     story_id: str = Path(),
 ):

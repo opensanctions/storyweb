@@ -39,6 +39,10 @@ class ArticleDetails(Article):
     text: str
 
 
+class StoryCreate(BaseModel):
+    title: str
+
+
 class Story(BaseModel):
     id: int
     title: str
