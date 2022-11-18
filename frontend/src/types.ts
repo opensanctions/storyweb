@@ -25,9 +25,12 @@ export interface IArticleDetails extends IArticle {
   text: string
 }
 
-export interface IStory {
-  id: number
+export interface IStoryBase {
   title: string
+}
+
+export interface IStory extends IStoryBase {
+  id: number
 }
 
 export interface IClusterBase {

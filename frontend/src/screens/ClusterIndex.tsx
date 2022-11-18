@@ -20,7 +20,7 @@ export default function ClusterIndex() {
   const onMerge = async () => {
     if (merges.length > 1) {
       const [anchor, ...other] = merges;
-      const response = await postMerge({ anchor: anchor, other: other }).unwrap()
+      await postMerge({ anchor: anchor, other: other }).unwrap()
       setMerges([]);
     }
   }

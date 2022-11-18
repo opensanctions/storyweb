@@ -3,6 +3,7 @@ import classnames from "classnames";
 import { FormEvent, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSearchParams } from "react-router-dom";
+import StoryCreateDialog from '../components/StoryCreateDialog';
 import { Numeric, SectionLoading } from '../components/util';
 
 import { useFetchSitesQuery } from '../services/sites';
@@ -11,9 +12,8 @@ import { asString } from "../util";
 
 export default function StoryIndex() {
   const [params, setParams] = useSearchParams();
-  const { data: sitesResponse } = useFetchSitesQuery();
   const [query, setQuery] = useState(asString(params.get('q')) || '')
-  const [site, setSite] = useState(asString(params.get('site')) || '')
+  const [showCreate, setShowCreate] = useState(false)
   const { data: listing } = useFetchStoryListingQuery({
     q: params.get('q'),
   });
@@ -22,6 +22,9 @@ export default function StoryIndex() {
     e.preventDefault();
     setParams({ q: query });
   }
+
+  const onCreate = () => { setShowCreate(true) };
+  const onCloseCreate = () => { setShowCreate(false) };
 
   return (
     <div>
@@ -42,7 +45,8 @@ export default function StoryIndex() {
         </form>
       </section>
       <section className="section">
-        <Button intent={Intent.PRIMARY}>New story...</Button>
+        <Button intent={Intent.PRIMARY} onClick={onCreate}>New story...</Button>
+        <StoryCreateDialog isOpen={showCreate} onClose={onCloseCreate} />
       </section>
       {listing === undefined && (
         <SectionLoading />
