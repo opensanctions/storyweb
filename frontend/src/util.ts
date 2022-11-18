@@ -22,13 +22,14 @@ export function asString(value: any): string | undefined {
 }
 
 export function listToggle<T>(items: T[], value: T): T[] {
+  const updated = [...items];
   const index = items.indexOf(value);
   if (index === -1) {
-    items.push(value);
+    updated.push(value);
   } else {
-    items.splice(index, 1);
+    updated.splice(index, 1);
   }
-  return items;
+  return updated;
 }
 
 export function getClusterLink(cluster: IClusterBase): string {
