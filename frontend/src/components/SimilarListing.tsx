@@ -3,7 +3,7 @@ import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { useFetchSimilarClusterListingQuery, useMergeClustersMutation } from "../services/clusters"
 import { ICluster } from "../types"
-import { getClusterLink } from "../util"
+import { getClusterLink, listToggle } from "../util"
 import { SectionLoading, SpacedList, TagType, TagLabel } from "./util"
 
 type SimilarListingProps = {
@@ -13,7 +13,7 @@ type SimilarListingProps = {
 export default function SimilarListing({ cluster }: SimilarListingProps) {
   const { data: listing, isLoading } = useFetchSimilarClusterListingQuery({ clusterId: cluster.id, params: {} });
   const navigate = useNavigate();
-  const [postMerge, { isLoading: isUpdating }] = useMergeClustersMutation()
+  const [postMerge, { isLoading: isUpdating }] = useMergeClustersMutation();
   const [merges, setMerges] = useState([] as string[]);
 
   if (listing === undefined || isLoading) {
@@ -38,11 +38,7 @@ export default function SimilarListing({ cluster }: SimilarListingProps) {
   }
 
   const toggleOne = async (id: string) => {
-    if (merges.indexOf(id) === -1) {
-      setMerges([...merges, id]);
-    } else {
-      setMerges(merges.filter(x => x !== id));
-    }
+    setMerges(listToggle(merges, id));
   }
 
   return (

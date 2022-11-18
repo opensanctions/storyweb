@@ -74,7 +74,7 @@ export default function ClusterArticles({ cluster }: ClusterArticlesProps) {
             ))}
           </tbody>
         </HTMLTable>
-        <code>{listing.debug_msg}</code>
+        {/* <code>{listing.debug_msg}</code> */}
       </div>
       <div className="page-column">
         {articleId && <ArticlePreview articleId={articleId} tags={[[cluster.label, ...cluster.labels]]} />}
