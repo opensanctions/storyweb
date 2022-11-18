@@ -1,19 +1,33 @@
-import { ControlGroup, Classes, HTMLTable, Button } from '@blueprintjs/core';
+import { ControlGroup, Classes, HTMLTable, Button, Checkbox } from '@blueprintjs/core';
 import classnames from "classnames";
 import { FormEvent, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSearchParams } from "react-router-dom";
 import { ErrorSection, Numeric, SectionLoading, TagType } from '../components/util';
 
-import { useFetchClusterListingQuery } from '../services/clusters';
-import { asString, getClusterLink } from "../util";
+import { useFetchClusterListingQuery, useMergeClustersMutation } from '../services/clusters';
+import { asString, getClusterLink, listToggle } from "../util";
 
 export default function ClusterIndex() {
   const [params, setParams] = useSearchParams();
-  const [query, setQuery] = useState(asString(params.get('q')) || '')
+  const [query, setQuery] = useState(asString(params.get('q')) || '');
+  const [merges, setMerges] = useState([] as string[]);
+  const [postMerge, { isLoading: isUpdating }] = useMergeClustersMutation();
   const { data: listing, error } = useFetchClusterListingQuery({
     q: params.get('q')
   });
+
+  const onMerge = async () => {
+    if (merges.length > 1) {
+      const [anchor, ...other] = merges;
+      const response = await postMerge({ anchor: anchor, other: other }).unwrap()
+      setMerges([]);
+    }
+  }
+
+  const toggleMerge = async (id: string) => {
+    setMerges(listToggle(merges, id));
+  }
 
   const onSubmit = function (e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -56,6 +70,11 @@ export default function ClusterIndex() {
               <th>Label</th>
               <th>Type</th>
               <th className="numeric">Articles</th>
+              <th>
+                <Button small onClick={onMerge} disabled={merges.length < 2}>
+                  Merge
+                </Button>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -67,6 +86,13 @@ export default function ClusterIndex() {
                 <td><TagType type={cluster.type} /></td>
                 <td className="numeric">
                   <Numeric value={cluster.articles} />
+                </td>
+                <td>
+                  <Checkbox
+                    checked={merges.indexOf(cluster.id) !== -1}
+                    onClick={() => toggleMerge(cluster.id)}
+                    disabled={isUpdating}
+                  />
                 </td>
               </tr>
             ))}

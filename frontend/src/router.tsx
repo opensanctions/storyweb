@@ -3,10 +3,11 @@ import ArticleIndex from "./screens/ArticleIndex";
 import ArticleView from "./screens/ArticleView";
 import ClusterIndex from "./screens/ClusterIndex";
 import ClusterView from "./screens/ClusterView";
-import HomePage from "./screens/Home";
+// import HomePage from "./screens/Home";
 import Layout from "./screens/Layout";
 import Linker from "./screens/Linker";
 import LinkerRelated from "./screens/LinkerRelated";
+import StoryIndex from "./screens/StoryIndex";
 
 interface IRouteError {
   statusText?: string
@@ -35,7 +36,7 @@ export const router = createBrowserRouter([
     children: [
       {
         path: "",
-        element: <HomePage />
+        element: <StoryIndex />
       },
       {
         path: "articles",
