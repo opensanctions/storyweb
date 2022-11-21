@@ -28,6 +28,16 @@ export function TagType({ type }: TagTypeProps) {
   return <span className={classnames(styles[type], styles.tagType)}>{meta?.label || type}</span>;
 }
 
+type LinkTypeProps = {
+  type: string
+}
+
+export function LinkType({ type }: LinkTypeProps) {
+  const { data: ontology } = useFetchOntologyQuery();
+  const meta = ontology?.link_types.find((t) => t.name === type)
+  return <span className={classnames(styles[type], styles.linkType)}>{meta?.label || type}</span>;
+}
+
 type NumericProps = {
   value?: number | null
 }

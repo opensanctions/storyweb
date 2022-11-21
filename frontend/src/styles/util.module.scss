@@ -27,3 +27,28 @@
 .ENT {
     background-color: $turquoise3;
 }
+
+.linkType {
+    font-size: 0.8em;
+    font-weight: bold;
+    display: inline-block;
+    padding: $spacer * 0.2;
+    padding-left: $spacer * 0.5;
+    padding-right: $spacer * 0.5;
+    border-radius: $spacer * 0.5;
+    color: $light-gray4;
+    background-color: $dark-gray3;
+}
+
+.UNRELATED {
+    background-color: $gray3;
+}
+
+.LOCATED,
+.WITHIN {
+    background-color: $forest3;
+}
+
+.ANTAGONIST {
+    background-color: $vermilion3;
+}

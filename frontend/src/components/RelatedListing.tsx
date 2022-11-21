@@ -1,10 +1,10 @@
-import { AnchorButton, Button, ButtonGroup, HTMLTable } from "@blueprintjs/core";
+import { AnchorButton, Button, ButtonGroup, HTMLTable, Icon } from "@blueprintjs/core";
 import { Link } from "react-router-dom";
 import { useFetchRelatedClusterListingQuery } from "../services/clusters";
 import { useExplodeClusterMutation } from "../services/links";
 import { ICluster } from "../types";
 import { getClusterLink, getLinkLoomLink } from "../util";
-import { SectionLoading, TagType } from "./util";
+import { LinkType, SectionLoading, SpacedList, TagType } from "./util";
 
 type RelatedListingProps = {
   cluster: ICluster,
@@ -44,12 +44,12 @@ export default function RelatedListing({ cluster }: RelatedListingProps) {
               </td>
               <td><TagType type={related.type} /></td>
               <td>
-                {related.link_types.length > 0 && (
-                  <Link to={getLinkLoomLink(cluster, related)}><>{related.link_types}</></Link>
-                )}
-                {related.link_types.length === 0 && (
-                  <Link to={getLinkLoomLink(cluster, related)}>add</Link>
-                )}
+                <Link to={getLinkLoomLink(cluster, related)}>
+                  <SpacedList values={related.link_types.map(t => <LinkType type={t} />)} />
+                  {related.link_types.length === 0 && (
+                    <Icon icon="new-link" />
+                  )}
+                </Link>
               </td>
               <td>{related.articles}</td>
             </tr>

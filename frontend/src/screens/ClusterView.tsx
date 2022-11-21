@@ -1,4 +1,4 @@
-import { redirect, useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { Tabs, Tab } from "@blueprintjs/core";
 
 import RelatedListing from "../components/RelatedListing";
@@ -6,11 +6,11 @@ import SimilarListing from "../components/SimilarListing";
 import { ErrorSection, SectionLoading, SpacedList, Spacer, TagType, TagLabel } from "../components/util";
 import { useFetchClusterQuery } from "../services/clusters";
 import ClusterArticles from "../components/ClusterArticles";
-import { getClusterLink } from "../util";
+import { ClusterGoogleSearch, ClusterSanctionsSearch } from "../components/ClusterSearches";
+import { SPACER } from "../constants";
 
 export default function ClusterView() {
   const { clusterId } = useParams();
-  // const navigate = useNavigate();
   const { data: cluster, isLoading, error } = useFetchClusterQuery(clusterId as string);
   if (error !== undefined) {
     return <ErrorSection title="Could not load the article" />
@@ -30,6 +30,10 @@ export default function ClusterView() {
         <TagType type={cluster.type} /> <Spacer />
         Aliases:{' '}
         <SpacedList values={cluster.labels.map((l) => <TagLabel key={l} label={l} />)} />
+        {SPACER}
+        <ClusterGoogleSearch cluster={cluster} />
+        {SPACER}
+        <ClusterSanctionsSearch cluster={cluster} />
       </p>
       <Tabs>
         <Tab id="related" title="Related" panel={<RelatedListing cluster={cluster} />} />
