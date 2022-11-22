@@ -5,7 +5,7 @@ import { getClusterLink } from '..//util';
 import { Button, HotkeyConfig, HotkeysTarget2, RadioGroup } from '@blueprintjs/core';
 import { useFetchClusterQuery } from '../services/clusters';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { SectionLoading } from '../components/util';
+import { SectionLoading, TagType } from '../components/util';
 import { useFetchOntologyQuery } from '../services/ontology';
 import { useFetchLinksQuery, useSaveLinkMutation } from '../services/links';
 import ArticleCorefList from '../components/ArticleCorefList';
@@ -112,15 +112,19 @@ export default function Linker() {
       <HotkeysTarget2 hotkeys={loomHotkeys}>
         <>
           <h3>
-            <code>
+            <strong>
+              <TagType type={source.type} />
+              {' '}
               <Link to={getClusterLink(source)}>{source.label}</Link>
-            </code>
+            </strong>
             {' '}
             {linkType.phrase}
             {' '}
-            <code>
+            <strong>
+              <TagType type={target.type} />
+              {' '}
               <Link to={getClusterLink(target)}>{target.label}</Link>
-            </code>
+            </strong>
           </h3>
           <div className="page-column-area">
             <div className="page-column">
