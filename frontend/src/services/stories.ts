@@ -6,7 +6,7 @@ import type { IListingResponse, IStory, IStoryArticleToggle, IStoryBase } from '
 
 export const storiesApi = createApi({
   reducerPath: 'storiesApi',
-  tagTypes: ['Story'],
+  tagTypes: ['Story', 'Article'],
   baseQuery: fetchBaseQuery({ baseUrl: API_URL }),
   endpoints: (builder) => ({
     fetchStory: builder.query<IStory, string>({
@@ -38,7 +38,7 @@ export const storiesApi = createApi({
           body: { article: data.article },
         }
       },
-      invalidatesTags: ['Story'],
+      invalidatesTags: ['Story', 'Article'],
     }),
   }),
 })

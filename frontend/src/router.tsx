@@ -8,6 +8,7 @@ import Layout from "./screens/Layout";
 import Linker from "./screens/Linker";
 import LinkerRelated from "./screens/LinkerRelated";
 import StoryIndex from "./screens/StoryIndex";
+import StoryView from "./screens/StoryView";
 
 interface IRouteError {
   statusText?: string
@@ -37,6 +38,10 @@ export const router = createBrowserRouter([
       {
         path: "",
         element: <StoryIndex />
+      },
+      {
+        path: "stories/:storyId",
+        element: <StoryView />
       },
       {
         path: "articles",

@@ -11,30 +11,29 @@ type ArticleStoryEditorContentProps = {
 function ArticleStoryEditorContent({ article }: ArticleStoryEditorContentProps) {
   const { data: allListing } = useFetchStoryListingQuery({ limit: 100 });
   const { data: linkedListing } = useFetchStoryListingQuery({ limit: 100, article: article.id });
-  const [toggleStoryArticle, { isLoading: isToggling }] = useToggleStoryArticleMutation();
+  const [toggleStoryArticle] = useToggleStoryArticleMutation();
 
 
   const linkedIds = linkedListing?.results.map((s) => s.id) || [];
   const onToggleAssign = async (e: MouseEvent, story: IStory) => {
     await toggleStoryArticle({ story: story.id, article: article.id }).unwrap();
   }
+  if (allListing === undefined) {
+    return null;
+  }
 
   return (
-    <>
-      {(allListing !== undefined) && (
-        <Menu>
-          {allListing.results.map((story) =>
-            <MenuItem
-              key={story.id}
-              text={story.title}
-              onClick={(e) => onToggleAssign(e, story)}
-              intent={linkedIds.indexOf(story.id) === -1 ? Intent.NONE : Intent.SUCCESS}
-              icon={linkedIds.indexOf(story.id) === -1 ? "small-minus" : "small-tick"}
-            />
-          )}
-        </Menu>
+    <Menu>
+      {allListing.results.map((story) =>
+        <MenuItem
+          key={story.id}
+          text={story.title}
+          onClick={(e) => onToggleAssign(e, story)}
+          intent={linkedIds.indexOf(story.id) === -1 ? Intent.NONE : Intent.SUCCESS}
+          icon={linkedIds.indexOf(story.id) === -1 ? "small-minus" : "small-tick"}
+        />
       )}
-    </>
+    </Menu>
   );
 }
 
