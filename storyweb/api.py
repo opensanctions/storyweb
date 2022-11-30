@@ -5,23 +5,28 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from storyweb.ontology import OntologyModel, ontology
 from storyweb.db import engine, Conn
-from storyweb.logic import (
-    create_link,
-    fetch_article,
+from storyweb.logic.articles import fetch_article, list_articles, list_sites
+from storyweb.logic.clusters import (
     fetch_cluster,
-    fetch_story,
-    create_story,
-    toggle_story_article,
-    list_articles,
-    list_stories,
     list_clusters,
-    list_links,
     list_related,
     list_similar,
-    list_sites,
     merge_cluster,
     explode_cluster,
     untag_article,
+)
+from storyweb.logic.links import (
+    create_link,
+    list_links,
+    merge_cluster,
+    explode_cluster,
+    untag_article,
+)
+from storyweb.logic.stories import (
+    list_stories,
+    fetch_story,
+    create_story,
+    toggle_story_article,
 )
 from storyweb.models import (
     Article,

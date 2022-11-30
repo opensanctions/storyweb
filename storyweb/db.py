@@ -20,18 +20,6 @@ def create_db() -> None:
     meta.create_all(checkfirst=True)
 
 
-# @event.listens_for(Engine, "before_cursor_execute")
-# def before_cursor_execute(conn, cursor, statement, parameters, context, executemany):
-#     conn.info.setdefault("query_start_time", []).append(time.time())
-#     # log.debug("Start Query: %s" % statement)
-
-
-# @event.listens_for(Engine, "after_cursor_execute")
-# def after_cursor_execute(conn, cursor, statement, parameters, context, executemany):
-#     total = time.time() - conn.info["query_start_time"].pop(-1)
-#     log.debug("Query [%s] total time: %f" % (statement, total))
-
-
 article_table = Table(
     "article",
     meta,
