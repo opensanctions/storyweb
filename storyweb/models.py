@@ -43,6 +43,10 @@ class StoryCreate(BaseModel):
     title: str
 
 
+class StoryArticleToggle(BaseModel):
+    article: str
+
+
 class Story(BaseModel):
     id: int
     title: str

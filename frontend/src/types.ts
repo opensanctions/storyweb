@@ -33,6 +33,11 @@ export interface IStory extends IStoryBase {
   id: number
 }
 
+export interface IStoryArticleToggle {
+  story: number
+  article: string
+}
+
 export interface IClusterBase {
   id: string
   label: string

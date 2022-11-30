@@ -18,9 +18,6 @@ export default function ClusterView() {
   if (cluster === undefined || isLoading) {
     return <SectionLoading />
   }
-  // if (cluster.id != clusterId) {
-  //   navigate(getClusterLink(cluster));
-  // }
   return (
     <div>
       <h1>

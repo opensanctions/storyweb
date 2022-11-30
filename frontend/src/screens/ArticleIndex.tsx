@@ -3,6 +3,7 @@ import classnames from "classnames";
 import { FormEvent, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSearchParams } from "react-router-dom";
+import ArticleStoryEditor from '../components/ArticleStoryEditor';
 import { Numeric, SectionLoading } from '../components/util';
 
 import { useFetchArticleListingQuery } from "../services/articles"
@@ -68,6 +69,7 @@ export default function ArticleIndex() {
               <th>Title</th>
               <th>Site</th>
               <th className="numeric">Entities</th>
+              <th>Add to story</th>
             </tr>
           </thead>
           <tbody>
@@ -81,6 +83,9 @@ export default function ArticleIndex() {
                 </td>
                 <td className="numeric">
                   <Numeric value={article.tags} />
+                </td>
+                <td>
+                  <ArticleStoryEditor article={article} inList />
                 </td>
               </tr>
             ))}

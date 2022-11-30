@@ -130,11 +130,17 @@ def fetch_article(conn: Conn, article_id: str) -> Optional[ArticleDetails]:
 
 
 def list_stories(
-    conn: Conn, listing: Listing, query: Optional[str]
+    conn: Conn, listing: Listing, query: Optional[str], article: Optional[str]
 ) -> ListingResponse[Story]:
     stmt = select(story_table)
     if query is not None and len(query.strip()):
         stmt = stmt.where(story_table.c.title.ilike(f"%{query}%"))
+    if article is not None and len(article.strip()):
+        stmt = stmt.join(
+            story_article_table,
+            story_article_table.c.story == story_table.c.id,
+        )
+        stmt = stmt.where(story_article_table.c.article == article)
     total = count_stmt(conn, stmt, story_table.c.id)
     stmt = stmt.limit(listing.limit).offset(listing.offset)
     cursor = conn.execute(stmt)
@@ -167,6 +173,21 @@ def create_story(conn: Conn, data: StoryCreate) -> Story:
     if story is None:
         raise Exception("Story was not saved.")
     return story
+
+
+def toggle_story_article(conn: Conn, story: str, article: str) -> None:
+    t = story_article_table.alias("t")
+    sstmt = select(func.count(story_article_table.c.story))
+    sstmt = sstmt.filter(t.c.story == story, t.c.article == article)
+    scursor = conn.execute(sstmt)
+    if scursor.scalar_one() > 0:
+        dstmt = delete(t)
+        dstmt = dstmt.filter(t.c.story == story, t.c.article == article)
+        conn.execute(dstmt)
+    else:
+        istmt = insert(story_article_table)
+        istmt = istmt.values(story=story, article=article)
+        conn.execute(istmt)
 
 
 def list_clusters(
