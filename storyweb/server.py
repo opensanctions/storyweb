@@ -1,4 +1,4 @@
 import logging
-from storyweb.api import app
+from storyweb.app import app
 
 logging.basicConfig(level=logging.INFO)

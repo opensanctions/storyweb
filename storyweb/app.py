@@ -8,7 +8,7 @@ from storyweb.routes import links, stories, articles, clusters
 app = FastAPI(
     title="storyweb",
     description="make networks from text",
-    redoc_url="/",
+    redoc_url="/api/1/docs",
 )
 app.add_middleware(
     CORSMiddleware,
@@ -17,12 +17,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.include_router(links.router)
-app.include_router(stories.router)
-app.include_router(articles.router)
-app.include_router(clusters.router)
+app.include_router(links.router, prefix="/api/1")
+app.include_router(stories.router, prefix="/api/1")
+app.include_router(articles.router, prefix="/api/1")
+app.include_router(clusters.router, prefix="/api/1")
 
 
-@app.get("/ontology", response_model=OntologyModel)
+@app.get("/api/1/ontology", response_model=OntologyModel)
 def ontology_model() -> OntologyModel:
     return ontology.model
