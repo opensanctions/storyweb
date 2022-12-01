@@ -1,52 +1,9 @@
-from typing import Generator, List, Optional
-from fastapi import FastAPI, Depends, Path, Query
-from fastapi.exceptions import HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from storyweb.ontology import OntologyModel, ontology
-from storyweb.db import engine, Conn
-from storyweb.logic.articles import fetch_article, list_articles, list_sites
-from storyweb.logic.clusters import (
-    fetch_cluster,
-    list_clusters,
-    list_related,
-    list_similar,
-    merge_cluster,
-    explode_cluster,
-    untag_article,
-)
-from storyweb.logic.links import (
-    create_link,
-    list_links,
-    untag_article,
-)
-from storyweb.logic.stories import (
-    list_stories,
-    fetch_story,
-    create_story,
-    toggle_story_article,
-)
-from storyweb.routes import links, stories
-from storyweb.routes.util import get_conn, get_listing
-from storyweb.models import (
-    Article,
-    ArticleDetails,
-    StoryCreate,
-    StoryArticleToggle,
-    Story,
-    Cluster,
-    ClusterDetails,
-    Link,
-    LinkBase,
-    Listing,
-    ListingResponse,
-    MergeRequest,
-    ExplodeRequest,
-    UntagRequest,
-    RelatedCluster,
-    SimilarCluster,
-    Site,
-)
+from storyweb.routes import links, stories, articles, clusters
+
 
 app = FastAPI(
     title="storyweb",
@@ -62,83 +19,8 @@ app.add_middleware(
 )
 app.include_router(links.router)
 app.include_router(stories.router)
-
-
-@app.get("/sites", response_model=ListingResponse[Site])
-def sites_index(
-    conn: Conn = Depends(get_conn),
-    listing: Listing = Depends(get_listing),
-):
-    """List all the source sites from which articles (refs) have been imported."""
-    return list_sites(conn, listing)
-
-
-@app.get("/articles", response_model=ListingResponse[Article])
-def articles_index(
-    conn: Conn = Depends(get_conn),
-    listing: Listing = Depends(get_listing),
-    site: Optional[str] = Query(None),
-    story: Optional[int] = Query(None),
-    q: Optional[str] = Query(None),
-    cluster: List[str] = Query([]),
-):
-    clusters = [i for i in cluster if i is not None and len(i.strip())]
-    return list_articles(
-        conn,
-        listing,
-        site=site,
-        story=story,
-        query=q,
-        clusters=clusters,
-    )
-
-
-@app.get("/articles/{article_id}", response_model=ArticleDetails)
-def article_view(
-    conn: Conn = Depends(get_conn),
-    article_id: str = Path(),
-):
-    article = fetch_article(conn, article_id)
-    if article is None:
-        raise HTTPException(404)
-    return article
-
-
-@app.get("/clusters", response_model=ListingResponse[Cluster])
-def route_cluster_index(
-    conn: Conn = Depends(get_conn),
-    listing: Listing = Depends(get_listing),
-    q: Optional[str] = Query(None),
-    article: Optional[str] = Query(None),
-):
-    return list_clusters(conn, listing, query=q, article=article)
-
-
-@app.get("/clusters/{cluster}", response_model=ClusterDetails)
-def route_cluster_view(conn: Conn = Depends(get_conn), cluster: str = Path()):
-    obj = fetch_cluster(conn, cluster)
-    if obj is None:
-        raise HTTPException(404)
-    return obj
-
-
-@app.get("/clusters/{cluster}/similar", response_model=ListingResponse[SimilarCluster])
-def route_cluster_similar(
-    conn: Conn = Depends(get_conn),
-    listing: Listing = Depends(get_listing),
-    cluster: str = Path(),
-):
-    return list_similar(conn, listing, cluster)
-
-
-@app.get("/clusters/{cluster}/related", response_model=ListingResponse[RelatedCluster])
-def route_cluster_related(
-    conn: Conn = Depends(get_conn),
-    listing: Listing = Depends(get_listing),
-    cluster: str = Path(),
-    linked: Optional[bool] = Query(None),
-):
-    return list_related(conn, listing, cluster, linked=linked)
+app.include_router(articles.router)
+app.include_router(clusters.router)
 
 
 @app.get("/ontology", response_model=OntologyModel)
