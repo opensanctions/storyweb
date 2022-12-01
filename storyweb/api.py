@@ -26,7 +26,7 @@ from storyweb.logic.stories import (
     create_story,
     toggle_story_article,
 )
-from storyweb.routes import links
+from storyweb.routes import links, stories
 from storyweb.routes.util import get_conn, get_listing
 from storyweb.models import (
     Article,
@@ -61,6 +61,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(links.router)
+app.include_router(stories.router)
 
 
 @app.get("/sites", response_model=ListingResponse[Site])
@@ -101,45 +102,6 @@ def article_view(
     if article is None:
         raise HTTPException(404)
     return article
-
-
-@app.get("/stories", response_model=ListingResponse[Story])
-def story_index(
-    conn: Conn = Depends(get_conn),
-    listing: Listing = Depends(get_listing),
-    q: Optional[str] = Query(None),
-    article: Optional[str] = Query(None),
-):
-    return list_stories(conn, listing, query=q, article=article)
-
-
-@app.post("/stories", response_model=Story)
-def story_create(story: StoryCreate, conn: Conn = Depends(get_conn)):
-    return create_story(conn, story)
-
-
-@app.get("/stories/{story_id}", response_model=Story)
-def story_view(
-    conn: Conn = Depends(get_conn),
-    story_id: str = Path(),
-):
-    story = fetch_story(conn, story_id)
-    if story is None:
-        raise HTTPException(404)
-    return story
-
-
-@app.post("/stories/{story_id}/articles", response_model=Story)
-def story_article_toggle(
-    data: StoryArticleToggle,
-    conn: Conn = Depends(get_conn),
-    story_id: str = Path(),
-):
-    story = fetch_story(conn, story_id)
-    if story is None:
-        raise HTTPException(404)
-    toggle_story_article(conn, story_id, data.article)
-    return story
 
 
 @app.get("/clusters", response_model=ListingResponse[Cluster])
