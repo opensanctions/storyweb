@@ -12,7 +12,7 @@ from pydantic import ValidationError
 from storyweb.db import engine
 from storyweb.clean import clean_entity_name, most_common, pick_name
 from storyweb.models import ArticleDetails, Sentence, Tag, TagSentence
-from storyweb.logic import save_extracted
+from storyweb.logic.articles import save_extracted
 from storyweb.ontology import ClusterType
 
 log = logging.getLogger(__name__)

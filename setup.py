@@ -29,6 +29,7 @@ setup(
         "pantomime",
         "orjson",
         "fastapi",
+        "networkx",
         "spacy",
         "python-levenshtein",
         "languagecodes",

@@ -1,4 +1,3 @@
-from datetime import datetime
 import logging
 from typing import Optional
 from sqlalchemy.sql import select, delete, insert, func
@@ -60,7 +59,7 @@ def create_story(conn: Conn, data: StoryCreate) -> Story:
 
 def toggle_story_article(conn: Conn, story: str, article: str) -> None:
     t = story_article_table.alias("t")
-    sstmt = select(func.count(story_article_table.c.story))
+    sstmt = select(func.count(t.c.story))
     sstmt = sstmt.filter(t.c.story == story, t.c.article == article)
     scursor = conn.execute(sstmt)
     if scursor.scalar_one() > 0:

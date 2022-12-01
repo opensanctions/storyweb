@@ -1,15 +1,18 @@
 import click
 import logging
 from pathlib import Path
+from networkx.readwrite.gexf import write_gexf
 
 from storyweb.db import create_db, engine
-from storyweb.logic import auto_merge, compute_cluster
+from storyweb.logic.links import compute_cluster, auto_merge
+from storyweb.logic.graph import generate_graph
 from storyweb.pipeline import load_articles
 
 
 log = logging.getLogger(__name__)
 
 InPath = click.Path(dir_okay=False, readable=True, path_type=Path)
+OutPath = click.Path(dir_okay=False, readable=True, path_type=Path)
 
 
 @click.group(help="Storyweb CLI")
@@ -21,6 +24,14 @@ def cli() -> None:
 @click.argument("articles", type=InPath)
 def parse(articles: Path) -> None:
     load_articles(articles)
+
+
+@cli.command("graph", help="Export an entity graph")
+@click.argument("graph_path", type=OutPath)
+def export_graph(graph_path: Path) -> None:
+    with engine.begin() as conn:
+        graph = generate_graph(conn)
+        write_gexf(graph, graph_path)
 
 
 @cli.command("compute", help="Run backend computations")

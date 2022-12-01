@@ -1,9 +1,8 @@
 import logging
-from datetime import datetime
-from typing import Dict, Iterable, List, Optional, Tuple
+from typing import Iterable, List, Optional
 from sqlalchemy.sql import select, delete, insert, func
 
-from storyweb.db import Conn, upsert, engine
+from storyweb.db import Conn, upsert
 from storyweb.db import article_table, sentence_table
 from storyweb.db import tag_table, tag_sentence_table
 from storyweb.db import story_article_table
@@ -19,8 +18,6 @@ from storyweb.models import (
     Tag,
     TagSentence,
 )
-from storyweb.ontology import LinkType
-from storyweb.logic.links import get_links, save_links, update_cluster
 
 log = logging.getLogger(__name__)
 
@@ -183,55 +180,3 @@ def save_extracted(
 #     stmt = stmt.from_select(["fingerprint", "count", "frequency"], gstmt)
 #     print("Update tf/idf", stmt)
 #     conn.execute(stmt)
-
-
-def auto_merge(conn: Conn, check_links: bool = True):
-    stmt = select(
-        tag_table.c.fingerprint.label("fingerprint"),
-        func.array_agg(tag_table.c.cluster).label("clusters"),
-    )
-    stmt = stmt.group_by(tag_table.c.fingerprint)
-    stmt = stmt.order_by(func.count(tag_table.c.id).desc())
-    stmt = stmt.having(func.count(tag_table.c.id) > 1)
-    cursor = conn.execute(stmt)
-
-    now = datetime.utcnow()
-    while True:
-        results = cursor.fetchmany(10000)
-        if not results:
-            break
-        for row in results:
-            with engine.begin() as inner:
-                canonical = max(row["clusters"])
-                links: Dict[Tuple[str, str], Link] = {}
-                for ref in row["clusters"]:
-                    if ref == canonical or ref is None:
-                        continue
-                    if check_links and len(get_links(inner, ref, canonical)) > 0:
-                        continue
-                    link = Link(
-                        source=ref,
-                        source_cluster=ref,
-                        target=canonical,
-                        target_cluster=canonical,
-                        type=LinkType.SAME,
-                        user="auto-merge",
-                        timestamp=now,
-                    )
-                    links[(ref, canonical)] = link
-                links_objs = list(links.values())
-                if len(links_objs):
-                    save_links(inner, links_objs)
-                    log.info(
-                        "Clusters: %s (%s merge %s)"
-                        % (row["fingerprint"], canonical, len(links))
-                    )
-                    update_cluster(inner, canonical)
-
-    # cstmt = select(tag_table.c.cluster.label("cluster"))
-    # cstmt = cstmt.where(tag_table.c.id != tag_table.c.cluster)
-    # cstmt = cstmt.group_by(tag_table.c.cluster)
-    # cursor = conn.execute(cstmt)
-    # clusters = [r.cluster for r in cursor.fetchall()]
-    # for cluster in clusters:
-    #     update_cluster(conn, cluster)
