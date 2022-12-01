@@ -1,0 +1,5 @@
+frontend/node_modules
+.mypy_cache
+__pycache__
+storyweb.egg-info
+.envrc

@@ -29,7 +29,7 @@ setup(
         "pantomime",
         "orjson",
         "fastapi",
-        # "spacy[apple]",
+        "spacy",
         "python-levenshtein",
         "languagecodes",
         "click >= 8.0.0, < 8.1.0",
