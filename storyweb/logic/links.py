@@ -84,38 +84,6 @@ def create_link(conn: Conn, source: str, target: str, type: str) -> Link:
     return link
 
 
-def merge_cluster(conn: Conn, anchor: str, others: List[str]) -> str:
-    timestamp = datetime.utcnow()
-    links: List[Link] = []
-    for other in others:
-        link = Link(
-            source=anchor,
-            source_cluster=anchor,
-            target=other,
-            target_cluster=other,
-            type=LinkType.SAME,
-            user="web",
-            timestamp=timestamp,
-        )
-        links.append(link)
-        clear_links(conn, anchor, other)
-    save_links(conn, links)
-    return update_cluster(conn, anchor)
-
-
-def explode_cluster(conn: Conn, cluster: str) -> str:
-    referents = compute_cluster(conn, cluster)
-    link_t = link_table.alias("l")
-    stmt = delete(link_t)
-    stmt = stmt.filter(
-        or_(link_t.c.source_cluster == cluster, link_t.c.target_cluster == cluster)
-    )
-    conn.execute(stmt)
-    for ref in referents:
-        update_cluster(conn, ref)
-    return cluster
-
-
 def untag_article(conn: Conn, cluster: str, article: str) -> str:
     sstmt = select(tag_table)
     sstmt = sstmt.filter(tag_table.c.article == article)

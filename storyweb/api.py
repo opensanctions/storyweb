@@ -18,8 +18,6 @@ from storyweb.logic.clusters import (
 from storyweb.logic.links import (
     create_link,
     list_links,
-    merge_cluster,
-    explode_cluster,
     untag_article,
 )
 from storyweb.logic.stories import (
@@ -28,6 +26,8 @@ from storyweb.logic.stories import (
     create_story,
     toggle_story_article,
 )
+from storyweb.routes import links
+from storyweb.routes.util import get_conn, get_listing
 from storyweb.models import (
     Article,
     ArticleDetails,
@@ -60,32 +60,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-def get_conn() -> Generator[Conn, None, None]:
-    """Create a database transaction for the request."""
-    with engine.begin() as conn:
-        yield conn
-
-
-def get_listing(
-    limit: int = Query(50, description="Number of objects to return", le=5000),
-    offset: int = Query(0, description="Skip the first N objects in response"),
-    sort: Optional[str] = Query(
-        None, description="Sort criterion, format: field:direction"
-    ),
-) -> Listing:
-    direction = "desc"
-    if sort is not None and ":" in sort:
-        sort, direction = sort.rsplit(":", 1)
-        direction = direction.lower().strip()
-        direction = "asc" if direction == "asc" else "desc"
-    return Listing(
-        limit=limit,
-        offset=offset,
-        sort_direction=direction,
-        sort_field=sort,
-    )
+app.include_router(links.router)
 
 
 @app.get("/sites", response_model=ListingResponse[Site])
@@ -207,52 +182,3 @@ def route_cluster_related(
 @app.get("/ontology", response_model=OntologyModel)
 def ontology_model() -> OntologyModel:
     return ontology.model
-
-
-@app.get("/links", response_model=ListingResponse[Link])
-def links_index(
-    conn: Conn = Depends(get_conn),
-    listing: Listing = Depends(get_listing),
-    cluster: List[str] = Query([]),
-):
-    clusters = [i for i in cluster if i is not None and len(i.strip())]
-    return list_links(conn, listing, clusters)
-
-
-@app.post("/links", response_model=Link)
-def links_save(
-    link: LinkBase,
-    conn: Conn = Depends(get_conn),
-):
-    # * make a link (any type)
-    #   * see all sentences that mention both tags/identities
-    #   * pick a relationship type
-    result = create_link(conn, link.source, link.target, link.type)
-    return result
-
-
-@app.post("/links/_merge", response_model=ClusterDetails)
-def merge_cluster_save(
-    data: MergeRequest,
-    conn: Conn = Depends(get_conn),
-):
-    cluster = merge_cluster(conn, data.anchor, data.other)
-    return fetch_cluster(conn, cluster)
-
-
-@app.post("/links/_explode", response_model=ClusterDetails)
-def explode_cluster_save(
-    data: ExplodeRequest,
-    conn: Conn = Depends(get_conn),
-):
-    cluster = explode_cluster(conn, data.cluster)
-    return fetch_cluster(conn, cluster)
-
-
-@app.post("/links/_untag", response_model=ClusterDetails)
-def untag_article_save(
-    data: UntagRequest,
-    conn: Conn = Depends(get_conn),
-):
-    cluster = untag_article(conn, data.cluster, data.article)
-    return fetch_cluster(conn, cluster)
