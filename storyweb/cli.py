@@ -36,9 +36,15 @@ def export_graph(graph_path: Path) -> None:
 
 @cli.command("compute", help="Run backend computations")
 def compute() -> None:
+    from pprint import pprint
+    from storyweb.models import Listing
+    from storyweb.logic.clusters import list_story_pairs
+
     with engine.begin() as conn:
         # print(compute_cluster(conn, "ffd364472a999c3d1001f5910398a53997ae0afe"))
-        compute_cluster(conn, "ffd364472a999c3d1001f5910398a53997ae0afe")
+        listing = Listing(limit=5, offset=0, sort_direction="desc")
+        resp = list_story_pairs(conn, listing, 4)
+        pprint(resp.dict())
 
 
 @cli.command("auto-merge", help="Automatically merge on fingerprints")

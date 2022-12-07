@@ -1,6 +1,7 @@
 import { Button, HTMLTable } from "@blueprintjs/core";
 import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
+import StoryClusters from "../components/StoryClusters";
 import { ErrorSection, SectionLoading } from "../components/util";
 import { useFetchArticleListingQuery } from "../services/articles";
 import { useFetchStoryQuery, useToggleStoryArticleMutation } from "../services/stories";
@@ -29,6 +30,9 @@ export default function StoryView() {
       <h1>
         {story.title}
       </h1>
+      <h3>Entities</h3>
+      <StoryClusters storyId={story.id} />
+      <h3>Articles</h3>
       <HTMLTable condensed bordered className="wide">
         <thead>
           <tr>

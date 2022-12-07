@@ -32,6 +32,7 @@ setup(
         "networkx",
         "spacy",
         "python-levenshtein",
+        "followthemoney",
         "languagecodes",
         "click >= 8.0.0, < 8.1.0",
     ],

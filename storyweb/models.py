@@ -88,6 +88,12 @@ class ClusterDetails(Cluster):
     labels: List[str]
 
 
+class ClusterPair(BaseModel):
+    left: ClusterBase
+    right: ClusterBase
+    articles: int
+
+
 class RelatedCluster(ClusterBase):
     articles: int
     link_types: List[str] = []

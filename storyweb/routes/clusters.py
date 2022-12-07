@@ -57,8 +57,9 @@ def route_cluster_index(
     listing: Listing = Depends(get_listing),
     q: Optional[str] = Query(None),
     article: Optional[str] = Query(None),
+    story: Optional[str] = Query(None),
 ):
-    return list_clusters(conn, listing, query=q, article=article)
+    return list_clusters(conn, listing, query=q, article=article, story=story)
 
 
 @router.get("/clusters/{cluster}", response_model=ClusterDetails)

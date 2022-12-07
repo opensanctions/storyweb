@@ -1,15 +1,18 @@
 import logging
 from datetime import datetime
 from typing import List, Optional, Set
+from sqlalchemy.sql import Select, Alias
 from sqlalchemy.sql import select, delete, update, func, or_
 
 from storyweb.db import Conn
-from storyweb.db import tag_table, link_table
+from storyweb.db import tag_table, link_table, story_article_table
 from storyweb.clean import most_common
 from storyweb.logic.util import count_stmt
 from storyweb.models import (
     Cluster,
     ClusterDetails,
+    ClusterBase,
+    ClusterPair,
     Link,
     Listing,
     ListingResponse,
@@ -27,6 +30,7 @@ def list_clusters(
     listing: Listing,
     query: Optional[str] = None,
     article: Optional[str] = None,
+    story: Optional[str] = None,
 ) -> ListingResponse[Cluster]:
     cluster_t = tag_table.alias("c")
     articles = func.count(func.distinct(cluster_t.c.article))
@@ -45,6 +49,13 @@ def list_clusters(
         article_t = tag_table.alias("a")
         stmt = stmt.where(article_t.c.cluster == cluster_t.c.cluster)
         stmt = stmt.where(article_t.c.article == article)
+
+    if story is not None and len(story.strip()):
+        sa_t = story_article_table.alias("sat")
+        article_t = tag_table.alias("sa")
+        stmt = stmt.where(article_t.c.cluster == cluster_t.c.cluster)
+        stmt = stmt.where(article_t.c.article == sa_t.c.article)
+        stmt = stmt.where(sa_t.c.story == story)
 
     total = count_stmt(conn, stmt, func.distinct(cluster_t.c.cluster))
     stmt = stmt.group_by(
@@ -140,6 +151,21 @@ def list_similar(conn: Conn, listing: Listing, cluster: str):
 def list_related(
     conn: Conn, listing: Listing, cluster: str, linked: Optional[bool] = None
 ) -> ListingResponse[RelatedCluster]:
+
+    tag_t = tag_table.alias("t")
+    cluster_t = tag_table.alias("c")
+
+    articles = func.count(func.distinct(cluster_t.c.article))
+    stmt = select(
+        tag_t.c.cluster.label("id"),
+        tag_t.c.cluster_label.label("label"),
+        tag_t.c.cluster_type.label("type"),
+        articles.label("articles"),
+    )
+    stmt = stmt.where(tag_t.c.article == cluster_t.c.article)
+    stmt = stmt.where(tag_t.c.cluster != cluster)
+    stmt = stmt.where(cluster_t.c.cluster == cluster)
+
     link_fwd = link_table.alias("fwd")
     link_bck = link_table.alias("bck")
     stmt_fwd = select(link_fwd.c.target_cluster.label("cluster"), link_fwd.c.type)
@@ -147,28 +173,11 @@ def list_related(
     stmt_bck = select(link_bck.c.source_cluster.label("cluster"), link_bck.c.type)
     stmt_bck = stmt_bck.filter(link_bck.c.target_cluster == cluster)
     cte = stmt_fwd.cte("links").union(stmt_bck)
-
-    tag_t = tag_table.alias("t")
-    cluster_t = tag_table.alias("c")
-
-    articles = func.count(func.distinct(cluster_t.c.article))
-
-    stmt = select(
-        tag_t.c.cluster.label("id"),
-        tag_t.c.cluster_label.label("label"),
-        tag_t.c.cluster_type.label("type"),
-        articles.label("articles"),
-    )
-    if linked is not False:
-        link_types = func.array_remove(func.array_agg(func.distinct(cte.c.type)), None)
-        stmt = stmt.add_columns(link_types.label("link_types"))
-    stmt = stmt.where(tag_t.c.article == cluster_t.c.article)
-    stmt = stmt.where(tag_t.c.cluster != cluster)
-    stmt = stmt.where(cluster_t.c.cluster == cluster)
-
     if linked is False:
         stmt = stmt.where(tag_t.c.cluster.not_in(select(cte.c.cluster)))
     else:
+        link_types = func.array_remove(func.array_agg(func.distinct(cte.c.type)), None)
+        stmt = stmt.add_columns(link_types.label("link_types"))
         stmt = stmt.outerjoin(cte, cte.c.cluster == tag_t.c.cluster)
         if linked is True:
             stmt = stmt.where(cte.c.type != None)
@@ -189,6 +198,70 @@ def list_related(
         results=results,
         limit=listing.limit,
         offset=listing.offset,
+    )
+
+
+def list_story_pairs(
+    conn: Conn,
+    listing: Listing,
+    story: int,
+    linked: Optional[bool] = None,
+) -> ListingResponse[ClusterPair]:
+    left_t = tag_table.alias("l")
+    right_t = tag_table.alias("r")
+    articles = func.count(func.distinct(left_t.c.article))
+    stmt = select(
+        left_t.c.cluster.label("left_id"),
+        left_t.c.cluster_type.label("left_type"),
+        left_t.c.cluster_label.label("left_label"),
+        right_t.c.cluster.label("right_id"),
+        right_t.c.cluster_type.label("right_type"),
+        right_t.c.cluster_label.label("right_label"),
+        articles.label("articles"),
+    )
+    stmt = stmt.where(left_t.c.cluster > right_t.c.cluster)
+    stmt = stmt.where(left_t.c.article == right_t.c.article)
+
+    sa_t = story_article_table.alias("sa")
+    stmt = stmt.where(left_t.c.article == sa_t.c.article)
+    stmt = stmt.where(sa_t.c.story == story)
+
+    if linked is not None:
+        link_t = link_table.alias("l")
+        # stmt = stmt.where(link_t.c.cluster <>)
+
+    # total = count_stmt(conn, stmt, func.distinct(left_t.c.cluster))
+    stmt = stmt.group_by(
+        left_t.c.cluster,
+        left_t.c.cluster_label,
+        left_t.c.cluster_type,
+        right_t.c.cluster,
+        right_t.c.cluster_label,
+        right_t.c.cluster_type,
+    )
+    stmt = stmt.order_by(articles.desc())
+    stmt = stmt.limit(listing.limit).offset(listing.offset)
+    cursor = conn.execute(stmt)
+    pairs: List[ClusterPair] = []
+    for row in cursor:
+        left = ClusterBase(
+            id=row["left_id"],
+            type=row["left_type"],
+            label=row["left_label"],
+        )
+        right = ClusterBase(
+            id=row["right_id"],
+            type=row["right_type"],
+            label=row["right_label"],
+        )
+        pairs.append(ClusterPair(left=left, right=right, articles=row["articles"]))
+
+    return ListingResponse[ClusterPair](
+        total=0,
+        debug_msg=str(stmt),
+        limit=listing.limit,
+        offset=listing.offset,
+        results=pairs,
     )
 
 
