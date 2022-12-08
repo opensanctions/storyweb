@@ -225,9 +225,27 @@ def list_story_pairs(
     stmt = stmt.where(left_t.c.article == sa_t.c.article)
     stmt = stmt.where(sa_t.c.story == story)
 
-    # link_t = link_table.alias("l")
-    # stmt = stmt.outerjoin(
-    #     link_t,
+    # total: 12117
+
+    link_t = link_table.alias("link")
+
+    stmt_cte = select(
+        func.greatest(link_t.c.source_cluster, link_t.c.target_cluster).label("big"),
+        func.least(link_t.c.source_cluster, link_t.c.target_cluster).label("smol"),
+        link_t.c.type.label("type"),
+    )
+    cte = stmt_cte.cte("links")
+
+    stmt = stmt.join(cte, cte.c.big == left_t.c.cluster)
+    stmt = stmt.filter(cte.c.smol == right_t.c.cluster)
+    stmt = stmt.add_columns(
+        func.array_agg(func.distinct(cte.c.type)).label("link_types")
+    )
+
+    # link_t = link_table.alias("link")
+    # sub_stmt = select(link_t.c.type)
+    # sub_stmt = sub_stmt.filter(link_t.c.source_cluster != link_t.c.target_cluster)
+    # sub_stmt = sub_stmt.filter(
     #     or_(
     #         and_(
     #             link_t.c.source_cluster == left_t.c.cluster,
@@ -239,10 +257,42 @@ def list_story_pairs(
     #         ),
     #     ),
     # )
+    # sub_q = sub_stmt.subquery("links")
+    # cte_stmt = cte_stmt.filter(link_t.c.target_cluster != link_t.c.source_cluster)
+    # cte = cte_stmt.cte("links")
+    # stmt = stmt.outerjoin(
+    #     cte,
+    #     and_(
+    #         cte.c.big == left_t.c.cluster,
+    #         cte.c.smol == right_t.c.cluster,
+    #     ),
+    # )
+    # stmt = stmt.filter(
+    #     or_(
+    #         link_t.c.target_cluster == right_t.c.cluster,
+    #         link_t.c.source_cluster == right_t.c.cluster,
+    #         link_t.c.type == None,
+    #     ),
+    # )
+    # stmt = stmt.filter(link_t.c.target_cluster != link_t.c.source_cluster)
+    # and_(
+    #         link_t.c.source_cluster == right_t.c.cluster,
+    #         link_t.c.target_cluster == left_t.c.cluster,
+    #     ),
+    #  or_(
+    #         and_(
+    #             link_t.c.source_cluster == left_t.c.cluster,
+    #             link_t.c.target_cluster == right_t.c.cluster,
+    #         ),
+    #         and_(
+    #             link_t.c.source_cluster == right_t.c.cluster,
+    #             link_t.c.target_cluster == left_t.c.cluster,
+    #         ),
+    #     ),
     # # stmt = stmt.where(link_t.c.cluster <>)
-    # link_types = func.array_remove(func.array_agg(func.distinct(link_t.c.type)), None)
+    # link_types = func.array_remove(func.array_agg(func.distinct(sub_q.c.type)), None)
     # stmt = stmt.add_columns(link_types.label("link_types"))
-
+    #
     # if linked is True:
     #     stmt = stmt.where(link_t.c.type != None)
     # if linked is False:
