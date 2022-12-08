@@ -1,8 +1,7 @@
 import logging
 from datetime import datetime
 from typing import List, Optional, Set
-from sqlalchemy.sql import Select, Alias
-from sqlalchemy.sql import select, delete, update, func, or_
+from sqlalchemy.sql import select, delete, update, func, or_, and_
 
 from storyweb.db import Conn
 from storyweb.db import tag_table, link_table, story_article_table
@@ -226,11 +225,30 @@ def list_story_pairs(
     stmt = stmt.where(left_t.c.article == sa_t.c.article)
     stmt = stmt.where(sa_t.c.story == story)
 
-    if linked is not None:
-        link_t = link_table.alias("l")
-        # stmt = stmt.where(link_t.c.cluster <>)
+    # link_t = link_table.alias("l")
+    # stmt = stmt.outerjoin(
+    #     link_t,
+    #     or_(
+    #         and_(
+    #             link_t.c.source_cluster == left_t.c.cluster,
+    #             link_t.c.target_cluster == right_t.c.cluster,
+    #         ),
+    #         and_(
+    #             link_t.c.source_cluster == right_t.c.cluster,
+    #             link_t.c.target_cluster == left_t.c.cluster,
+    #         ),
+    #     ),
+    # )
+    # # stmt = stmt.where(link_t.c.cluster <>)
+    # link_types = func.array_remove(func.array_agg(func.distinct(link_t.c.type)), None)
+    # stmt = stmt.add_columns(link_types.label("link_types"))
 
-    # total = count_stmt(conn, stmt, func.distinct(left_t.c.cluster))
+    # if linked is True:
+    #     stmt = stmt.where(link_t.c.type != None)
+    # if linked is False:
+    #     stmt = stmt.where(link_t.c.type == None)
+
+    total = count_stmt(conn, stmt, left_t.c.cluster)
     stmt = stmt.group_by(
         left_t.c.cluster,
         left_t.c.cluster_label,
@@ -240,6 +258,7 @@ def list_story_pairs(
         right_t.c.cluster_type,
     )
     stmt = stmt.order_by(articles.desc())
+    print(stmt)
     stmt = stmt.limit(listing.limit).offset(listing.offset)
     cursor = conn.execute(stmt)
     pairs: List[ClusterPair] = []
@@ -254,10 +273,18 @@ def list_story_pairs(
             type=row["right_type"],
             label=row["right_label"],
         )
-        pairs.append(ClusterPair(left=left, right=right, articles=row["articles"]))
+        link_types = row["link_types"] if "link_types" in row else []
+        pairs.append(
+            ClusterPair(
+                left=left,
+                right=right,
+                articles=row["articles"],
+                link_types=link_types,
+            )
+        )
 
     return ListingResponse[ClusterPair](
-        total=0,
+        total=total,
         debug_msg=str(stmt),
         limit=listing.limit,
         offset=listing.offset,

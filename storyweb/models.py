@@ -92,6 +92,7 @@ class ClusterPair(BaseModel):
     left: ClusterBase
     right: ClusterBase
     articles: int
+    link_types: List[str] = []
 
 
 class RelatedCluster(ClusterBase):
