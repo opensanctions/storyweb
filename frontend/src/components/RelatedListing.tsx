@@ -4,6 +4,7 @@ import { useFetchRelatedClusterListingQuery } from "../services/clusters";
 import { useExplodeClusterMutation } from "../services/links";
 import { ICluster } from "../types";
 import { getClusterLink, getLinkLoomLink } from "../util";
+import PairLink from "./PairLink";
 import { LinkType, SectionLoading, SpacedList, TagType } from "./util";
 
 type RelatedListingProps = {
@@ -44,12 +45,7 @@ export default function RelatedListing({ cluster }: RelatedListingProps) {
               </td>
               <td><TagType type={related.type} /></td>
               <td>
-                <Link to={getLinkLoomLink(cluster, related)}>
-                  <SpacedList values={related.link_types.map(t => <LinkType type={t} />)} />
-                  {related.link_types.length === 0 && (
-                    <Icon icon="new-link" />
-                  )}
-                </Link>
+                <PairLink left={cluster} right={related} link_types={related.link_types} />
               </td>
               <td>{related.articles}</td>
             </tr>
