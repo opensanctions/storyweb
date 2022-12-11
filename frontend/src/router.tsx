@@ -8,6 +8,7 @@ import Layout from "./screens/Layout";
 import Linker from "./screens/Linker";
 import LinkerRelated from "./screens/LinkerRelated";
 import StoryIndex from "./screens/StoryIndex";
+import StoryLinker from "./screens/StoryLinker";
 import StoryView from "./screens/StoryView";
 
 interface IRouteError {
@@ -42,6 +43,10 @@ export const router = createBrowserRouter([
       {
         path: "stories/:storyId",
         element: <StoryView />
+      },
+      {
+        path: "stories/:storyId/linker",
+        element: <StoryLinker />
       },
       {
         path: "articles",

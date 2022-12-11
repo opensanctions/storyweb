@@ -218,17 +218,19 @@ def list_story_pairs(
         right_t.c.cluster_label.label("right_label"),
         articles.label("articles"),
     )
-    stmt = stmt.where(left_t.c.cluster > right_t.c.cluster)
-    stmt = stmt.where(left_t.c.article == right_t.c.article)
+    stmt = stmt.join_from(
+        left_t,
+        right_t,
+        and_(
+            left_t.c.article == right_t.c.article, left_t.c.cluster > right_t.c.cluster
+        ),
+    )
 
     sa_t = story_article_table.alias("sa")
-    stmt = stmt.where(left_t.c.article == sa_t.c.article)
+    stmt = stmt.join_from(left_t, sa_t, left_t.c.article == sa_t.c.article)
     stmt = stmt.where(sa_t.c.story == story)
 
-    # total: 12117
-
     link_t = link_table.alias("link")
-
     stmt_cte = select(
         func.greatest(link_t.c.source_cluster, link_t.c.target_cluster).label("big"),
         func.least(link_t.c.source_cluster, link_t.c.target_cluster).label("smol"),
@@ -236,67 +238,17 @@ def list_story_pairs(
     )
     cte = stmt_cte.cte("links")
 
-    stmt = stmt.join(cte, cte.c.big == left_t.c.cluster)
-    stmt = stmt.filter(cte.c.smol == right_t.c.cluster)
-    stmt = stmt.add_columns(
-        func.array_agg(func.distinct(cte.c.type)).label("link_types")
+    stmt = stmt.outerjoin_from(
+        left_t,
+        cte,
+        and_(cte.c.big == left_t.c.cluster, cte.c.smol == right_t.c.cluster),
     )
-
-    # link_t = link_table.alias("link")
-    # sub_stmt = select(link_t.c.type)
-    # sub_stmt = sub_stmt.filter(link_t.c.source_cluster != link_t.c.target_cluster)
-    # sub_stmt = sub_stmt.filter(
-    #     or_(
-    #         and_(
-    #             link_t.c.source_cluster == left_t.c.cluster,
-    #             link_t.c.target_cluster == right_t.c.cluster,
-    #         ),
-    #         and_(
-    #             link_t.c.source_cluster == right_t.c.cluster,
-    #             link_t.c.target_cluster == left_t.c.cluster,
-    #         ),
-    #     ),
-    # )
-    # sub_q = sub_stmt.subquery("links")
-    # cte_stmt = cte_stmt.filter(link_t.c.target_cluster != link_t.c.source_cluster)
-    # cte = cte_stmt.cte("links")
-    # stmt = stmt.outerjoin(
-    #     cte,
-    #     and_(
-    #         cte.c.big == left_t.c.cluster,
-    #         cte.c.smol == right_t.c.cluster,
-    #     ),
-    # )
-    # stmt = stmt.filter(
-    #     or_(
-    #         link_t.c.target_cluster == right_t.c.cluster,
-    #         link_t.c.source_cluster == right_t.c.cluster,
-    #         link_t.c.type == None,
-    #     ),
-    # )
-    # stmt = stmt.filter(link_t.c.target_cluster != link_t.c.source_cluster)
-    # and_(
-    #         link_t.c.source_cluster == right_t.c.cluster,
-    #         link_t.c.target_cluster == left_t.c.cluster,
-    #     ),
-    #  or_(
-    #         and_(
-    #             link_t.c.source_cluster == left_t.c.cluster,
-    #             link_t.c.target_cluster == right_t.c.cluster,
-    #         ),
-    #         and_(
-    #             link_t.c.source_cluster == right_t.c.cluster,
-    #             link_t.c.target_cluster == left_t.c.cluster,
-    #         ),
-    #     ),
-    # # stmt = stmt.where(link_t.c.cluster <>)
-    # link_types = func.array_remove(func.array_agg(func.distinct(sub_q.c.type)), None)
-    # stmt = stmt.add_columns(link_types.label("link_types"))
-    #
-    # if linked is True:
-    #     stmt = stmt.where(link_t.c.type != None)
-    # if linked is False:
-    #     stmt = stmt.where(link_t.c.type == None)
+    link_types = func.array_remove(func.array_agg(func.distinct(cte.c.type)), None)
+    stmt = stmt.add_columns(link_types.label("link_types"))
+    if linked is True:
+        stmt = stmt.where(cte.c.type != None)
+    if linked is False:
+        stmt = stmt.where(cte.c.type == None)
 
     total = count_stmt(conn, stmt, left_t.c.cluster)
     stmt = stmt.group_by(
@@ -308,7 +260,6 @@ def list_story_pairs(
         right_t.c.cluster_type,
     )
     stmt = stmt.order_by(articles.desc())
-    print(stmt)
     stmt = stmt.limit(listing.limit).offset(listing.offset)
     cursor = conn.execute(stmt)
     pairs: List[ClusterPair] = []
@@ -323,13 +274,12 @@ def list_story_pairs(
             type=row["right_type"],
             label=row["right_label"],
         )
-        link_types = row["link_types"] if "link_types" in row else []
         pairs.append(
             ClusterPair(
                 left=left,
                 right=right,
                 articles=row["articles"],
-                link_types=link_types,
+                link_types=row["link_types"],
             )
         )
 

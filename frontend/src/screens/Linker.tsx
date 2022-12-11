@@ -20,6 +20,7 @@ export default function Linker() {
   const anchorId = params.get('anchor');
   const otherId = params.get('other');
   const articleId = params.get('article');
+  const storyId = params.get('story');
   const relatedMode = params.get('related') !== null;
   if (anchorId === null) {
     navigate('/clusters');
@@ -40,7 +41,8 @@ export default function Linker() {
 
   useEffect(() => {
     if (linksListing !== undefined && linksListing.results.length) {
-      setLink((l) => ({ ...l, type: linksListing.results[0].type }))
+      const existingLink = linksListing.results[0];
+      setLink((l) => ({ ...l, source: existingLink.source_cluster, target: existingLink.target_cluster, type: existingLink.type }))
     }
   }, [linksListing]);
 
@@ -57,7 +59,9 @@ export default function Linker() {
   const save = async function () {
     const saved = await saveLink(link).unwrap();
     const newAnchor = link.source === anchorId ? saved.source_cluster : saved.target_cluster;
-    if (relatedMode) {
+    if (storyId) {
+      navigate(`/stories/${storyId}/linker?previous=${otherId}:${anchorId}`);
+    } else if (relatedMode) {
       navigate(`/linker/related?anchor=${newAnchor}&previous=${otherId}`);
     } else {
       navigate(`/clusters/${newAnchor}`)

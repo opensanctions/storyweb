@@ -2,11 +2,11 @@ import queryString from 'query-string';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 
 import { API_URL } from '../constants'
-import type { IListingResponse, IStory, IStoryArticleToggle, IStoryBase } from '../types'
+import type { IClusterPair, IListingResponse, IStory, IStoryArticleToggle, IStoryBase } from '../types'
 
 export const storiesApi = createApi({
   reducerPath: 'storiesApi',
-  tagTypes: ['Story', 'Article'],
+  tagTypes: ['Story', 'Article', "Cluster", "Link"],
   baseQuery: fetchBaseQuery({ baseUrl: API_URL }),
   endpoints: (builder) => ({
     fetchStory: builder.query<IStory, string>({
@@ -19,6 +19,13 @@ export const storiesApi = createApi({
         'query': params
       }),
       providesTags: ["Story"]
+    }),
+    fetchStoryPairs: builder.query<IListingResponse<IClusterPair>, any>({
+      query: ({ storyId, params }) => queryString.stringifyUrl({
+        'url': `stories/${storyId}/pairs`,
+        'query': params
+      }),
+      providesTags: ["Story", "Cluster", "Link"]
     }),
     createStory: builder.mutation<IStory, IStoryBase>({
       query(story) {
@@ -43,4 +50,4 @@ export const storiesApi = createApi({
   }),
 })
 
-export const { useFetchStoryListingQuery, useFetchStoryQuery, useCreateStoryMutation, useToggleStoryArticleMutation } = storiesApi
+export const { useFetchStoryListingQuery, useFetchStoryQuery, useCreateStoryMutation, useToggleStoryArticleMutation, useFetchStoryPairsQuery } = storiesApi

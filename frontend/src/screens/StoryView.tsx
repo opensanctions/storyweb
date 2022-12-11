@@ -1,4 +1,4 @@
-import { Button, HTMLTable } from "@blueprintjs/core";
+import { AnchorButton, Button, ButtonGroup, HTMLTable } from "@blueprintjs/core";
 import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import StoryClusters from "../components/StoryClusters";
@@ -30,6 +30,11 @@ export default function StoryView() {
       <h1>
         {story.title}
       </h1>
+      <p>
+        <ButtonGroup>
+          <AnchorButton icon="new-link" href={`/stories/${story.id}/linker`}>Link tool</AnchorButton>
+        </ButtonGroup>
+      </p>
       <h3>Entities</h3>
       <StoryClusters storyId={story.id} />
       <h3>Articles</h3>

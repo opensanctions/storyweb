@@ -9,11 +9,13 @@ from storyweb.logic.stories import (
     create_story,
     toggle_story_article,
 )
+from storyweb.logic.clusters import list_story_pairs
 from storyweb.routes.util import get_conn, get_listing
 from storyweb.models import (
     StoryCreate,
     StoryArticleToggle,
     Story,
+    ClusterPair,
     Listing,
     ListingResponse,
 )
@@ -39,7 +41,7 @@ def story_create(story: StoryCreate, conn: Conn = Depends(get_conn)):
 @router.get("/stories/{story_id}", response_model=Story)
 def story_view(
     conn: Conn = Depends(get_conn),
-    story_id: str = Path(),
+    story_id: int = Path(),
 ):
     story = fetch_story(conn, story_id)
     if story is None:
@@ -51,10 +53,23 @@ def story_view(
 def story_article_toggle(
     data: StoryArticleToggle,
     conn: Conn = Depends(get_conn),
-    story_id: str = Path(),
+    story_id: int = Path(),
 ):
     story = fetch_story(conn, story_id)
     if story is None:
         raise HTTPException(404)
     toggle_story_article(conn, story_id, data.article)
     return story
+
+
+@router.get("/stories/{story_id}/pairs", response_model=ListingResponse[ClusterPair])
+def story_pairs(
+    conn: Conn = Depends(get_conn),
+    listing: Listing = Depends(get_listing),
+    story_id: int = Path(),
+    linked: Optional[bool] = Query(None),
+):
+    story = fetch_story(conn, story_id)
+    if story is None:
+        raise HTTPException(404)
+    return list_story_pairs(conn, listing, story_id, linked=linked)

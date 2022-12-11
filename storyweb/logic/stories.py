@@ -36,7 +36,7 @@ def list_stories(
     )
 
 
-def fetch_story(conn: Conn, story_id: str) -> Optional[Story]:
+def fetch_story(conn: Conn, story_id: int) -> Optional[Story]:
     stmt = select(story_table)
     stmt = stmt.where(story_table.c.id == story_id)
     stmt = stmt.limit(1)

@@ -67,6 +67,13 @@ export interface IClusterDetails extends ICluster {
   labels: string[]
 }
 
+export interface IClusterPair {
+  left: IClusterBase,
+  right: IClusterBase,
+  link_types: string[]
+  articles: number
+}
+
 export interface IRelatedCluster extends IClusterBase {
   articles: number
   link_types: string[]
