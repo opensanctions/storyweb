@@ -1,11 +1,11 @@
-import { AnchorButton, Button, ButtonGroup, HTMLTable, Icon } from "@blueprintjs/core";
+import { AnchorButton, Button, ButtonGroup, HTMLTable } from "@blueprintjs/core";
 import { Link } from "react-router-dom";
 import { useFetchRelatedClusterListingQuery } from "../services/clusters";
 import { useExplodeClusterMutation } from "../services/links";
 import { ICluster } from "../types";
 import { getClusterLink, getLinkLoomLink } from "../util";
 import PairLink from "./PairLink";
-import { LinkType, SectionLoading, SpacedList, TagType } from "./util";
+import { SectionLoading, TagType } from "./util";
 
 type RelatedListingProps = {
   cluster: ICluster,
