@@ -1,5 +1,6 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, Path, Query
+from fastapi.responses import PlainTextResponse
 from fastapi.exceptions import HTTPException
 
 from storyweb.db import Conn
@@ -10,6 +11,7 @@ from storyweb.logic.stories import (
     toggle_story_article,
 )
 from storyweb.logic.clusters import list_story_pairs
+from storyweb.logic.graph import generate_graph_gexf
 from storyweb.routes.util import get_conn, get_listing
 from storyweb.models import (
     StoryCreate,
@@ -73,3 +75,15 @@ def story_pairs(
     if story is None:
         raise HTTPException(404)
     return list_story_pairs(conn, listing, story_id, linked=linked)
+
+
+@router.get("/stories/{story_id}/gexf", response_class=PlainTextResponse)
+def story_gexf(
+    conn: Conn = Depends(get_conn),
+    story_id: int = Path(),
+):
+    story = fetch_story(conn, story_id)
+    if story is None:
+        raise HTTPException(404)
+    text = generate_graph_gexf(conn, story=story_id)
+    return PlainTextResponse(content=text, media_type="text/xml")
