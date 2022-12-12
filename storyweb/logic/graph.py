@@ -54,18 +54,18 @@ def generate_graph(
             graph.add_node(
                 source_id,
                 label=row["source_label"],
-                type=row["source_type"],
+                node_type=row["source_type"],
             )
         if not graph.has_node(target_id):
             graph.add_node(
                 target_id,
                 label=row["target_label"],
-                type=row["target_type"],
+                node_type=row["target_type"],
             )
         graph.add_edge(
             source_id,
             target_id,
-            link_type=row["link_type"],
+            edge_type=row["link_type"],
         )
 
     return graph

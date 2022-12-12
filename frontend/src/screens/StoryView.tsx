@@ -2,6 +2,7 @@ import { AnchorButton, Button, ButtonGroup, HTMLTable } from "@blueprintjs/core"
 import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import StoryClusters from "../components/StoryClusters";
+import StoryGraph from "../components/StoryGraph";
 import StoryPairs from "../components/StoryPairs";
 import { ErrorSection, SectionLoading } from "../components/util";
 import { useFetchArticleListingQuery } from "../services/articles";
@@ -31,12 +32,13 @@ export default function StoryView() {
       <h1>
         {story.title}
       </h1>
+      <StoryGraph storyId={story.id} />
       <h3>Co-occurring entities</h3>
-      <p>
+      <section>
         <ButtonGroup>
           <AnchorButton icon="new-link" href={`/stories/${story.id}/linker`}>Link tool</AnchorButton>
         </ButtonGroup>
-      </p>
+      </section>
       <StoryPairs storyId={story.id} />
       <h3>Articles</h3>
       <HTMLTable condensed bordered className="wide">

@@ -27,6 +27,17 @@ export const storiesApi = createApi({
       }),
       providesTags: ["Story", "Cluster", "Link"]
     }),
+    fetchStoryGraph: builder.query<string, any>({
+      query: ({ storyId, params }) => ({
+        url: queryString.stringifyUrl({
+          'url': `stories/${storyId}/gexf`,
+          'query': params
+        }),
+        responseHandler: (response) => response.text(),
+      }),
+      providesTags: ["Story", "Cluster", "Link"],
+
+    }),
     createStory: builder.mutation<IStory, IStoryBase>({
       query(story) {
         return {
@@ -50,4 +61,4 @@ export const storiesApi = createApi({
   }),
 })
 
-export const { useFetchStoryListingQuery, useFetchStoryQuery, useCreateStoryMutation, useToggleStoryArticleMutation, useFetchStoryPairsQuery } = storiesApi
+export const { useFetchStoryListingQuery, useFetchStoryQuery, useFetchStoryGraphQuery, useCreateStoryMutation, useToggleStoryArticleMutation, useFetchStoryPairsQuery } = storiesApi
