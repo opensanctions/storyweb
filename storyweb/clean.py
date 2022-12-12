@@ -1,6 +1,6 @@
 import re
 import Levenshtein
-from typing import List, Optional
+from typing import List, Optional, Union
 from normality import collapse_spaces
 
 PREFIXES_RAW_LIST = [
@@ -47,5 +47,5 @@ def most_common(texts: List[str]) -> str:
     return max(set(texts), key=texts.count)
 
 
-def pick_name(names: List[str]) -> str:
+def pick_name(names: List[Union[str, bytes]]) -> str:
     return Levenshtein.setmedian(names)

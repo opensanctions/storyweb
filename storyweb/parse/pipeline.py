@@ -23,15 +23,23 @@ NLP_TYPES = {
     "ORG": ClusterType.ORGANIZATION,
     "GPE": ClusterType.LOCATION,
 }
+NLP_MODELS = {
+    "eng": "en_core_web_sm",
+    # "en_core_web_trf",
+    "deu": "de_core_news_sm",
+    "rus": "ru_core_news_sm",
+    "xxx": "xx_ent_wiki_sm",
+}
 
 
 @cache
-def load_nlp():
+def load_nlp(language: str):
+    if language not in NLP_MODELS:
+        return load_nlp("xxx")
     spacy.prefer_gpu()
     # disable everything but NER:
     nlp = spacy.load(
-        # "en_core_web_trf",
-        "en_core_web_sm",
+        NLP_MODELS[language],
         disable=["tok2vec", "tagger", "parser", "attribute_ruler", "lemmatizer"],
     )
     nlp.add_pipe("sentencizer")
@@ -66,7 +74,7 @@ def extract_tag(ent: Span) -> Optional[Tuple[str, str, str]]:
     return (label, tag_type, fp)
 
 
-def load_article(doc: Doc, raw: Article) -> None:
+def _load_article(doc: Doc, raw: Article) -> str:
     log.info("Article [%s, %s]: %r", raw.id, raw.language, raw.title)
     article = ArticleDetails(
         id=raw.id,
@@ -128,10 +136,17 @@ def load_article(doc: Doc, raw: Article) -> None:
 
     with engine.begin() as conn:
         save_extracted(conn, article, sentences, tag_sentence_objs, tags)
+    return article.id
 
 
 def load_articles(path: Path) -> None:
-    nlp = load_nlp()
+    nlp = load_nlp("eng")
     raw_articles = read_raw_articles(path)
     for (doc, raw_article) in nlp.pipe(raw_articles, batch_size=20, as_tuples=True):
-        load_article(doc, raw_article)
+        _load_article(doc, raw_article)
+
+
+def load_one_article(article: Article) -> str:
+    nlp = load_nlp(article.language)
+    doc = nlp(article.text)
+    return _load_article(doc, article)

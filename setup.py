@@ -18,7 +18,7 @@ setup(
     packages=find_packages(exclude=["ez_setup", "examples", "tests"]),
     namespace_packages=[],
     include_package_data=True,
-    package_data={"": ["storyweb/py.typed", "mediacrawl/py.typed"]},
+    package_data={"": ["storyweb/py.typed", "storyweb/data/*"]},
     zip_safe=False,
     install_requires=[
         "sqlalchemy",
@@ -34,6 +34,9 @@ setup(
         "python-levenshtein",
         "followthemoney",
         "languagecodes",
+        "fasttext",
+        "trafilatura",
+        "charset-normalizer",
         "click >= 8.0.0, < 8.1.0",
     ],
     tests_require=[],

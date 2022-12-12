@@ -28,6 +28,13 @@ RUN localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
 ENV LANG='en_US.UTF-8' \
     TZ="UTC"
 
+RUN pip install -U pip setuptools wheel
+RUN pip install spacy
+RUN python3 -m spacy download en_core_web_sm
+RUN python3 -m spacy download de_core_news_sm
+RUN python3 -m spacy download xx_ent_wiki_sm
+RUN python3 -m spacy download ru_core_news_sm
+
 RUN mkdir -p /storyweb
 WORKDIR /storyweb
 COPY . /storyweb

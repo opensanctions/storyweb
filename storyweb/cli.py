@@ -6,7 +6,8 @@ from networkx.readwrite.gexf import write_gexf
 from storyweb.db import create_db, engine
 from storyweb.logic.links import compute_cluster, auto_merge
 from storyweb.logic.graph import generate_graph
-from storyweb.pipeline import load_articles
+from storyweb.parse import import_article_by_url
+from storyweb.parse.pipeline import load_articles
 
 
 log = logging.getLogger(__name__)
@@ -24,6 +25,12 @@ def cli() -> None:
 @click.argument("articles", type=InPath)
 def parse(articles: Path) -> None:
     load_articles(articles)
+
+
+@cli.command("import-url", help="Load a single news story by URL")
+@click.argument("url", type=str)
+def parse(url: str) -> None:
+    import_article_by_url(url)
 
 
 @cli.command("graph", help="Export an entity graph")
