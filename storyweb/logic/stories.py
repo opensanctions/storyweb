@@ -64,10 +64,11 @@ def toggle_story_article(
     sstmt = select(func.count(t.c.story))
     sstmt = sstmt.filter(t.c.story == story, t.c.article == article)
     scursor = conn.execute(sstmt)
-    if scursor.scalar_one() > 0 and delete_existing:
-        dstmt = delete(t)
-        dstmt = dstmt.filter(t.c.story == story, t.c.article == article)
-        conn.execute(dstmt)
+    if scursor.scalar_one() > 0:
+        if delete_existing:
+            dstmt = delete(t)
+            dstmt = dstmt.filter(t.c.story == story, t.c.article == article)
+            conn.execute(dstmt)
     else:
         istmt = insert(story_article_table)
         istmt = istmt.values(story=story, article=article)
