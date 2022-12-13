@@ -47,6 +47,10 @@ class StoryArticleToggle(BaseModel):
     article: str
 
 
+class StoryArticleImportUrl(BaseModel):
+    url: str
+
+
 class Story(BaseModel):
     id: int
     title: str

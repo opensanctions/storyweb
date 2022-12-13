@@ -2,7 +2,7 @@ import queryString from 'query-string';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 
 import { API_URL } from '../constants'
-import type { IClusterPair, IListingResponse, IStory, IStoryArticleToggle, IStoryBase } from '../types'
+import type { IArticle, IClusterPair, IListingResponse, IStory, IStoryArticleImport, IStoryArticleToggle, IStoryBase } from '../types'
 
 export const storiesApi = createApi({
   reducerPath: 'storiesApi',
@@ -58,7 +58,17 @@ export const storiesApi = createApi({
       },
       invalidatesTags: ['Story', 'Article'],
     }),
+    importStoryArticle: builder.mutation<IArticle, IStoryArticleImport>({
+      query(data) {
+        return {
+          url: `stories/${data.story}/articles/import-url`,
+          method: 'POST',
+          body: { url: data.url },
+        }
+      },
+      invalidatesTags: ['Story', 'Article'],
+    }),
   }),
 })
 
-export const { useFetchStoryListingQuery, useFetchStoryQuery, useFetchStoryGraphQuery, useCreateStoryMutation, useToggleStoryArticleMutation, useFetchStoryPairsQuery } = storiesApi
+export const { useFetchStoryListingQuery, useFetchStoryQuery, useFetchStoryGraphQuery, useCreateStoryMutation, useToggleStoryArticleMutation, useImportStoryArticleMutation, useFetchStoryPairsQuery } = storiesApi

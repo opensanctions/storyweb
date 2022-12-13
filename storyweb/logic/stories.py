@@ -58,7 +58,7 @@ def create_story(conn: Conn, data: StoryCreate) -> Story:
 
 
 def toggle_story_article(
-    conn: Conn, story: str, article: str, delete_existing: bool = True
+    conn: Conn, story: int, article: str, delete_existing: bool = True
 ) -> None:
     t = story_article_table.alias("t")
     sstmt = select(func.count(t.c.story))

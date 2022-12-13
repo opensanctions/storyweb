@@ -1,6 +1,8 @@
-import { AnchorButton, Button, ButtonGroup, HTMLTable } from "@blueprintjs/core";
+import { AnchorButton, Button, ButtonGroup, HTMLTable, Intent } from "@blueprintjs/core";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
+import StoryArticleImportDialog from "../components/StoryArticleImportDialog";
 import StoryClusters from "../components/StoryClusters";
 import StoryGraph from "../components/StoryGraph";
 import StoryPairs from "../components/StoryPairs";
@@ -11,6 +13,7 @@ import { IArticle } from "../types";
 
 export default function StoryView() {
   const { storyId } = useParams();
+  const [showImport, setShowImport] = useState(false)
   const { data: story, isLoading, error } = useFetchStoryQuery(storyId as string);
   const { data: articleListing } = useFetchArticleListingQuery({ story: storyId });
   const [toggleStoryArticle] = useToggleStoryArticleMutation();
@@ -41,6 +44,10 @@ export default function StoryView() {
       </section>
       <StoryPairs storyId={story.id} />
       <h3>Articles</h3>
+      <section>
+        <Button intent={Intent.PRIMARY} onClick={() => setShowImport(true)}>Import article...</Button>
+        <StoryArticleImportDialog storyId={story.id} isOpen={showImport} onClose={() => setShowImport(false)} />
+      </section>
       <HTMLTable condensed bordered className="wide">
         <thead>
           <tr>

@@ -12,10 +12,13 @@ from storyweb.logic.stories import (
 )
 from storyweb.logic.clusters import list_story_pairs
 from storyweb.logic.graph import generate_graph_gexf
+from storyweb.logic.links import story_merge
+from storyweb.parse import import_article_by_url
 from storyweb.routes.util import get_conn, get_listing
 from storyweb.models import (
     StoryCreate,
     StoryArticleToggle,
+    StoryArticleImportUrl,
     Story,
     ClusterPair,
     Listing,
@@ -61,6 +64,23 @@ def story_article_toggle(
     if story is None:
         raise HTTPException(404)
     toggle_story_article(conn, story_id, data.article)
+    return story
+
+
+@router.post("/stories/{story_id}/articles/import-url", response_model=Story)
+def story_article_import_url(
+    data: StoryArticleImportUrl,
+    conn: Conn = Depends(get_conn),
+    story_id: int = Path(),
+):
+    story = fetch_story(conn, story_id)
+    if story is None:
+        raise HTTPException(404)
+    article_id = import_article_by_url(conn, data.url)
+    if article_id is None:
+        raise HTTPException(400)
+    story_merge(conn, story_id, article_id)
+    toggle_story_article(conn, story_id, article_id, delete_existing=False)
     return story
 
 

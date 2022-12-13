@@ -38,6 +38,11 @@ export interface IStoryArticleToggle {
   article: string
 }
 
+export interface IStoryArticleImport {
+  story: number
+  url: string
+}
+
 export interface IClusterBase {
   id: string
   label: string
