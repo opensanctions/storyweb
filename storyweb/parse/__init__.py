@@ -3,13 +3,14 @@ import requests
 from typing import Optional
 from articledata import URL
 
+from storyweb.db import Conn
 from storyweb.parse.extract import extract
-from storyweb.parse.pipeline import load_articles, load_one_article
+from storyweb.parse.pipeline import load_one_article
 
 log = logging.getLogger(__name__)
 
 
-def import_article_by_url(url: str) -> Optional[str]:
+def import_article_by_url(conn: Conn, url: str) -> Optional[str]:
     try:
         res = requests.get(url)
         res.raise_for_status()
@@ -22,4 +23,4 @@ def import_article_by_url(url: str) -> Optional[str]:
     if article is None:
         return None
 
-    return load_one_article(article)
+    return load_one_article(conn, article)

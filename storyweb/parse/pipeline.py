@@ -9,7 +9,7 @@ from normality import slugify
 from articledata import Article
 from pydantic import ValidationError
 
-from storyweb.db import engine
+from storyweb.db import engine, Conn
 from storyweb.clean import clean_entity_name, most_common, pick_name
 from storyweb.models import ArticleDetails, Sentence, Tag, TagSentence
 from storyweb.logic.articles import save_extracted
@@ -74,7 +74,7 @@ def extract_tag(ent: Span) -> Optional[Tuple[str, str, str]]:
     return (label, tag_type, fp)
 
 
-def _load_article(doc: Doc, raw: Article) -> str:
+def _load_article(conn: Conn, doc: Doc, raw: Article) -> str:
     log.info("Article [%s, %s]: %r", raw.id, raw.language, raw.title)
     article = ArticleDetails(
         id=raw.id,
@@ -134,8 +134,7 @@ def _load_article(doc: Doc, raw: Article) -> str:
             obj = TagSentence(tag=tag_id, article=article.id, sentence=seq)
             tag_sentence_objs.append(obj)
 
-    with engine.begin() as conn:
-        save_extracted(conn, article, sentences, tag_sentence_objs, tags)
+    save_extracted(conn, article, sentences, tag_sentence_objs, tags)
     return article.id
 
 
@@ -143,10 +142,11 @@ def load_articles(path: Path) -> None:
     nlp = load_nlp("eng")
     raw_articles = read_raw_articles(path)
     for (doc, raw_article) in nlp.pipe(raw_articles, batch_size=20, as_tuples=True):
-        _load_article(doc, raw_article)
+        with engine.begin() as conn:
+            _load_article(conn, doc, raw_article)
 
 
-def load_one_article(article: Article) -> str:
+def load_one_article(conn: Conn, article: Article) -> str:
     nlp = load_nlp(article.language)
     doc = nlp(article.text)
-    return _load_article(doc, article)
+    return _load_article(conn, doc, article)

@@ -57,12 +57,14 @@ def create_story(conn: Conn, data: StoryCreate) -> Story:
     return story
 
 
-def toggle_story_article(conn: Conn, story: str, article: str) -> None:
+def toggle_story_article(
+    conn: Conn, story: str, article: str, delete_existing: bool = True
+) -> None:
     t = story_article_table.alias("t")
     sstmt = select(func.count(t.c.story))
     sstmt = sstmt.filter(t.c.story == story, t.c.article == article)
     scursor = conn.execute(sstmt)
-    if scursor.scalar_one() > 0:
+    if scursor.scalar_one() > 0 and delete_existing:
         dstmt = delete(t)
         dstmt = dstmt.filter(t.c.story == story, t.c.article == article)
         conn.execute(dstmt)

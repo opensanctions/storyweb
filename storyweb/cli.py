@@ -1,10 +1,12 @@
 import click
 import logging
 from pathlib import Path
+from typing import Optional
 from networkx.readwrite.gexf import write_gexf
 
 from storyweb.db import create_db, engine
-from storyweb.logic.links import compute_cluster, auto_merge
+from storyweb.logic.links import auto_merge, story_merge
+from storyweb.logic.stories import toggle_story_article
 from storyweb.logic.graph import generate_graph
 from storyweb.parse import import_article_by_url
 from storyweb.parse.pipeline import load_articles
@@ -29,8 +31,13 @@ def parse(articles: Path) -> None:
 
 @cli.command("import-url", help="Load a single news story by URL")
 @click.argument("url", type=str)
-def parse(url: str) -> None:
-    import_article_by_url(url)
+@click.option("-s", "--story", "story", help="Story ID", type=int)
+def parse(url: str, story: Optional[int] = None) -> None:
+    with engine.begin() as conn:
+        article_id = import_article_by_url(conn, url)
+        if story is not None:
+            story_merge(conn, story, article_id)
+            toggle_story_article(conn, story, article_id, delete_existing=False)
 
 
 @cli.command("graph", help="Export an entity graph")

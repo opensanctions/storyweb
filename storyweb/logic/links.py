@@ -4,7 +4,7 @@ from typing import List, Set, Dict, Tuple
 from sqlalchemy.sql import select, delete, update, and_, or_, func
 
 from storyweb.db import Conn, upsert, engine
-from storyweb.db import tag_table, link_table
+from storyweb.db import tag_table, link_table, story_article_table
 from storyweb.clean import most_common
 from storyweb.logic.util import count_stmt
 from storyweb.models import Link, Listing, ListingResponse
@@ -250,3 +250,38 @@ def auto_merge(conn: Conn, check_links: bool = True):
     # clusters = [r.cluster for r in cursor.fetchall()]
     # for cluster in clusters:
     #     update_cluster(conn, cluster)
+
+
+def story_merge(conn: Conn, story: int, article: str) -> None:
+    inner_t = tag_table.alias("tag_inner")
+    outer_t = tag_table.alias("tag_outer")
+    sat_t = story_article_table.alias("sat")
+    stmt = select(
+        inner_t.c.cluster.label("tag"),
+        outer_t.c.cluster.label("cluster"),
+        func.count(outer_t.c.article).label("articles"),
+    )
+    stmt = stmt.filter(inner_t.c.article == article)
+    stmt = stmt.filter(inner_t.c.id == inner_t.c.cluster)
+    stmt = stmt.join(outer_t, outer_t.c.fingerprint == inner_t.c.fingerprint)
+    stmt = stmt.join(sat_t, outer_t.c.article == sat_t.c.article)
+    stmt = stmt.filter(sat_t.c.story == story)
+    stmt = stmt.filter(inner_t.c.cluster != outer_t.c.cluster)
+    stmt = stmt.group_by(inner_t.c.cluster, outer_t.c.cluster)
+    stmt = stmt.order_by(func.count(outer_t.c.article).desc())
+    cursor = conn.execute(stmt)
+    now = datetime.utcnow()
+
+    for row in cursor:
+        link = Link(
+            source=row["tag"],
+            source_cluster=row["tag"],
+            target=row["cluster"],
+            target_cluster=row["cluster"],
+            type=LinkType.SAME,
+            user="auto-merge",
+            timestamp=now,
+        )
+        save_links(conn, [link])
+        canonical = max(row["tag"], row["cluster"])
+        update_cluster(conn, canonical)
