@@ -2,7 +2,7 @@ import queryString from 'query-string';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 
 import { API_URL } from '../constants'
-import type { IArticle, IClusterPair, IListingResponse, IStory, IStoryArticleImport, IStoryArticleToggle, IStoryBase } from '../types'
+import type { IArticle, IClusterPair, IListingResponse, IStory, IStoryArticleImport, IStoryArticleToggle, IStoryMutation } from '../types'
 
 export const storiesApi = createApi({
   reducerPath: 'storiesApi',
@@ -39,10 +39,20 @@ export const storiesApi = createApi({
       providesTags: ["Story", "Cluster", "Link"],
 
     }),
-    createStory: builder.mutation<IStory, IStoryBase>({
+    createStory: builder.mutation<IStory, IStoryMutation>({
       query(story) {
         return {
           url: `stories`,
+          method: 'POST',
+          body: story,
+        }
+      },
+      invalidatesTags: ['Story'],
+    }),
+    updateStory: builder.mutation<IStory, IStory>({
+      query(story) {
+        return {
+          url: `stories/${story.id}`,
           method: 'POST',
           body: story,
         }
@@ -81,4 +91,4 @@ export const storiesApi = createApi({
   }),
 })
 
-export const { useFetchStoryListingQuery, useFetchStoryQuery, useFetchStoryGraphQuery, useCreateStoryMutation, useDeleteStoryMutation, useToggleStoryArticleMutation, useImportStoryArticleMutation, useFetchStoryPairsQuery } = storiesApi
+export const { useFetchStoryListingQuery, useFetchStoryQuery, useFetchStoryGraphQuery, useCreateStoryMutation, useUpdateStoryMutation, useDeleteStoryMutation, useToggleStoryArticleMutation, useImportStoryArticleMutation, useFetchStoryPairsQuery } = storiesApi

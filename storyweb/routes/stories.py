@@ -8,6 +8,7 @@ from storyweb.logic.stories import (
     list_stories,
     fetch_story,
     create_story,
+    update_story,
     delete_story,
     toggle_story_article,
 )
@@ -17,7 +18,7 @@ from storyweb.logic.links import story_merge
 from storyweb.parse import import_article_by_url
 from storyweb.routes.util import get_conn, get_listing
 from storyweb.models import (
-    StoryCreate,
+    StoryMutation,
     StoryArticleToggle,
     StoryArticleImportUrl,
     Story,
@@ -40,7 +41,7 @@ def story_index(
 
 
 @router.post("/stories", response_model=Story)
-def story_create(story: StoryCreate, conn: Conn = Depends(get_conn)):
+def story_create(story: StoryMutation, conn: Conn = Depends(get_conn)):
     return create_story(conn, story)
 
 
@@ -108,6 +109,16 @@ def story_gexf(
         raise HTTPException(404)
     text = generate_graph_gexf(conn, story=story_id)
     return PlainTextResponse(content=text, media_type="text/xml")
+
+
+@router.post("/stories/{story_id}", response_model=Story)
+def story_update(
+    data: StoryMutation, conn: Conn = Depends(get_conn), story_id: int = Path()
+):
+    story = fetch_story(conn, story_id)
+    if story is None:
+        raise HTTPException(404)
+    return update_story(conn, data, story_id)
 
 
 @router.delete("/stories/{story_id}")

@@ -1,12 +1,12 @@
 import logging
 from typing import Optional
-from sqlalchemy.sql import select, delete, insert, func
+from sqlalchemy.sql import select, delete, update, insert, func
 
 from storyweb.db import Conn
 from storyweb.db import story_table
 from storyweb.db import story_article_table
 from storyweb.logic.util import count_stmt
-from storyweb.models import Story, StoryCreate, Listing, ListingResponse
+from storyweb.models import Story, StoryMutation, Listing, ListingResponse
 
 log = logging.getLogger(__name__)
 
@@ -47,11 +47,22 @@ def fetch_story(conn: Conn, story_id: int) -> Optional[Story]:
     return Story.parse_obj(obj)
 
 
-def create_story(conn: Conn, data: StoryCreate) -> Story:
+def create_story(conn: Conn, data: StoryMutation) -> Story:
     stmt = insert(story_table)
-    stmt = stmt.values(title=data.title)
+    stmt = stmt.values(title=data.title, summary=data.summary)
     cursor = conn.execute(stmt)
     story = fetch_story(conn, cursor.inserted_primary_key[0])
+    if story is None:
+        raise Exception("Story was not saved.")
+    return story
+
+
+def update_story(conn: Conn, data: StoryMutation, story_id: int) -> Story:
+    stmt = update(story_table)
+    stmt = stmt.where(story_table.c.id == story_id)
+    stmt = stmt.values(title=data.title, summary=data.summary)
+    conn.execute(stmt)
+    story = fetch_story(conn, story_id)
     if story is None:
         raise Exception("Story was not saved.")
     return story

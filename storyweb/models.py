@@ -39,8 +39,9 @@ class ArticleDetails(Article):
     text: str
 
 
-class StoryCreate(BaseModel):
-    title: str
+class StoryMutation(BaseModel):
+    title: str = Field(min_length=4)
+    summary: Optional[str]
 
 
 class StoryArticleToggle(BaseModel):

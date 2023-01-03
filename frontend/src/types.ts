@@ -25,11 +25,12 @@ export interface IArticleDetails extends IArticle {
   text: string
 }
 
-export interface IStoryBase {
+export interface IStoryMutation {
   title: string
+  summary: string
 }
 
-export interface IStory extends IStoryBase {
+export interface IStory extends IStoryMutation {
   id: number
 }
 

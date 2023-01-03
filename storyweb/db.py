@@ -38,6 +38,7 @@ story_table = Table(
     meta,
     Column("id", Integer, primary_key=True),
     Column("title", Unicode, nullable=True),
+    Column("summary", Unicode, nullable=True),
 )
 
 story_article_table = Table(
