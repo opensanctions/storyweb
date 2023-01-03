@@ -12,6 +12,7 @@ type IClusterQueryParams = {
 export const clustersApi = createApi({
   reducerPath: 'clustersApi',
   tagTypes: ['Cluster', 'Link'],
+  refetchOnMountOrArgChange: true,
   baseQuery: fetchBaseQuery({ baseUrl: API_URL }),
   endpoints: (builder) => ({
     fetchCluster: builder.query<IClusterDetails, string>({

@@ -18,7 +18,7 @@ export const articlesApi = createApi({
         'url': `articles`,
         'query': params
       }),
-      providesTags: ["Article"]
+      providesTags: ["Article"],
     }),
   }),
 })

@@ -7,6 +7,7 @@ import type { IArticle, IClusterPair, IListingResponse, IStory, IStoryArticleImp
 export const storiesApi = createApi({
   reducerPath: 'storiesApi',
   tagTypes: ['Story', 'Article', "Cluster", "Link"],
+  refetchOnMountOrArgChange: true,
   baseQuery: fetchBaseQuery({ baseUrl: API_URL }),
   endpoints: (builder) => ({
     fetchStory: builder.query<IStory, string>({

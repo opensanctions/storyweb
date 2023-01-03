@@ -8,6 +8,7 @@ import { IClusterDetails, ILink, IListingResponse, IUntagArticle } from '../type
 export const linksApi = createApi({
   reducerPath: 'linksApi',
   tagTypes: ['Cluster', 'Link'],
+  refetchOnMountOrArgChange: true,
   baseQuery: fetchBaseQuery({ baseUrl: API_URL }),
   endpoints: (builder) => ({
     fetchLinks: builder.query<IListingResponse<ILink>, any>({
