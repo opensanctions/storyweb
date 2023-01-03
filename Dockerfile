@@ -1,4 +1,4 @@
-FROM node:18 AS frontend
+FROM node:19 AS frontend
 
 RUN mkdir -p /fe
 WORKDIR /fe
