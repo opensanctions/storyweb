@@ -1,6 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from starlette.exceptions import HTTPException
+from starlette.responses import Response
+from starlette.types import Scope
 
 from storyweb.ontology import OntologyModel, ontology
 from storyweb.routes import links, stories, articles, clusters
@@ -29,4 +32,15 @@ def ontology_model() -> OntologyModel:
     return ontology.model
 
 
-app.mount("/", StaticFiles(directory="frontend/build", html=True), name="frontend")
+class SPAStaticFiles(StaticFiles):
+    async def get_response(self, path: str, scope: Scope) -> Response:
+        try:
+            return await super().get_response(path, scope)
+        except HTTPException as http:
+            if http.status_code == 404 and not path.startswith("api"):
+                return await super().get_response("index.html", scope)
+            else:
+                raise
+
+
+app.mount("/", SPAStaticFiles(directory="frontend/build", html=True), name="frontend")
