@@ -1,5 +1,5 @@
 import queryString from 'query-string';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { SectionLoading } from '../components/util';
 import { useEffect } from 'react';
 import { useFetchStoryPairsQuery } from '../services/stories';

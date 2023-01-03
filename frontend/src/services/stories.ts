@@ -49,6 +49,15 @@ export const storiesApi = createApi({
       },
       invalidatesTags: ['Story'],
     }),
+    deleteStory: builder.mutation<void, number>({
+      query(storyId) {
+        return {
+          url: `stories/${storyId}`,
+          method: 'DELETE',
+        }
+      },
+      invalidatesTags: ['Story'],
+    }),
     toggleStoryArticle: builder.mutation<IStory, IStoryArticleToggle>({
       query(data) {
         return {
@@ -72,4 +81,4 @@ export const storiesApi = createApi({
   }),
 })
 
-export const { useFetchStoryListingQuery, useFetchStoryQuery, useFetchStoryGraphQuery, useCreateStoryMutation, useToggleStoryArticleMutation, useImportStoryArticleMutation, useFetchStoryPairsQuery } = storiesApi
+export const { useFetchStoryListingQuery, useFetchStoryQuery, useFetchStoryGraphQuery, useCreateStoryMutation, useDeleteStoryMutation, useToggleStoryArticleMutation, useImportStoryArticleMutation, useFetchStoryPairsQuery } = storiesApi

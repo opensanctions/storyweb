@@ -57,6 +57,15 @@ def create_story(conn: Conn, data: StoryCreate) -> Story:
     return story
 
 
+def delete_story(conn: Conn, story_id: int) -> None:
+    sa_stmt = delete(story_article_table)
+    sa_stmt = sa_stmt.where(story_article_table.c.story == story_id)
+    conn.execute(sa_stmt)
+    s_stmt = delete(story_table)
+    s_stmt = s_stmt.where(story_table.c.id == story_id)
+    conn.execute(s_stmt)
+
+
 def toggle_story_article(
     conn: Conn, story: int, article: str, delete_existing: bool = True
 ) -> None:

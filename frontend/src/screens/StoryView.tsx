@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import StoryArticleImportDialog from "../components/StoryArticleImportDialog";
-import StoryClusters from "../components/StoryClusters";
+import StoryDeleteDialog from "../components/StoryDeleteDialog";
 import StoryGraph from "../components/StoryGraph";
 import StoryPairs from "../components/StoryPairs";
 import { ErrorSection, SectionLoading } from "../components/util";
@@ -13,7 +13,8 @@ import { IArticle } from "../types";
 
 export default function StoryView() {
   const { storyId } = useParams();
-  const [showImport, setShowImport] = useState(false)
+  const [showImport, setShowImport] = useState(false);
+  const [showDelete, setShowDelete] = useState(false);
   const { data: story, isLoading, error } = useFetchStoryQuery(storyId as string);
   const { data: articleListing } = useFetchArticleListingQuery({ story: storyId });
   const [toggleStoryArticle] = useToggleStoryArticleMutation();
@@ -35,6 +36,8 @@ export default function StoryView() {
       <h1>
         {story.title}
       </h1>
+      <Button intent={Intent.DANGER} icon="trash" onClick={() => setShowDelete(true)}>Delete</Button>
+      <StoryDeleteDialog isOpen={showDelete} onClose={() => setShowDelete(false)} story={story} />
       <StoryGraph storyId={story.id} />
       <h3>Co-occurring entities</h3>
       <section>

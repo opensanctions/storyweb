@@ -73,6 +73,12 @@ link_types:
     phrase: "works for"
     source_type: PER
     target_type: ORG
+  - name: MEMBER
+    directed: true
+    label: "Member"
+    phrase: "is part of"
+    source_type: PER
+    target_type: ORG
   - name: BUSINESS
     directed: false
     label: "Business activity"
