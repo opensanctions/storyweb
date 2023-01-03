@@ -22,7 +22,7 @@
     "graphology-gexf": "^0.10.3",
     "graphology-types": "^0.24.5",
     "lodash": "^4.17.21",
-    "query-string": "^7.1.1",
+    "query-string": "^8.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-helmet": "^6.1.0",
