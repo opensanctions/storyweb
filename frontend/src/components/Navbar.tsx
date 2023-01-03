@@ -9,7 +9,9 @@ export default function NavbarSection() {
       <div className='page-container'>
         <Navbar.Group align={Alignment.LEFT}>
           <Navbar.Heading>
-            StoryWeb
+            <Link to="/">
+              StoryWeb
+            </Link>
           </Navbar.Heading>
           <Navbar.Divider />
           <Link to="/" role="button" className="bp4-minimal bp4-button">

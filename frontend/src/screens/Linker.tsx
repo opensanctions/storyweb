@@ -10,8 +10,10 @@ import { useFetchOntologyQuery } from '../services/ontology';
 import { useFetchLinksQuery, useSaveLinkMutation } from '../services/links';
 import ArticleCorefList from '../components/ArticleCorefList';
 import ArticlePreview from '../components/ArticlePreview';
+import StoryLinkerBanner from '../components/StoryLinkerBanner';
 
 import styles from '../styles/Linker.module.scss';
+
 
 export default function Linker() {
   const navigate = useNavigate();
@@ -115,6 +117,9 @@ export default function Linker() {
     <div>
       <HotkeysTarget2 hotkeys={loomHotkeys}>
         <>
+          {!!storyId && (
+            <StoryLinkerBanner storyId={storyId} />
+          )}
           <h3>
             <strong>
               <TagType type={source.type} />

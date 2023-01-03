@@ -13,7 +13,7 @@ export default function LinkerRelated() {
   }
   const relatedParams = { linked: false, limit: 1, _: params.get('previous') };
   const relatedQuery = { clusterId: anchorId + '', params: relatedParams };
-  const { data, isLoading } = useFetchRelatedClusterListingQuery(relatedQuery)
+  const { data, isLoading } = useFetchRelatedClusterListingQuery(relatedQuery, { refetchOnMountOrArgChange: true })
   useEffect(() => {
     if (data !== undefined && !isLoading) {
       if (data.results.length > 0) {
