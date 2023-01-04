@@ -6,6 +6,7 @@ import StoryArticleImportDialog from "../components/StoryArticleImportDialog";
 import StoryDeleteDialog from "../components/StoryDeleteDialog";
 import StoryGraph from "../components/StoryGraph";
 import StoryPairs from "../components/StoryPairs";
+import StoryUpdateDialog from "../components/StoryUpdateDialog";
 import { ErrorSection, SectionLoading } from "../components/util";
 import { useFetchArticleListingQuery } from "../services/articles";
 import { useFetchStoryQuery, useToggleStoryArticleMutation } from "../services/stories";
@@ -15,6 +16,7 @@ export default function StoryView() {
   const { storyId } = useParams();
   const [showImport, setShowImport] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
   const { data: story, isLoading, error } = useFetchStoryQuery(storyId as string);
   const { data: articleListing } = useFetchArticleListingQuery({ story: storyId });
   const [toggleStoryArticle] = useToggleStoryArticleMutation();
@@ -38,6 +40,8 @@ export default function StoryView() {
       </h1>
       <Button intent={Intent.DANGER} icon="trash" onClick={() => setShowDelete(true)}>Delete</Button>
       <StoryDeleteDialog isOpen={showDelete} onClose={() => setShowDelete(false)} story={story} />
+      <Button intent={Intent.NONE} icon="edit" onClick={() => setShowEdit(true)}>Edit</Button>
+      <StoryUpdateDialog isOpen={showEdit} onClose={() => setShowEdit(false)} story={story} />
       <StoryGraph storyId={story.id} />
       <h3>Co-occurring entities</h3>
       <section>

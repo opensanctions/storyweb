@@ -1,31 +1,32 @@
 import { Button, Classes, Dialog, FormGroup, InputGroup, TextArea } from "@blueprintjs/core";
 import { FormEvent, MouseEvent, useState } from "react";
-import { useCreateStoryMutation } from "../services/stories";
+import { useUpdateStoryMutation } from "../services/stories";
+import { IStory } from "../types";
 
-type StoryCreateDialogProps = {
+type StoryUpdateDialogProps = {
+  story: IStory
   isOpen: boolean
   onClose: () => void
 }
 
-export default function StoryCreateDialog({ isOpen, onClose }: StoryCreateDialogProps) {
-  const [title, setTitle] = useState('');
-  const [summary, setSummary] = useState('');
-  const [createStory, { isLoading: isCreating }] = useCreateStoryMutation();
+export default function StoryUpdateDialog({ story, isOpen, onClose }: StoryUpdateDialogProps) {
+  const [title, setTitle] = useState(story.title);
+  const [summary, setSummary] = useState(story.summary);
+  const [updateStory, { isLoading: isCreating }] = useUpdateStoryMutation();
 
   const hasTitle = title.trim().length > 3;
 
-  const onCreate = async (e: MouseEvent | FormEvent) => {
+  const onSave = async (e: MouseEvent | FormEvent) => {
     e.preventDefault();
     if (hasTitle && !isCreating) {
-      await createStory({ title: title, summary: summary }).unwrap();
-      setTitle('')
+      await updateStory({ id: story.id, title: title, summary: summary }).unwrap();
       onClose()
     }
   }
 
   return (
-    <Dialog isOpen={isOpen} onClose={onClose} title="Create a new story">
-      <form onSubmit={onCreate}>
+    <Dialog isOpen={isOpen} onClose={onClose} title="Edit story">
+      <form onSubmit={onSave}>
         <div className={Classes.DIALOG_BODY}>
           <FormGroup
             helperText="Describe your story with a simple sentence."
@@ -43,7 +44,7 @@ export default function StoryCreateDialog({ isOpen, onClose }: StoryCreateDialog
         </div>
         <div className={Classes.DIALOG_FOOTER}>
           <div className={Classes.DIALOG_FOOTER_ACTIONS}>
-            <Button onClick={onCreate} disabled={!isCreating && !hasTitle}>Create</Button>
+            <Button onClick={onSave} disabled={!isCreating && !hasTitle}>Save</Button>
           </div>
         </div>
       </form>
