@@ -37,7 +37,7 @@ setup(
         "fasttext",
         "trafilatura",
         "charset-normalizer",
-        "click >= 8.0.0, < 8.1.0",
+        "click >= 8.0.0, < 8.2.0",
     ],
     tests_require=[],
     entry_points={
