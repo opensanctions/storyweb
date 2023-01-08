@@ -11,6 +11,7 @@ class ClusterTypeModel(BaseModel):
     label: str
     plural: str
     parent: Optional[str]
+    color: str
 
 
 class LinkTypeModel(BaseModel):
@@ -38,6 +39,7 @@ class ClusterType(object):
         self.name = model.name
         self.label = model.label
         self.plural = model.plural
+        self.color = model.color
 
     @property
     def parent(self) -> Optional["ClusterType"]:

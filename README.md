@@ -51,6 +51,7 @@ SELECT ot.article, ARRAY_AGG(DISTINCT oi.label), COUNT(oi.id)
 	ORDER BY COUNT(oi.id) DESC;
 ```
 
+```sql
 SELECT ot.article, ARRAY_AGG(DISTINCT oi.label), COUNT(oi.id)
 	FROM tag lt
 	JOIN tag li ON lt.article = li.article
@@ -62,7 +63,7 @@ SELECT ot.article, ARRAY_AGG(DISTINCT oi.label), COUNT(oi.id)
 		AND oi.article <> li.article
 	GROUP BY ot.article
 	ORDER BY COUNT(oi.id) DESC;
-
+```
 
 ```sql
 WITH corefs AS (

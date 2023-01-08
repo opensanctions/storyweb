@@ -2,22 +2,27 @@ cluster_types:
   - name: ANY
     label: "Thing"
     plural: "Things"
+    color: "#9D3F9D"
   - name: ENT
     label: "Entity"
     plural: "Entities"
     parent: ANY
+    color: "#9D3F9D"
   - name: LOC
     label: "Location"
     plural: "Locations"
     parent: ANY
+    color: "#29a634"
   - name: PER
     label: "Person"
     plural: "People"
     parent: ENT
+    color: "#9d3f9d"
   - name: ORG
     label: "Organization"
     plural: "Organizations"
     parent: ENT
+    color: "#2965cc"
 link_types:
   - name: SAME
     label: "Same as"

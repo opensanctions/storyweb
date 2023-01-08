@@ -1,13 +1,16 @@
 import queryString from 'query-string';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { SectionLoading } from '../components/util';
 import { useEffect } from 'react';
 import { useFetchStoryPairsQuery } from '../services/stories';
+import { useNodeTypes } from '../selectors';
 
 export default function StoryLinker() {
   const { storyId } = useParams();
   const navigate = useNavigate();
-  const pairsParams = { linked: false, limit: 1 };
+  const [params] = useSearchParams();
+  const nodeTypes = useNodeTypes();
+  const pairsParams = { linked: false, limit: 1, _: params.get('previous'), types: nodeTypes };
   const pairsQuery = { storyId, params: pairsParams };
   const { data, isLoading } = useFetchStoryPairsQuery(pairsQuery, { refetchOnMountOrArgChange: true });
   useEffect(() => {

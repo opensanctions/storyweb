@@ -1,5 +1,6 @@
 import { AnchorButton, Button, ButtonGroup, HTMLTable } from "@blueprintjs/core";
 import { Link } from "react-router-dom";
+import { useNodeTypes } from "../selectors";
 import { useFetchRelatedClusterListingQuery } from "../services/clusters";
 import { useExplodeClusterMutation } from "../services/links";
 import { ICluster } from "../types";
@@ -12,7 +13,9 @@ type RelatedListingProps = {
 }
 
 export default function RelatedListing({ cluster }: RelatedListingProps) {
-  const { data: listing, isLoading } = useFetchRelatedClusterListingQuery({ clusterId: cluster.id, params: {} })
+  const nodeTypes = useNodeTypes();
+  const relatedParams = { clusterId: cluster.id, params: { types: nodeTypes } };
+  const { data: listing, isLoading } = useFetchRelatedClusterListingQuery(relatedParams)
   const [explodeCluster, { isLoading: isExploding }] = useExplodeClusterMutation()
   if (listing === undefined || isLoading || isExploding) {
     return <SectionLoading />

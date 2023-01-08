@@ -6,6 +6,8 @@ import { linksApi } from './services/links'
 import { ontologyApi } from './services/ontology'
 import { sitesApi } from './services/sites'
 import { storiesApi } from './services/stories'
+import { configSlice, hydrate } from './services/config'
+
 
 export const store = configureStore({
   reducer: {
@@ -15,6 +17,7 @@ export const store = configureStore({
     [clustersApi.reducerPath]: clustersApi.reducer,
     [linksApi.reducerPath]: linksApi.reducer,
     [sitesApi.reducerPath]: sitesApi.reducer,
+    config: configSlice.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
@@ -26,7 +29,28 @@ export const store = configureStore({
       .concat(sitesApi.middleware),
 })
 
+store.subscribe(() => {
+  localStorage.setItem('config', JSON.stringify(store.getState().config))
+})
+
 setupListeners(store.dispatch)
+
+const getConfig = () => {
+  try {
+    const persistedState = localStorage.getItem('config')
+    if (persistedState) {
+      return JSON.parse(persistedState)
+    }
+  }
+  catch (e) {
+    console.log(e)
+  }
+}
+
+const storedConfig = getConfig()
+if (storedConfig) {
+  store.dispatch(hydrate(storedConfig))
+}
 
 export type RootState = ReturnType<typeof store.getState>
 export type AppDispatch = typeof store.dispatch

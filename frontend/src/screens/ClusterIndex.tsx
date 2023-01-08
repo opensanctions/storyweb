@@ -4,6 +4,7 @@ import { FormEvent, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSearchParams } from "react-router-dom";
 import { ErrorSection, Numeric, SectionLoading, TagType } from '../components/util';
+import { useNodeTypes } from '../selectors';
 
 import { useFetchClusterListingQuery, useMergeClustersMutation } from '../services/clusters';
 import { asString, getClusterLink, listToggle } from "../util";
@@ -14,7 +15,8 @@ export default function ClusterIndex() {
   const [merges, setMerges] = useState([] as string[]);
   const [postMerge, { isLoading: isUpdating }] = useMergeClustersMutation();
   const { data: listing, error } = useFetchClusterListingQuery({
-    q: params.get('q')
+    q: params.get('q'),
+    types: useNodeTypes(),
   });
 
   const onMerge = async () => {

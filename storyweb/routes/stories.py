@@ -92,11 +92,12 @@ def story_pairs(
     listing: Listing = Depends(get_listing),
     story_id: int = Path(),
     linked: Optional[bool] = Query(None),
+    types: List[str] = Query([]),
 ):
     story = fetch_story(conn, story_id)
     if story is None:
         raise HTTPException(404)
-    return list_story_pairs(conn, listing, story_id, linked=linked)
+    return list_story_pairs(conn, listing, story_id, linked=linked, types=types)
 
 
 @router.get("/stories/{story_id}/gexf", response_class=PlainTextResponse)

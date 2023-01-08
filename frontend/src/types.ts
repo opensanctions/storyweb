@@ -129,6 +129,7 @@ export interface IClusterType {
   label: string
   plural: string
   parent?: string
+  color: string
 }
 
 export interface IOntology {

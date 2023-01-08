@@ -30,6 +30,7 @@ def list_clusters(
     query: Optional[str] = None,
     article: Optional[str] = None,
     story: Optional[str] = None,
+    types: List[str] = [],
 ) -> ListingResponse[Cluster]:
     cluster_t = tag_table.alias("c")
     articles = func.count(func.distinct(cluster_t.c.article))
@@ -39,6 +40,10 @@ def list_clusters(
         cluster_t.c.cluster_label.label("label"),
         articles.label("articles"),
     )
+
+    if len(types):
+        stmt = stmt.where(cluster_t.c.cluster_type.in_(types))
+
     if query is not None and len(query.strip()):
         text_t = tag_table.alias("q")
         stmt = stmt.where(text_t.c.cluster == cluster_t.c.cluster)
@@ -148,7 +153,11 @@ def list_similar(conn: Conn, listing: Listing, cluster: str):
 
 
 def list_related(
-    conn: Conn, listing: Listing, cluster: str, linked: Optional[bool] = None
+    conn: Conn,
+    listing: Listing,
+    cluster: str,
+    linked: Optional[bool] = None,
+    types: List[str] = [],
 ) -> ListingResponse[RelatedCluster]:
 
     tag_t = tag_table.alias("t")
@@ -164,6 +173,9 @@ def list_related(
     stmt = stmt.where(tag_t.c.article == cluster_t.c.article)
     stmt = stmt.where(tag_t.c.cluster != cluster)
     stmt = stmt.where(cluster_t.c.cluster == cluster)
+
+    if len(types):
+        stmt = stmt.where(tag_t.c.cluster_type.in_(types))
 
     link_fwd = link_table.alias("fwd")
     link_bck = link_table.alias("bck")
@@ -205,6 +217,7 @@ def list_story_pairs(
     listing: Listing,
     story: int,
     linked: Optional[bool] = None,
+    types: List[str] = [],
 ) -> ListingResponse[ClusterPair]:
     left_t = tag_table.alias("l")
     right_t = tag_table.alias("r")
@@ -225,6 +238,10 @@ def list_story_pairs(
             left_t.c.article == right_t.c.article, left_t.c.cluster > right_t.c.cluster
         ),
     )
+
+    if len(types):
+        stmt = stmt.where(left_t.c.cluster_type.in_(types))
+        stmt = stmt.where(right_t.c.cluster_type.in_(types))
 
     sa_t = story_article_table.alias("sa")
     stmt = stmt.join_from(left_t, sa_t, left_t.c.article == sa_t.c.article)

@@ -25,7 +25,11 @@ type TagTypeProps = {
 export function TagType({ type }: TagTypeProps) {
   const { data: ontology } = useFetchOntologyQuery();
   const meta = ontology?.cluster_types.find((t) => t.name === type)
-  return <span className={classnames(styles[type], styles.tagType)}>{meta?.label || type}</span>;
+  return (
+    <span className={styles.tagType} style={{ 'backgroundColor': meta?.color }}>
+      {meta?.label || type}
+    </span>
+  );
 }
 
 type LinkTypeProps = {
