@@ -1,5 +1,6 @@
 import { Button, Classes, Dialog, FormGroup, InputGroup, TextArea } from "@blueprintjs/core";
 import { FormEvent, MouseEvent, useState } from "react";
+import { STORY_ICON } from "../constants";
 import { useUpdateStoryMutation } from "../services/stories";
 import { IStory } from "../types";
 
@@ -25,7 +26,7 @@ export default function StoryUpdateDialog({ story, isOpen, onClose }: StoryUpdat
   }
 
   return (
-    <Dialog isOpen={isOpen} onClose={onClose} title="Edit story">
+    <Dialog isOpen={isOpen} onClose={onClose} icon={STORY_ICON} title="Edit story">
       <form onSubmit={onSave}>
         <div className={Classes.DIALOG_BODY}>
           <FormGroup

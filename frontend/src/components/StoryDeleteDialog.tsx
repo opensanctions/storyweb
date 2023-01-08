@@ -1,6 +1,7 @@
 import { Button, Callout, Classes, Dialog, Intent } from "@blueprintjs/core";
 import { FormEvent, MouseEvent } from "react";
 import { useNavigate } from "react-router-dom";
+import { STORY_ICON } from "../constants";
 import { useDeleteStoryMutation } from "../services/stories";
 import { IStory } from "../types";
 
@@ -21,7 +22,7 @@ export default function StoryDeleteDialog({ isOpen, onClose, story }: StoryCreat
   }
 
   return (
-    <Dialog isOpen={isOpen} onClose={onClose} title={`Delete story: ${story.title}`}>
+    <Dialog isOpen={isOpen} onClose={onClose} icon={STORY_ICON} title={`Delete story: ${story.title}`}>
       <form onSubmit={onDelete}>
         <div className={Classes.DIALOG_BODY}>
           <Callout intent={Intent.DANGER}>

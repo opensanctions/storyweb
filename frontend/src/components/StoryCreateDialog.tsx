@@ -1,5 +1,6 @@
 import { Button, Classes, Dialog, FormGroup, InputGroup, TextArea } from "@blueprintjs/core";
 import { FormEvent, MouseEvent, useState } from "react";
+import { STORY_ICON } from "../constants";
 import { useCreateStoryMutation } from "../services/stories";
 
 type StoryCreateDialogProps = {
@@ -24,7 +25,7 @@ export default function StoryCreateDialog({ isOpen, onClose }: StoryCreateDialog
   }
 
   return (
-    <Dialog isOpen={isOpen} onClose={onClose} title="Create a new story">
+    <Dialog isOpen={isOpen} onClose={onClose} icon={STORY_ICON} title="Create a new story">
       <form onSubmit={onCreate}>
         <div className={Classes.DIALOG_BODY}>
           <FormGroup

@@ -72,7 +72,7 @@ export default function ClusterIndex() {
               <th>Label</th>
               <th>Type</th>
               <th className="numeric">Articles</th>
-              <th>
+              <th style={{ width: "1%" }} className="numeric">
                 <Button small onClick={onMerge} disabled={merges.length < 2}>
                   Merge
                 </Button>
@@ -89,7 +89,7 @@ export default function ClusterIndex() {
                 <td className="numeric">
                   <Numeric value={cluster.articles} />
                 </td>
-                <td>
+                <td style={{ width: "1%" }} className="numeric">
                   <Checkbox
                     checked={merges.indexOf(cluster.id) !== -1}
                     onClick={() => toggleMerge(cluster.id)}

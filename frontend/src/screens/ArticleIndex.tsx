@@ -69,7 +69,7 @@ export default function ArticleIndex() {
               <th>Title</th>
               <th>Site</th>
               <th className="numeric">Entities</th>
-              <th>Add to story</th>
+              <th className="numeric">Stories</th>
             </tr>
           </thead>
           <tbody>
@@ -84,7 +84,7 @@ export default function ArticleIndex() {
                 <td className="numeric">
                   <Numeric value={article.tags} />
                 </td>
-                <td>
+                <td style={{ width: "1%" }} className="numeric">
                   <ArticleStoryEditor article={article} inList />
                 </td>
               </tr>
