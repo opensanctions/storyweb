@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Navbar, Alignment, Icon } from '@blueprintjs/core';
+import { Navbar, Alignment, Icon, Button } from '@blueprintjs/core';
+import SettingsDialog from './SettingsDialog';
 
 
 export default function NavbarSection() {
+  const [showSettings, setShowSettings] = useState(false);
   return (
     <Navbar className='bp4-dark'>
       <div className='page-container'>
@@ -26,6 +28,10 @@ export default function NavbarSection() {
             <Icon icon="document" />
             <span className="bp4-button-text">Articles</span>
           </Link>
+        </Navbar.Group>
+        <Navbar.Group align={Alignment.RIGHT}>
+          <Button minimal icon="cog" onClick={() => setShowSettings(true)}>Settings</Button>
+          <SettingsDialog isOpen={showSettings} onClose={() => setShowSettings(false)} />
         </Navbar.Group>
       </div>
     </Navbar>
