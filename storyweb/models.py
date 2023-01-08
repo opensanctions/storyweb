@@ -55,6 +55,7 @@ class StoryArticleImportUrl(BaseModel):
 class Story(BaseModel):
     id: int
     title: str
+    summary: Optional[str]
 
 
 class Sentence(BaseModel):

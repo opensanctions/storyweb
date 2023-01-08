@@ -1,7 +1,7 @@
-import { ControlGroup, Classes, Intent, HTMLTable, Button, NonIdealState } from '@blueprintjs/core';
+import { ControlGroup, Classes, Intent, HTMLTable, Button, NonIdealState, Card, Elevation, ButtonGroup } from '@blueprintjs/core';
 import classnames from "classnames";
 import { FormEvent, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useSearchParams } from "react-router-dom";
 import StoryCreateDialog from '../components/StoryCreateDialog';
 import { SectionLoading } from '../components/util';
@@ -9,8 +9,12 @@ import { SectionLoading } from '../components/util';
 import { useFetchStoryListingQuery } from '../services/stories';
 import { asString } from "../util";
 
+import styles from '../styles/Story.module.scss';
+import ScreenHeading from '../components/ScreenHeading';
+
 export default function StoryIndex() {
   const [params, setParams] = useSearchParams();
+  const navigate = useNavigate();
   const [query, setQuery] = useState(asString(params.get('q')) || '')
   const [showCreate, setShowCreate] = useState(false)
   const { data: listing } = useFetchStoryListingQuery({
@@ -27,9 +31,12 @@ export default function StoryIndex() {
 
   return (
     <div>
-      {(listing === undefined) && (
-        <h1>Your StoryWebs</h1>
-      )}
+      <ScreenHeading title={<>Your StoryWebs</>}>
+        <ButtonGroup>
+          <Button intent={Intent.PRIMARY} onClick={onCreate} icon="add">New story...</Button>
+          <StoryCreateDialog isOpen={showCreate} onClose={onCloseCreate} />
+        </ButtonGroup>
+      </ScreenHeading>
       <section className="section">
         <form onSubmit={onSubmit}>
           <ControlGroup fill>
@@ -43,10 +50,6 @@ export default function StoryIndex() {
           </ControlGroup>
         </form>
       </section>
-      <section className="section">
-        <Button intent={Intent.PRIMARY} onClick={onCreate}>New story...</Button>
-        <StoryCreateDialog isOpen={showCreate} onClose={onCloseCreate} />
-      </section>
       {listing === undefined && (
         <SectionLoading />
       )}
@@ -58,23 +61,38 @@ export default function StoryIndex() {
         />
       )}
       {(listing !== undefined && listing.results.length > 0) && (
-        <HTMLTable condensed bordered className="wide">
-          <thead>
-            <tr>
-              <th>Title</th>
-            </tr>
-          </thead>
-          <tbody>
-            {listing.results.map((story) => (
-              <tr key={story.id}>
-                <td>
-                  <Link to={`/stories/${story.id}`}>{story.title}</Link>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </HTMLTable>
-      )}
-    </div>
+        <div className={styles.storyCardArea}>
+          {listing.results.map((story) => (
+            <Card
+              key={story.id}
+              interactive={true}
+              elevation={Elevation.TWO}
+              className={styles.storyCard}
+              onClick={() => navigate(`/stories/${story.id}`)}
+            >
+              <h3>{story.title}</h3>
+              <p>{story.summary}</p>
+            </Card>
+          ))}
+        </div>
+        // <HTMLTable condensed bordered className="wide">
+        //   <thead>
+        //     <tr>
+        //       <th>Title</th>
+        //     </tr>
+        //   </thead>
+        //   <tbody>
+        //     {listing.results.map((story) => (
+        //       <tr key={story.id}>
+        //         <td>
+        //           <Link to={`/stories/${story.id}`}>{story.title}</Link>
+        //         </td>
+        //       </tr>
+        //     ))}
+        //   </tbody>
+        // </HTMLTable>
+      )
+      }
+    </div >
   )
 }

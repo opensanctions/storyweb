@@ -1,0 +1,14 @@
+@import "./variables.scss";
+
+.storyCardArea {
+    display: flex;
+    // flex-direction: column;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.storyCard {
+    flex: 0 1 30%;
+    // margin-left: $spacer;
+    margin-bottom: $spacer * 2;
+}
