@@ -10,12 +10,12 @@ import { useFetchOntologyQuery } from '../services/ontology';
 import styles from '../styles/util.module.scss';
 
 
-type TagLabelProps = {
+type ClusterLabelProps = {
   label: string
 }
 
-export function TagLabel({ label }: TagLabelProps) {
-  return <span className={styles.tagLabel}>{label}</span>;
+export function ClusterLabel({ label }: ClusterLabelProps) {
+  return <span className={styles.ClusterLabel}>{label}</span>;
 }
 
 type TagTypeProps = {

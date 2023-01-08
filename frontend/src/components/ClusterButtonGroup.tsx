@@ -22,7 +22,7 @@ export default function ClusterButtonGroup({ cluster }: ClusterButtonGroupProps)
   return (
     <ButtonGroup>
       <AnchorButton icon={LINKER_ICON} intent={Intent.PRIMARY} href={getLinkLoomLink(cluster)} disabled={disabled}>
-        Build network
+        Build web
       </AnchorButton>
       <AnchorButton href={googleUrl} disabled={disabled} icon="search-text">Google</AnchorButton>
       <AnchorButton href={sanctionsUrl} disabled={disabled} icon="search-text">OpenSanctions</AnchorButton>

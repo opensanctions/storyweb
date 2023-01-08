@@ -1,7 +1,7 @@
 import { Link, useParams, useSearchParams } from "react-router-dom"
 import { Checkbox, HTMLTable } from '@blueprintjs/core';
 import ArticleText from "../components/ArticleText";
-import { ErrorSection, SectionLoading, Spacer, TagLabel, TagType } from "../components/util";
+import { ErrorSection, SectionLoading, Spacer, ClusterLabel, TagType } from "../components/util";
 import { useFetchArticleQuery } from "../services/articles"
 import { useFetchClusterListingQuery } from "../services/clusters";
 import { getClusterLink, listToggle } from "../util";
@@ -86,7 +86,7 @@ export default function ArticleView() {
                   </td>
                   <td>
                     <Link to={getClusterLink(cluster)}>
-                      <TagLabel label={cluster.label} />
+                      <ClusterLabel label={cluster.label} />
                     </Link>
                   </td>
                   <td>

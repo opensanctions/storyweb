@@ -1,20 +1,20 @@
 import React, { useState } from 'react';
+import classnames from 'classnames';
 import { Link } from 'react-router-dom';
 import { Navbar, Alignment, Icon, Button } from '@blueprintjs/core';
 import SettingsDialog from './SettingsDialog';
-import { ARTICLE_ICON, CLUSTER_ICON, STORY_ICON } from '../constants';
+import { ARTICLE_ICON, CLUSTER_ICON, SITE, STORY_ICON } from '../constants';
 
+import styles from "../styles/Navbar.module.scss";
 
 export default function NavbarSection() {
   const [showSettings, setShowSettings] = useState(false);
   return (
-    <Navbar className='bp4-dark'>
+    <Navbar className={classnames('bp4-dark', styles.navContainered)}>
       <div className='page-container'>
         <Navbar.Group align={Alignment.LEFT}>
           <Navbar.Heading>
-            <Link to="/">
-              StoryWeb
-            </Link>
+            <Link to="/">{SITE}</Link>
           </Navbar.Heading>
           <Navbar.Divider />
           <Link to="/" role="button" className="bp4-minimal bp4-button">
