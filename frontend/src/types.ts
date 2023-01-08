@@ -50,21 +50,6 @@ export interface IClusterBase {
   type: string
 }
 
-// export interface ITag extends IClusterBase {
-//   cluster: string
-//   article: string
-//   fingerprint: string
-//   count: number
-// }
-
-// export interface IArticleTag extends IClusterBase {
-//   article: IArticle
-//   cluster: string
-//   fingerprint: string
-//   count: number
-//   link_type?: string
-// }
-
 export interface ICluster extends IClusterBase {
   articles: number
 }
@@ -130,6 +115,7 @@ export interface IClusterType {
   plural: string
   parent?: string
   color: string
+  icon: string
 }
 
 export interface IOntology {

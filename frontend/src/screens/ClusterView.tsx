@@ -1,9 +1,9 @@
 import { useParams } from "react-router-dom";
-import { Tabs, Tab } from "@blueprintjs/core";
+import { Tabs, Tab, IconSize } from "@blueprintjs/core";
 
 import RelatedListing from "../components/RelatedListing";
 import SimilarListing from "../components/SimilarListing";
-import { ErrorSection, SectionLoading, SpacedList, Spacer, TagType, ClusterLabel } from "../components/util";
+import { ErrorSection, SectionLoading, SpacedList, Spacer, ClusterType, ClusterLabel, ClusterTypeIcon } from "../components/util";
 import { useFetchClusterQuery } from "../services/clusters";
 import ClusterArticles from "../components/ClusterArticles";
 import ScreenHeading from "../components/ScreenHeading";
@@ -18,13 +18,17 @@ export default function ClusterView() {
   if (cluster === undefined || isLoading) {
     return <SectionLoading />
   }
+  const title = <>
+    <ClusterTypeIcon type={cluster.type} size={IconSize.LARGE} />
+    <ClusterLabel label={cluster.label} />
+  </>;
   return (
     <div>
-      <ScreenHeading title={<ClusterLabel label={cluster.label} />}>
+      <ScreenHeading title={title}>
         <ClusterButtonGroup cluster={cluster} />
       </ScreenHeading>
       <p>
-        <TagType type={cluster.type} /> <Spacer />
+        <ClusterType type={cluster.type} /> <Spacer />
         Aliases:{' '}
         <SpacedList values={cluster.labels.map((l) => <ClusterLabel key={l} label={l} />)} />
       </p>

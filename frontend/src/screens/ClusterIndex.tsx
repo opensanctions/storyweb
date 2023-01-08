@@ -3,7 +3,7 @@ import classnames from "classnames";
 import { FormEvent, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSearchParams } from "react-router-dom";
-import { ErrorSection, Numeric, SectionLoading, TagType } from '../components/util';
+import { ErrorSection, Numeric, SectionLoading, ClusterType, ClusterTypeIcon } from '../components/util';
 import { useNodeTypes } from '../selectors';
 
 import { useFetchClusterListingQuery, useMergeClustersMutation } from '../services/clusters';
@@ -70,7 +70,6 @@ export default function ClusterIndex() {
           <thead>
             <tr>
               <th>Label</th>
-              <th>Type</th>
               <th className="numeric">Articles</th>
               <th style={{ width: "1%" }} className="numeric">
                 <Button small onClick={onMerge} disabled={merges.length < 2}>
@@ -83,9 +82,9 @@ export default function ClusterIndex() {
             {listing.results.map((cluster) => (
               <tr key={cluster.id}>
                 <td>
+                  <ClusterTypeIcon type={cluster.type} size={14} />
                   <Link to={getClusterLink(cluster)}>{cluster.label}</Link>
                 </td>
-                <td><TagType type={cluster.type} /></td>
                 <td className="numeric">
                   <Numeric value={cluster.articles} />
                 </td>

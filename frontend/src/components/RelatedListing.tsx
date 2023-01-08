@@ -5,7 +5,7 @@ import { useFetchRelatedClusterListingQuery } from "../services/clusters";
 import { ICluster } from "../types";
 import { getClusterLink } from "../util";
 import PairLink from "./PairLink";
-import { SectionLoading, TagType } from "./util";
+import { SectionLoading, ClusterType, ClusterTypeIcon } from "./util";
 
 type RelatedListingProps = {
   cluster: ICluster,
@@ -25,22 +25,21 @@ export default function RelatedListing({ cluster }: RelatedListingProps) {
         <thead>
           <tr>
             <th>Name</th>
-            <th>Type</th>
             <th>Link</th>
-            <th>Articles</th>
+            <th style={{ width: '1%' }} className="numeric">Articles</th>
           </tr>
         </thead>
         <tbody>
           {listing.results.map((related) => (
             <tr key={related.id}>
               <td>
+                <ClusterTypeIcon type={cluster.type} size={14} />
                 <Link to={getClusterLink(related)}>{related.label}</Link>
               </td>
-              <td><TagType type={related.type} /></td>
               <td>
                 <PairLink left={cluster} right={related} link_types={related.link_types} />
               </td>
-              <td>{related.articles}</td>
+              <td className="numeric">{related.articles}</td>
             </tr>
           ))}
         </tbody>

@@ -3,26 +3,31 @@ cluster_types:
     label: "Thing"
     plural: "Things"
     color: "#9D3F9D"
+    icon: "hat"
   - name: ENT
     label: "Entity"
     plural: "Entities"
     parent: ANY
     color: "#9D3F9D"
+    icon: "people"
   - name: LOC
     label: "Location"
     plural: "Locations"
     parent: ANY
     color: "#29a634"
+    icon: "mountain"
   - name: PER
     label: "Person"
     plural: "People"
     parent: ENT
     color: "#9d3f9d"
+    icon: "person"
   - name: ORG
     label: "Organization"
     plural: "Organizations"
     parent: ENT
     color: "#2965cc"
+    icon: "office"
 link_types:
   - name: SAME
     label: "Same as"

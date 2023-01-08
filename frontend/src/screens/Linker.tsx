@@ -4,7 +4,7 @@ import { getClusterLink } from '..//util';
 import { Button, HotkeyConfig, HotkeysTarget2, RadioGroup } from '@blueprintjs/core';
 import { useFetchClusterQuery } from '../services/clusters';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { SectionLoading, TagType } from '../components/util';
+import { SectionLoading, ClusterType, ClusterTypeIcon } from '../components/util';
 import { useFetchOntologyQuery } from '../services/ontology';
 import { useFetchLinksQuery, useSaveLinkMutation } from '../services/links';
 import ArticleCorefList from '../components/ArticleCorefList';
@@ -119,18 +119,16 @@ export default function Linker() {
           {!!storyId && (
             <StoryLinkerBanner storyId={storyId} />
           )}
-          <h3>
+          <h3 className={styles.phrase}>
             <strong>
-              <TagType type={source.type} />
-              {' '}
+              <ClusterTypeIcon type={source.type} size={14} />
               <Link to={getClusterLink(source)}>{source.label}</Link>
             </strong>
             {' '}
             {linkType.phrase}
             {' '}
             <strong>
-              <TagType type={target.type} />
-              {' '}
+              <ClusterTypeIcon type={target.type} size={14} />
               <Link to={getClusterLink(target)}>{target.label}</Link>
             </strong>
           </h3>

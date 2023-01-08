@@ -1,4 +1,4 @@
-import { NonIdealState, NonIdealStateIconSize, Spinner, SpinnerSize } from '@blueprintjs/core';
+import { Icon, NonIdealState, NonIdealStateIconSize, Spinner, SpinnerSize } from '@blueprintjs/core';
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { ReactNode } from 'react';
@@ -18,19 +18,43 @@ export function ClusterLabel({ label }: ClusterLabelProps) {
   return <span className={styles.ClusterLabel}>{label}</span>;
 }
 
-type TagTypeProps = {
+type ClusterTypeProps = {
   type: string
 }
 
-export function TagType({ type }: TagTypeProps) {
+export function ClusterType({ type }: ClusterTypeProps) {
   const { data: ontology } = useFetchOntologyQuery();
   const meta = ontology?.cluster_types.find((t) => t.name === type)
   return (
-    <span className={styles.tagType} style={{ 'backgroundColor': meta?.color }}>
+    <span className={styles.clusterType} style={{ 'backgroundColor': meta?.color }}>
       {meta?.label || type}
     </span>
   );
 }
+
+
+type ClusterTypeIconProps = {
+  type: string
+  size?: number
+  className?: string
+}
+
+export function ClusterTypeIcon({ type, size, className }: ClusterTypeIconProps) {
+  const { data: ontology } = useFetchOntologyQuery();
+  const allClassName = classnames('spaced-icon', className)
+  const meta = ontology?.cluster_types.find((t) => t.name === type);
+  const icon = meta?.icon || 'hat';
+  return (
+    <Icon
+      icon={icon as any}
+      size={size}
+      color={meta?.color}
+      className={allClassName}
+      title={meta?.label || type}
+    />
+  );
+}
+
 
 type LinkTypeProps = {
   type: string

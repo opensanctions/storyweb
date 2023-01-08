@@ -7,10 +7,10 @@
 @import "@react-sigma/core/lib/react-sigma.min.css";
 
 .page-container {
-    // margin: 0 auto;
-    // max-width: $max-container-width;
-    margin-left: $spacer * 2;
-    margin-right: $spacer * 2;
+    margin: 0 auto;
+    max-width: $max-container-width;
+    // margin-left: $spacer * 2;
+    // margin-right: $spacer * 2;
     line-height: 1.4;
 }
 
@@ -62,4 +62,17 @@ th.numeric {
 .bp4-navbar-heading a:hover {
     color: white;
     text-decoration: none;
+}
+
+.spaced-icon {
+    margin-right: 0.3em;
+}
+
+h1 {
+    clear: both;
+    padding-top: $spacer;
+
+    .bp4-icon {
+        vertical-align: middle;
+    }
 }

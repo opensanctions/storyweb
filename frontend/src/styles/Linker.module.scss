@@ -1,4 +1,21 @@
+@import "./variables.scss";
+
 // .articlePreview {
 //     max-height: 70vh;
 //     overflow-y: scroll;
 // }
+
+.phrase {
+    text-align: center;
+    // background-color: $light-gray2;
+    background-color: white;
+    padding-top: $spacer;
+    padding-bottom: $spacer;
+    border-radius: $spacer;
+
+    :global {
+        .bp4-icon {
+            vertical-align: middle;
+        }
+    }
+}

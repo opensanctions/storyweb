@@ -4,7 +4,7 @@ import { useNodeTypes } from "../selectors";
 import { useFetchStoryPairsQuery } from "../services/stories";
 import { getClusterLink } from "../util";
 import PairLink from "./PairLink";
-import { ErrorSection, Numeric, SectionLoading, Spacer, TagType } from "./util";
+import { ErrorSection, Numeric, SectionLoading, Spacer, ClusterType, ClusterTypeIcon } from "./util";
 
 type StoryPairsProps = {
   storyId: number,
@@ -38,14 +38,12 @@ export default function StoryPairs({ storyId }: StoryPairsProps) {
         {clusters.results.map((pair) => (
           <tr key={pair.left.id + pair.right.id}>
             <td>
+              <ClusterTypeIcon type={pair.left.type} size={14} />
               <Link to={getClusterLink(pair.left)}>{pair.left.label}</Link>
-              <Spacer />
-              <TagType type={pair.left.type} />
             </td>
             <td>
+              <ClusterTypeIcon type={pair.right.type} size={14} />
               <Link to={getClusterLink(pair.right)}>{pair.right.label}</Link>
-              <Spacer />
-              <TagType type={pair.right.type} />
             </td>
             <td>
               <PairLink left={pair.left} right={pair.right} link_types={pair.link_types} />
