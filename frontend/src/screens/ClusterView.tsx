@@ -6,8 +6,8 @@ import SimilarListing from "../components/SimilarListing";
 import { ErrorSection, SectionLoading, SpacedList, Spacer, TagType, TagLabel } from "../components/util";
 import { useFetchClusterQuery } from "../services/clusters";
 import ClusterArticles from "../components/ClusterArticles";
-import { ClusterGoogleSearch, ClusterSanctionsSearch } from "../components/ClusterSearches";
-import { SPACER } from "../constants";
+import ScreenHeading from "../components/ScreenHeading";
+import ClusterButtonGroup from "../components/ClusterButtonGroup";
 
 export default function ClusterView() {
   const { clusterId } = useParams();
@@ -20,17 +20,13 @@ export default function ClusterView() {
   }
   return (
     <div>
-      <h1>
-        <TagLabel label={cluster.label} />
-      </h1>
+      <ScreenHeading title={<TagLabel label={cluster.label} />}>
+        <ClusterButtonGroup cluster={cluster} />
+      </ScreenHeading>
       <p>
         <TagType type={cluster.type} /> <Spacer />
         Aliases:{' '}
         <SpacedList values={cluster.labels.map((l) => <TagLabel key={l} label={l} />)} />
-        {SPACER}
-        <ClusterGoogleSearch cluster={cluster} />
-        {SPACER}
-        <ClusterSanctionsSearch cluster={cluster} />
       </p>
       <Tabs>
         <Tab id="related" title="Related" panel={<RelatedListing cluster={cluster} />} />

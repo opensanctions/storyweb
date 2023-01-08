@@ -1,13 +1,15 @@
-import { AnchorButton, Button, ButtonGroup, HTMLTable, Intent } from "@blueprintjs/core";
+import { AnchorButton, Button, ButtonGroup, HTMLTable, Icon, IconSize, Intent } from "@blueprintjs/core";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
+import ScreenHeading from "../components/ScreenHeading";
 import StoryArticleImportDialog from "../components/StoryArticleImportDialog";
 import StoryDeleteDialog from "../components/StoryDeleteDialog";
 import StoryGraph from "../components/StoryGraph";
 import StoryPairs from "../components/StoryPairs";
 import StoryUpdateDialog from "../components/StoryUpdateDialog";
 import { ErrorSection, SectionLoading } from "../components/util";
+import { ARTICLE_ICON, LINKER_ICON, STORY_ICON } from "../constants";
 import { useFetchArticleListingQuery } from "../services/articles";
 import { useFetchStoryQuery, useToggleStoryArticleMutation } from "../services/stories";
 import { IArticle } from "../types";
@@ -35,26 +37,27 @@ export default function StoryView() {
 
   return (
     <div>
-      <h1>
-        {story.title}
-      </h1>
-      <Button intent={Intent.DANGER} icon="trash" onClick={() => setShowDelete(true)}>Delete</Button>
-      <StoryDeleteDialog isOpen={showDelete} onClose={() => setShowDelete(false)} story={story} />
-      <Button intent={Intent.NONE} icon="edit" onClick={() => setShowEdit(true)}>Edit</Button>
-      <StoryUpdateDialog isOpen={showEdit} onClose={() => setShowEdit(false)} story={story} />
+      <ScreenHeading title={<><Icon icon={STORY_ICON} size={IconSize.LARGE} /> {story.title}</>}>
+        <AnchorButton intent={Intent.PRIMARY} icon={LINKER_ICON} href={`/stories/${story.id}/linker`}>
+          Build web
+        </AnchorButton>
+        <Button icon={ARTICLE_ICON} intent={Intent.PRIMARY} onClick={() => setShowImport(true)}>
+          Add article
+        </Button>
+        <StoryArticleImportDialog storyId={story.id} isOpen={showImport} onClose={() => setShowImport(false)} />
+        <Button intent={Intent.NONE} icon="edit" onClick={() => setShowEdit(true)}>
+          Edit
+        </Button>
+        <StoryUpdateDialog isOpen={showEdit} onClose={() => setShowEdit(false)} story={story} />
+        <Button intent={Intent.DANGER} icon="trash" onClick={() => setShowDelete(true)}>
+          Delete
+        </Button>
+        <StoryDeleteDialog isOpen={showDelete} onClose={() => setShowDelete(false)} story={story} />
+      </ScreenHeading>
       <StoryGraph storyId={story.id} />
       <h3>Co-occurring entities</h3>
-      <section>
-        <ButtonGroup>
-          <AnchorButton icon="new-link" href={`/stories/${story.id}/linker`}>Link tool</AnchorButton>
-        </ButtonGroup>
-      </section>
       <StoryPairs storyId={story.id} />
       <h3>Articles</h3>
-      <section>
-        <Button intent={Intent.PRIMARY} onClick={() => setShowImport(true)}>Import article...</Button>
-        <StoryArticleImportDialog storyId={story.id} isOpen={showImport} onClose={() => setShowImport(false)} />
-      </section>
       <HTMLTable condensed bordered className="wide">
         <thead>
           <tr>
@@ -84,6 +87,6 @@ export default function StoryView() {
           ))}
         </tbody>
       </HTMLTable>
-    </div>
+    </div >
   )
 }

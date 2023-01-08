@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Navbar, Alignment, Icon, Button } from '@blueprintjs/core';
 import SettingsDialog from './SettingsDialog';
+import { ARTICLE_ICON, CLUSTER_ICON, STORY_ICON } from '../constants';
 
 
 export default function NavbarSection() {
@@ -17,15 +18,15 @@ export default function NavbarSection() {
           </Navbar.Heading>
           <Navbar.Divider />
           <Link to="/" role="button" className="bp4-minimal bp4-button">
-            <Icon icon="projects" />
+            <Icon icon={STORY_ICON} />
             <span className="bp4-button-text">Stories</span>
           </Link>
           <Link to="/clusters" role="button" className="bp4-minimal bp4-button">
-            <Icon icon="people" />
+            <Icon icon={CLUSTER_ICON} />
             <span className="bp4-button-text">Entities</span>
           </Link>
           <Link to="/articles" role="button" className="bp4-minimal bp4-button">
-            <Icon icon="document" />
+            <Icon icon={ARTICLE_ICON} />
             <span className="bp4-button-text">Articles</span>
           </Link>
         </Navbar.Group>

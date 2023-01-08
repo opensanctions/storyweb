@@ -1,10 +1,9 @@
-import { AnchorButton, Button, ButtonGroup, HTMLTable } from "@blueprintjs/core";
+import { HTMLTable } from "@blueprintjs/core";
 import { Link } from "react-router-dom";
 import { useNodeTypes } from "../selectors";
 import { useFetchRelatedClusterListingQuery } from "../services/clusters";
-import { useExplodeClusterMutation } from "../services/links";
 import { ICluster } from "../types";
-import { getClusterLink, getLinkLoomLink } from "../util";
+import { getClusterLink } from "../util";
 import PairLink from "./PairLink";
 import { SectionLoading, TagType } from "./util";
 
@@ -16,21 +15,12 @@ export default function RelatedListing({ cluster }: RelatedListingProps) {
   const nodeTypes = useNodeTypes();
   const relatedParams = { clusterId: cluster.id, params: { types: nodeTypes } };
   const { data: listing, isLoading } = useFetchRelatedClusterListingQuery(relatedParams)
-  const [explodeCluster, { isLoading: isExploding }] = useExplodeClusterMutation()
-  if (listing === undefined || isLoading || isExploding) {
+  if (listing === undefined || isLoading) {
     return <SectionLoading />
   }
 
-  const onExplode = async () => {
-    await explodeCluster(cluster.id).unwrap();
-  };
-
   return (
     <>
-      <ButtonGroup>
-        <AnchorButton icon="new-link" href={getLinkLoomLink(cluster)}>Link tool</AnchorButton>
-        <Button icon="graph-remove" onClick={onExplode}>Explode</Button>
-      </ButtonGroup>
       <HTMLTable condensed bordered className="wide">
         <thead>
           <tr>
