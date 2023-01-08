@@ -4,7 +4,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { useFetchArticleListingQuery } from "../services/articles";
 import { useUntagArticleMutation } from "../services/links";
 import { IArticle, IClusterDetails } from "../types";
-import ArticlePreview from "./ArticlePreview";
+import ArticleDrawer from "./ArticleDrawer";
 import { SectionLoading } from "./util";
 
 type ClusterArticlesProps = {
@@ -16,16 +16,20 @@ export default function ClusterArticles({ cluster }: ClusterArticlesProps) {
   const { data: listing, isLoading } = useFetchArticleListingQuery(query);
   const [params, setParams] = useSearchParams();
   const [untagArticleMutation, { isLoading: isUntagging }] = useUntagArticleMutation();
-  const articleId = params.get('article');
+  const articleId = params.get('article') || '';
 
   if (listing === undefined || isLoading || isUntagging) {
     return <SectionLoading />
   }
 
-  const setArticle = (e: MouseEvent<HTMLAnchorElement>, article: IArticle) => {
+  const showArticle = (e: MouseEvent<HTMLAnchorElement>, articleId: string) => {
     e.preventDefault();
+    setArticle(articleId);
+  }
+
+  const setArticle = (articleId: string) => {
     const paramsObj = Object.fromEntries(params.entries());
-    setParams({ ...paramsObj, article: article.id });
+    setParams({ ...paramsObj, article: articleId });
   }
 
   const untagArticle = async (article: IArticle) => {
@@ -33,45 +37,45 @@ export default function ClusterArticles({ cluster }: ClusterArticlesProps) {
   }
 
   return (
-    <div className="page-column-area">
-      <div className="page-column">
-        <HTMLTable condensed bordered className="wide">
-          <thead>
-            <tr>
-              <th>Title</th>
-              <th>Site</th>
-              <th>Split</th>
+    <>
+      <HTMLTable condensed bordered className="wide">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Site</th>
+            <th>Split</th>
+          </tr>
+        </thead>
+        <tbody>
+          {listing.results.map((article) => (
+            <tr key={article.id}>
+              <td>
+                <Link
+                  onClick={(e) => showArticle(e, article.id)}
+                  to={`/articles/${article.id}`}
+                >
+                  {article.title}
+                </Link>
+              </td>
+              <td>{article.site}</td>
+              <td>
+                <Button
+                  onClick={() => untagArticle(article)}
+                  icon="unresolve"
+                  minimal
+                  small
+                />
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {listing.results.map((article) => (
-              <tr key={article.id}>
-                <td>
-                  <Link
-                    onClick={(e) => setArticle(e, article)}
-                    to={`/articles/${article.id}`}
-                  >
-                    {article.title}
-                  </Link>
-                </td>
-                <td>{article.site}</td>
-                <td>
-                  <Button
-                    onClick={() => untagArticle(article)}
-                    icon="unresolve"
-                    minimal
-                    small
-                  />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </HTMLTable>
-        {/* <code>{listing.debug_msg}</code> */}
-      </div>
-      <div className="page-column">
-        {articleId && <ArticlePreview articleId={articleId} tags={[[cluster.label, ...cluster.labels]]} />}
-      </div>
-    </div>
+          ))}
+        </tbody>
+      </HTMLTable>
+      <ArticleDrawer
+        isOpen={articleId !== null && articleId.length > 1}
+        onClose={(e) => setArticle('')}
+        articleId={articleId || ''}
+        tags={[[cluster.label, ...cluster.labels]]}
+      />
+    </>
   )
 }

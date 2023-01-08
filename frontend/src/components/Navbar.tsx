@@ -10,7 +10,8 @@ import styles from "../styles/Navbar.module.scss";
 export default function NavbarSection() {
   const [showSettings, setShowSettings] = useState(false);
   return (
-    <Navbar className={classnames('bp4-dark', styles.navContainered)}>
+    // 'bp4-dark', 
+    <Navbar className={classnames(styles.navContainered)}>
       <div className='page-container'>
         <Navbar.Group align={Alignment.LEFT}>
           <Navbar.Heading>

@@ -80,7 +80,7 @@ export default function SimilarListing({ cluster }: SimilarListingProps) {
             {listing.results.map((similar) => (
               <tr key={similar.id}>
                 <td>
-                  <ClusterTypeIcon type={cluster.type} size={14} />
+                  <ClusterTypeIcon type={similar.type} size={14} />
                   <Link to={getClusterLink(similar)}>{similar.label}</Link>
                 </td>
                 <td>

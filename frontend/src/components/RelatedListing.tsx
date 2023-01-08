@@ -33,7 +33,7 @@ export default function RelatedListing({ cluster }: RelatedListingProps) {
           {listing.results.map((related) => (
             <tr key={related.id}>
               <td>
-                <ClusterTypeIcon type={cluster.type} size={14} />
+                <ClusterTypeIcon type={related.type} size={14} />
                 <Link to={getClusterLink(related)}>{related.label}</Link>
               </td>
               <td>
