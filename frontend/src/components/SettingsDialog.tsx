@@ -1,14 +1,12 @@
-import { Button, Checkbox, Classes, Dialog, FormGroup, InputGroup, Label, TextArea } from "@blueprintjs/core";
-import { FormEvent, MouseEvent, useState } from "react";
+import { Checkbox, Classes, Dialog, Label } from "@blueprintjs/core";
+import { FormEvent } from "react";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { setHiddenNodeTypes } from "../services/config";
 import { useFetchOntologyQuery } from "../services/ontology";
-import { useCreateStoryMutation } from "../services/stories";
 import { RootState } from "../store";
 import { IClusterType } from "../types";
 import { listToggle } from "../util";
-import { TagType } from "./util";
 
 type SettingsDialogProps = {
   isOpen: boolean
