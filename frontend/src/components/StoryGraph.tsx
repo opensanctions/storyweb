@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import Graph from "graphology";
 import { parse } from "graphology-gexf/browser";
-import { SigmaContainer, useLoadGraph } from "@react-sigma/core";
+import { ControlsContainer, SigmaContainer, useLoadGraph, useRegisterEvents, ZoomControl } from "@react-sigma/core";
 import "@react-sigma/core/lib/react-sigma.min.css";
 import { useFetchStoryGraphQuery } from "../services/stories";
 import { useLayoutForceAtlas2 } from "@react-sigma/layout-forceatlas2";
@@ -28,6 +28,11 @@ export const LoadGraph = ({ storyId }: StoryGraphProps) => {
         attributes.size = 5 + (1.5 * graph.degree(node));
         attributes.color = type?.color || '#dddddd';
       });
+      graph.forEachEdge((edge, attributes) => {
+        const type = ontology.link_types.find((t) => t.name === attributes.edge_type);
+        attributes.size = 2;
+        attributes.label = type?.label;
+      });
       loadGraph(graph);
       assign();
     }
@@ -37,10 +42,33 @@ export const LoadGraph = ({ storyId }: StoryGraphProps) => {
   return null;
 };
 
+const GraphEvents: React.FC = () => {
+  const registerEvents = useRegisterEvents();
+
+  useEffect(() => {
+    registerEvents({
+      clickNode: (event) => console.log("clickNode", event.event, event.node, event.preventSigmaDefault),
+      doubleClickNode: (event) => console.log("doubleClickNode", event.event, event.node, event.preventSigmaDefault),
+      clickEdge: (event) => console.log("clickEdge", event.event, event.edge, event.preventSigmaDefault),
+      doubleClickEdge: (event) => console.log("doubleClickEdge", event.event, event.edge, event.preventSigmaDefault),
+      wheel: (event) => event.preventSigmaDefault(),
+    });
+  }, [registerEvents]);
+
+  return null;
+};
+
 export default function StoryGraph({ storyId }: StoryGraphProps) {
   return (
-    <SigmaContainer style={{ height: "500px", width: "100%" }}>
+    <SigmaContainer style={{ height: "500px", width: "100%" }} settings={{
+      zIndex: true,
+      renderEdgeLabels: true
+    }}>
       <LoadGraph storyId={storyId} />
+      <GraphEvents />
+      <ControlsContainer position={"bottom-right"}>
+        <ZoomControl />
+      </ControlsContainer>
     </SigmaContainer>
   );
 }

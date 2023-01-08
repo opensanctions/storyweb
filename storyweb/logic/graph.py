@@ -1,6 +1,7 @@
 from typing import List, Optional
 from networkx import MultiDiGraph
 from sqlalchemy.future import select
+from sqlalchemy.sql import or_
 from networkx.readwrite.gexf import generate_gexf
 
 from storyweb.db import Conn, link_table, tag_table, story_article_table
@@ -41,6 +42,12 @@ def generate_graph(
         lstmt = lstmt.join(target_t, link_t.c.target_cluster == target_t.c.cluster)
         lstmt = lstmt.join(sa_target_t, sa_target_t.c.article == target_t.c.article)
         lstmt = lstmt.filter(sa_target_t.c.story == story)
+        # lstmt = lstmt.filter(
+        #     or_(
+        #         sa_target_t.c.story == story,
+        #         sa_source_t.c.story == story,
+        #     )
+        # )
     else:
         lstmt = lstmt.join(source_t, link_t.c.source_cluster == source_t.c.id)
         lstmt = lstmt.join(target_t, link_t.c.target_cluster == target_t.c.id)
