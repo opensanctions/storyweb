@@ -1,14 +1,13 @@
 import { ILink } from '../types';
 import { FormEvent, useEffect, useState } from 'react';
 import { getClusterLink } from '..//util';
-import { Button, HotkeyConfig, HotkeysTarget2, RadioGroup } from '@blueprintjs/core';
+import { Button, HotkeyConfig, HotkeysTarget2, Label, RadioGroup } from '@blueprintjs/core';
 import { useFetchClusterQuery } from '../services/clusters';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { SectionLoading, ClusterType, ClusterTypeIcon } from '../components/util';
+import { SectionLoading, ClusterTypeIcon } from '../components/util';
 import { useFetchOntologyQuery } from '../services/ontology';
 import { useFetchLinksQuery, useSaveLinkMutation } from '../services/links';
 import ArticleCorefList from '../components/ArticleCorefList';
-import ArticlePreview from '../components/ArticlePreview';
 import StoryLinkerBanner from '../components/StoryLinkerBanner';
 
 import styles from '../styles/Linker.module.scss';
@@ -20,7 +19,6 @@ export default function Linker() {
   const [params] = useSearchParams();
   const anchorId = params.get('anchor');
   const otherId = params.get('other');
-  const articleId = params.get('article');
   const storyId = params.get('story');
   const relatedMode = params.get('related') !== null;
   if (anchorId === null) {
@@ -136,7 +134,7 @@ export default function Linker() {
             <div className="page-column">
               <form onSubmit={onSubmit}>
                 <RadioGroup
-                  label="Link type"
+                  label="Select link type:"
                   name="type"
                   onChange={onChangeType}
                   selectedValue={link.type}
@@ -148,14 +146,11 @@ export default function Linker() {
               </form>
             </div>
             <div className="page-column">
-              <ArticleCorefList clusters={[source.id, target.id]} />
-            </div>
-            <div className="page-column">
-              {articleId && (
-                <div className={styles.articlePreview}>
-                  <ArticlePreview articleId={articleId} tags={[anchor.labels, other.labels]} />
-                </div>
-              )}
+              <Label>View articles that mention both:</Label>
+              <ArticleCorefList
+                clusters={[source.id, target.id]}
+                tags={[anchor.labels, other.labels]}
+              />
             </div>
           </div>
         </>

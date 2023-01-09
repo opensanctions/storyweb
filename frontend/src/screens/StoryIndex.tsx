@@ -12,7 +12,6 @@ import { asString } from "../util";
 
 import styles from '../styles/Story.module.scss';
 
-
 export default function StoryIndex() {
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
@@ -76,22 +75,6 @@ export default function StoryIndex() {
             </Card>
           ))}
         </div>
-        // <HTMLTable condensed bordered className="wide">
-        //   <thead>
-        //     <tr>
-        //       <th>Title</th>
-        //     </tr>
-        //   </thead>
-        //   <tbody>
-        //     {listing.results.map((story) => (
-        //       <tr key={story.id}>
-        //         <td>
-        //           <Link to={`/stories/${story.id}`}>{story.title}</Link>
-        //         </td>
-        //       </tr>
-        //     ))}
-        //   </tbody>
-        // </HTMLTable>
       )
       }
     </div >
