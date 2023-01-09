@@ -3,15 +3,24 @@ import { Tabs, Tab, IconSize } from "@blueprintjs/core";
 
 import RelatedListing from "../components/RelatedListing";
 import SimilarListing from "../components/SimilarListing";
-import { ErrorSection, SectionLoading, SpacedList, Spacer, ClusterType, ClusterLabel, ClusterTypeIcon } from "../components/util";
-import { useFetchClusterQuery } from "../services/clusters";
+import { ErrorSection, SectionLoading, SpacedList, Spacer, ClusterType, ClusterLabel, ClusterTypeIcon, NumericTag } from "../components/util";
+import { useFetchClusterQuery, useFetchSimilarClusterListingQuery, useFetchRelatedClusterListingQuery } from "../services/clusters";
 import ClusterArticles from "../components/ClusterArticles";
 import ScreenHeading from "../components/ScreenHeading";
 import ClusterButtonGroup from "../components/ClusterButtonGroup";
+import { useFetchArticleListingQuery } from "../services/articles";
+import { useNodeTypes } from "../selectors";
 
 export default function ClusterView() {
   const { clusterId } = useParams();
+  const nodeTypes = useNodeTypes();
   const { data: cluster, isLoading, error } = useFetchClusterQuery(clusterId as string);
+  const relatedQuery = { clusterId: clusterId || '', params: { types: nodeTypes } };
+  const { data: related } = useFetchRelatedClusterListingQuery(relatedQuery)
+  const similarQuery = { clusterId: clusterId || '', params: {} };
+  const { data: similar } = useFetchSimilarClusterListingQuery(similarQuery);
+  const articleQuery = { cluster: clusterId };
+  const { data: articles } = useFetchArticleListingQuery(articleQuery);
   if (error !== undefined) {
     return <ErrorSection title="Could not load the article" />
   }
@@ -32,10 +41,35 @@ export default function ClusterView() {
         Aliases:{' '}
         <SpacedList values={cluster.labels.map((l) => <ClusterLabel key={l} label={l} />)} />
       </p>
-      <Tabs>
-        <Tab id="related" title="Related" panel={<RelatedListing cluster={cluster} />} />
-        <Tab id="similar" title="Similar" panel={<SimilarListing cluster={cluster} />} />
-        <Tab id="articles" title="Articles" panel={<ClusterArticles cluster={cluster} />} />
+      <Tabs id="clusterView">
+        <Tab id="related"
+          title={
+            <>
+              Co-occurring
+              <NumericTag value={related?.total} className="tab-tag" />
+            </>
+          }
+          panel={<RelatedListing cluster={cluster} />}
+        />
+        <Tab id="similar"
+          title={
+            <>
+              Similar
+              <NumericTag value={similar?.total} className="tab-tag" />
+            </>
+          }
+          disabled={similar?.total === 0}
+          panel={<SimilarListing cluster={cluster} />}
+        />
+        <Tab id="articles"
+          title={
+            <>
+              Articles
+              <NumericTag value={articles?.total} className="tab-tag" />
+            </>
+          }
+          panel={<ClusterArticles cluster={cluster} />}
+        />
       </Tabs>
     </div>
   )

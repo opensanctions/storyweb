@@ -1,59 +1,74 @@
-import { HTMLTable } from "@blueprintjs/core";
+import { Button, HTMLTable } from "@blueprintjs/core";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useNodeTypes } from "../selectors";
-import { useFetchStoryPairsQuery } from "../services/stories";
+import { useFetchArticleListingQuery } from "../services/articles";
+import { useFetchStoryPairsQuery, useToggleStoryArticleMutation } from "../services/stories";
+import { IArticle, IStory } from "../types";
 import { getClusterLink } from "../util";
+import ArticleDrawer from "./ArticleDrawer";
 import PairLink from "./PairLink";
 import { ErrorSection, Numeric, SectionLoading, ClusterTypeIcon } from "./util";
 
 type StoryArticlesProps = {
-  storyId: number,
+  story: IStory,
 }
 
-export default function StoryArticles({ storyId }: StoryArticlesProps) {
-  const nodeTypes = useNodeTypes();
-  const { data: clusters, error: clustersError } = useFetchStoryPairsQuery({
-    storyId: storyId,
-    params: { types: nodeTypes }
-  });
+export default function StoryArticles({ story }: StoryArticlesProps) {
+  const [previewArticle, setPreviewArticle] = useState('')
+  const { data: articles, error, isLoading } = useFetchArticleListingQuery({ story: story.id });
+  const [toggleStoryArticle] = useToggleStoryArticleMutation();
 
-  if (clustersError !== undefined) {
-    return <ErrorSection title="Could not load story-related entity pairs" />
+  if (error !== undefined) {
+    return <ErrorSection title="Could not load story-related articles" />
   }
-  if (clusters === undefined) {
+  if (articles === undefined || isLoading) {
     return <SectionLoading />
   }
 
+  const onRemoveArticle = async (article: IArticle) => {
+    if (story !== undefined) {
+      await toggleStoryArticle({ story: story.id, article: article.id }).unwrap()
+    }
+  }
+
   return (
-    <HTMLTable condensed bordered className="wide">
-      <thead>
-        <tr>
-          <th>From</th>
-          <th>To</th>
-          <th>Links</th>
-          <th style={{ width: "1%" }} className="numeric">Articles</th>
-        </tr>
-      </thead>
-      <tbody>
-        {clusters.results.map((pair) => (
-          <tr key={pair.left.id + pair.right.id}>
-            <td>
-              <ClusterTypeIcon type={pair.left.type} size={14} />
-              <Link to={getClusterLink(pair.left)}>{pair.left.label}</Link>
-            </td>
-            <td>
-              <ClusterTypeIcon type={pair.right.type} size={14} />
-              <Link to={getClusterLink(pair.right)}>{pair.right.label}</Link>
-            </td>
-            <td>
-              <PairLink left={pair.left} right={pair.right} link_types={pair.link_types} />
-            </td>
-            <td className="numeric">
-              <Numeric value={pair.articles} />
-            </td>
+    <>
+      <HTMLTable condensed bordered className="wide">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Site</th>
+            <th>Remove</th>
           </tr>
-        ))}
-      </tbody>
-    </HTMLTable>
+        </thead>
+        <tbody>
+          {articles.results.map((article) => (
+            <tr key={article.id}>
+              <td>
+                <a onClick={() => setPreviewArticle(article.id)}>
+                  {article.title}
+                </a>
+              </td>
+              <td>{article.site}</td>
+              <td>
+                <Button
+                  onClick={() => onRemoveArticle(article)}
+                  icon="trash"
+                  minimal
+                  small
+                />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </HTMLTable>
+      <ArticleDrawer
+        isOpen={previewArticle.length > 1}
+        onClose={(e) => setPreviewArticle('')}
+        articleId={previewArticle}
+        tags={[]}
+      />
+    </>
   )
 };

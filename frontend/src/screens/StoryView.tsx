@@ -1,14 +1,15 @@
-import { AnchorButton, Button, ButtonGroup, HTMLTable, Icon, IconSize, Intent } from "@blueprintjs/core";
+import { AnchorButton, Button, ButtonGroup, HTMLTable, Icon, IconSize, Intent, Tab, Tabs } from "@blueprintjs/core";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import ScreenHeading from "../components/ScreenHeading";
 import StoryArticleImportDialog from "../components/StoryArticleImportDialog";
+import StoryArticles from "../components/StoryArticles";
 import StoryDeleteDialog from "../components/StoryDeleteDialog";
 import StoryGraph from "../components/StoryGraph";
 import StoryPairs from "../components/StoryPairs";
 import StoryUpdateDialog from "../components/StoryUpdateDialog";
-import { ErrorSection, SectionLoading } from "../components/util";
+import { ErrorSection, NumericTag, SectionLoading } from "../components/util";
 import { ARTICLE_ICON, LINKER_ICON, STORY_ICON } from "../constants";
 import { useFetchArticleListingQuery } from "../services/articles";
 import { useFetchStoryQuery, useToggleStoryArticleMutation } from "../services/stories";
@@ -20,19 +21,13 @@ export default function StoryView() {
   const [showDelete, setShowDelete] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const { data: story, isLoading, error } = useFetchStoryQuery(storyId as string);
-  const { data: articleListing } = useFetchArticleListingQuery({ story: storyId });
-  const [toggleStoryArticle] = useToggleStoryArticleMutation();
+  const { data: articles } = useFetchArticleListingQuery({ story: storyId });
+
   if (error !== undefined) {
     return <ErrorSection title="Could not load the article" />
   }
-  if (story === undefined || isLoading || articleListing === undefined) {
+  if (story === undefined || isLoading) {
     return <SectionLoading />
-  }
-
-  const onRemoveArticle = async (article: IArticle) => {
-    if (story !== undefined) {
-      await toggleStoryArticle({ story: story.id, article: article.id }).unwrap()
-    }
   }
 
   return (
@@ -54,39 +49,35 @@ export default function StoryView() {
         </Button>
         <StoryDeleteDialog isOpen={showDelete} onClose={() => setShowDelete(false)} story={story} />
       </ScreenHeading>
-      <StoryGraph storyId={story.id} />
-      <h3>Co-occurring entities</h3>
-      <StoryPairs storyId={story.id} />
-      <h3>Articles</h3>
-      <HTMLTable condensed bordered className="wide">
-        <thead>
-          <tr>
-            <th>Title</th>
-            <th>Site</th>
-            <th>Remove</th>
-          </tr>
-        </thead>
-        <tbody>
-          {articleListing.results.map((article) => (
-            <tr key={article.id}>
-              <td>
-                <Link to={`/articles/${article.id}`}>
-                  {article.title}
-                </Link>
-              </td>
-              <td>{article.site}</td>
-              <td>
-                <Button
-                  onClick={() => onRemoveArticle(article)}
-                  icon="trash"
-                  minimal
-                  small
-                />
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </HTMLTable>
+      <Tabs id="storyView">
+        <Tab id="graph"
+          title={
+            <>
+              Network graph
+              <NumericTag value={0} className="tab-tag" />
+            </>
+          }
+          panel={<StoryGraph storyId={story.id} />}
+        />
+        <Tab id="pairs"
+          title={
+            <>
+              Co-occurring entities
+              <NumericTag value={0} className="tab-tag" />
+            </>
+          }
+          panel={<StoryPairs storyId={story.id} />}
+        />
+        <Tab id="articles"
+          title={
+            <>
+              Articles
+              <NumericTag value={articles?.total} className="tab-tag" />
+            </>
+          }
+          panel={<StoryArticles story={story} />}
+        />
+      </Tabs>
     </div >
   )
 }
