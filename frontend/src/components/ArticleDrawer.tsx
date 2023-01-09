@@ -1,9 +1,8 @@
-import { Drawer, DrawerSize, Tab, Tabs } from "@blueprintjs/core"
+import { Drawer, Tab, Tabs } from "@blueprintjs/core"
 import { SyntheticEvent } from "react"
 import { ARTICLE_ICON } from "../constants"
 import { useFetchArticleQuery } from "../services/articles"
 import { useFetchClusterListingQuery } from "../services/clusters"
-import { IArticle } from "../types"
 import ArticleText from "./ArticleText"
 import { ErrorSection, NumericTag, SectionLoading } from "./util"
 

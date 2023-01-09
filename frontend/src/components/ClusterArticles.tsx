@@ -4,7 +4,9 @@ import { Link, useSearchParams } from "react-router-dom";
 import { useFetchArticleListingQuery } from "../services/articles";
 import { useUntagArticleMutation } from "../services/links";
 import { IArticle, IClusterDetails } from "../types";
+import { useListingPagination } from "../util";
 import ArticleDrawer from "./ArticleDrawer";
+import Pagination from "./Pagination";
 import { SectionLoading } from "./util";
 
 
@@ -13,7 +15,8 @@ type ClusterArticlesProps = {
 }
 
 export default function ClusterArticles({ cluster }: ClusterArticlesProps) {
-  const query = { cluster: cluster.id };
+  const page = useListingPagination('articles');
+  const query = { ...page, cluster: cluster.id };
   const { data: listing, isLoading } = useFetchArticleListingQuery(query);
   const [params, setParams] = useSearchParams();
   const [untagArticleMutation, { isLoading: isUntagging }] = useUntagArticleMutation();
@@ -71,6 +74,7 @@ export default function ClusterArticles({ cluster }: ClusterArticlesProps) {
           ))}
         </tbody>
       </HTMLTable>
+      <Pagination prefix='articles' response={listing} />
       <ArticleDrawer
         isOpen={articleId !== null && articleId.length > 1}
         onClose={(e) => setArticle('')}

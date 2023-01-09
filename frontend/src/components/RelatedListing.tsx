@@ -3,9 +3,10 @@ import { Link } from "react-router-dom";
 import { useNodeTypes } from "../selectors";
 import { useFetchRelatedClusterListingQuery } from "../services/clusters";
 import { ICluster } from "../types";
-import { getClusterLink } from "../util";
+import { getClusterLink, useListingPagination } from "../util";
+import Pagination from "./Pagination";
 import PairLink from "./PairLink";
-import { SectionLoading, ClusterType, ClusterTypeIcon } from "./util";
+import { SectionLoading, ClusterTypeIcon } from "./util";
 
 type RelatedListingProps = {
   cluster: ICluster,
@@ -13,7 +14,8 @@ type RelatedListingProps = {
 
 export default function RelatedListing({ cluster }: RelatedListingProps) {
   const nodeTypes = useNodeTypes();
-  const relatedParams = { clusterId: cluster.id, params: { types: nodeTypes } };
+  const page = useListingPagination('related');
+  const relatedParams = { clusterId: cluster.id, params: { ...page, types: nodeTypes } };
   const { data: listing, isLoading } = useFetchRelatedClusterListingQuery(relatedParams)
   if (listing === undefined || isLoading) {
     return <SectionLoading />
@@ -44,7 +46,7 @@ export default function RelatedListing({ cluster }: RelatedListingProps) {
           ))}
         </tbody>
       </HTMLTable>
-      {/* <code>{listing.debug_msg}</code> */}
+      <Pagination prefix='related' response={listing} />
     </>
   )
 }

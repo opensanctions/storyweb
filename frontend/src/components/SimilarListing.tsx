@@ -3,15 +3,18 @@ import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { useFetchSimilarClusterListingQuery, useMergeClustersMutation } from "../services/clusters"
 import { ICluster } from "../types"
-import { getClusterLink, listToggle } from "../util"
-import { SectionLoading, SpacedList, ClusterType, ClusterLabel, ClusterTypeIcon } from "./util"
+import { getClusterLink, listToggle, useListingPagination } from "../util"
+import Pagination from "./Pagination"
+import { SectionLoading, SpacedList, ClusterLabel, ClusterTypeIcon } from "./util"
 
 type SimilarListingProps = {
   cluster: ICluster,
 }
 
 export default function SimilarListing({ cluster }: SimilarListingProps) {
-  const { data: listing, isLoading } = useFetchSimilarClusterListingQuery({ clusterId: cluster.id, params: {} });
+  const page = useListingPagination('similar');
+  const similarQuery = { clusterId: cluster.id, params: { ...page } };
+  const { data: listing, isLoading } = useFetchSimilarClusterListingQuery(similarQuery);
   const navigate = useNavigate();
   const [postMerge, { isLoading: isUpdating }] = useMergeClustersMutation();
   const [merges, setMerges] = useState([] as string[]);
@@ -67,42 +70,43 @@ export default function SimilarListing({ cluster }: SimilarListingProps) {
         />
       )}
       {listing.total > 0 && (
-        <HTMLTable condensed bordered className="wide">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Common tags</th>
-              <th>Count</th>
-              <th>Same</th>
-            </tr>
-          </thead>
-          <tbody>
-            {listing.results.map((similar) => (
-              <tr key={similar.id}>
-                <td>
-                  <ClusterTypeIcon type={similar.type} size={14} />
-                  <Link to={getClusterLink(similar)}>{similar.label}</Link>
-                </td>
-                <td>
-                  <SpacedList values={similar.common.map((l) => <ClusterLabel key={l} label={l} />)} />
-                </td>
-                <td>
-                  {similar.common_count}
-                </td>
-                <td>
-                  <Checkbox
-                    checked={merges.indexOf(similar.id) !== -1}
-                    onClick={() => toggleOne(similar.id)}
-                    disabled={isUpdating}
-                  />
-                </td>
+        <>
+          <HTMLTable condensed bordered className="wide">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Common tags</th>
+                <th>Count</th>
+                <th>Same</th>
               </tr>
-            ))}
-          </tbody>
-        </HTMLTable>
+            </thead>
+            <tbody>
+              {listing.results.map((similar) => (
+                <tr key={similar.id}>
+                  <td>
+                    <ClusterTypeIcon type={similar.type} size={14} />
+                    <Link to={getClusterLink(similar)}>{similar.label}</Link>
+                  </td>
+                  <td>
+                    <SpacedList values={similar.common.map((l) => <ClusterLabel key={l} label={l} />)} />
+                  </td>
+                  <td>
+                    {similar.common_count}
+                  </td>
+                  <td>
+                    <Checkbox
+                      checked={merges.indexOf(similar.id) !== -1}
+                      onClick={() => toggleOne(similar.id)}
+                      disabled={isUpdating}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </HTMLTable>
+        </>
       )}
-
-      {/* <code>{listing.debug_msg}</code> */}
+      <Pagination prefix='similar' response={listing} />
     </>
   )
 }

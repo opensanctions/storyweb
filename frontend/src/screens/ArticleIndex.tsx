@@ -1,21 +1,25 @@
-import { ControlGroup, Classes, HTMLSelect, HTMLTable, Button } from '@blueprintjs/core';
+import { ControlGroup, Classes, HTMLSelect, HTMLTable, Button, IconSize, Icon } from '@blueprintjs/core';
 import classnames from "classnames";
 import { FormEvent, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSearchParams } from "react-router-dom";
 import ArticleStoryEditor from '../components/ArticleStoryEditor';
+import Pagination from '../components/Pagination';
 import { Numeric, SectionLoading } from '../components/util';
+import { ARTICLE_ICON } from '../constants';
 
 import { useFetchArticleListingQuery } from "../services/articles"
 import { useFetchSitesQuery } from '../services/sites';
-import { asString } from "../util";
+import { asString, useListingPagination } from "../util";
 
 export default function ArticleIndex() {
   const [params, setParams] = useSearchParams();
+  const page = useListingPagination('articles');
   const { data: sitesResponse } = useFetchSitesQuery();
   const [query, setQuery] = useState(asString(params.get('q')) || '')
   const [site, setSite] = useState(asString(params.get('site')) || '')
   const { data: listing } = useFetchArticleListingQuery({
+    ...page,
     q: params.get('q'),
     site: params.get('site'),
     sort: 'tags:desc'
@@ -30,10 +34,16 @@ export default function ArticleIndex() {
   return (
     <div>
       {(listing === undefined || sites === undefined) && (
-        <h1>Articles in the StoryWeb database</h1>
+        <h1>
+          <Icon size={IconSize.LARGE} icon={ARTICLE_ICON} />{' '}
+          Articles in the StoryWeb database
+        </h1>
       )}
       {(listing !== undefined && sites !== undefined) && (
-        <h1><Numeric value={listing.total} /> articles from <Numeric value={sites.length} /> sources in the StoryWeb database</h1>
+        <h1>
+          <Icon size={IconSize.LARGE} icon={ARTICLE_ICON} />{' '}
+          <Numeric value={listing.total} /> articles from <Numeric value={sites.length} /> sources in the StoryWeb database
+        </h1>
       )}
 
       <section className="section">
@@ -63,35 +73,38 @@ export default function ArticleIndex() {
         <SectionLoading />
       )}
       {listing !== undefined && (
-        <HTMLTable condensed bordered className="wide">
-          <thead>
-            <tr>
-              <th>Title</th>
-              <th>Site</th>
-              <th className="numeric">Entities</th>
-              <th className="numeric">Stories</th>
-            </tr>
-          </thead>
-          <tbody>
-            {listing.results.map((article) => (
-              <tr key={article.id}>
-                <td>
-                  <Link to={article.id}>{article.title}</Link>
-                </td>
-                <td>
-                  {article.site}
-                </td>
-                <td className="numeric">
-                  <Numeric value={article.tags} />
-                </td>
-                <td style={{ width: "1%" }} className="numeric">
-                  <ArticleStoryEditor article={article} inList />
-                </td>
+        <>
+          <HTMLTable condensed bordered className="wide">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Site</th>
+                <th className="numeric">Entities</th>
+                <th className="numeric">Stories</th>
               </tr>
-            ))}
-          </tbody>
-        </HTMLTable>
+            </thead>
+            <tbody>
+              {listing.results.map((article) => (
+                <tr key={article.id}>
+                  <td>
+                    <Link to={article.id}>{article.title}</Link>
+                  </td>
+                  <td>
+                    {article.site}
+                  </td>
+                  <td className="numeric">
+                    <Numeric value={article.tags} />
+                  </td>
+                  <td style={{ width: "1%" }} className="numeric">
+                    <ArticleStoryEditor article={article} inList />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </HTMLTable>
+          <Pagination prefix='articles' response={listing} />
+        </>
       )}
-    </div>
+    </div >
   )
 }

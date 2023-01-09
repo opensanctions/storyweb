@@ -1,4 +1,5 @@
 import queryString from 'query-string';
+import { useSearchParams } from 'react-router-dom';
 // import { useLocation } from 'react-router-dom';
 
 import { IClusterBase } from "./types";
@@ -47,4 +48,12 @@ export function getLinkLoomLink(anchor: IClusterBase, other?: IClusterBase): str
     'url': `/linker`,
     'query': { anchor: anchor.id, other: other.id }
   })
+}
+
+export function useListingPagination(prefix: string, limit: number = 15) {
+  const [params] = useSearchParams();
+  return {
+    limit: parseInt(params.get(`${prefix}.limit`) || `${limit}`, 10),
+    offset: parseInt(params.get(`${prefix}.offset`) || '0', 10)
+  }
 }

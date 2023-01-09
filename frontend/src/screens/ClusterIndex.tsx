@@ -1,20 +1,24 @@
-import { ControlGroup, Classes, HTMLTable, Button, Checkbox } from '@blueprintjs/core';
+import { ControlGroup, Classes, HTMLTable, Button, Checkbox, IconSize, Icon } from '@blueprintjs/core';
 import classnames from "classnames";
 import { FormEvent, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSearchParams } from "react-router-dom";
-import { ErrorSection, Numeric, SectionLoading, ClusterType, ClusterTypeIcon } from '../components/util';
+import Pagination from '../components/Pagination';
+import { ErrorSection, Numeric, SectionLoading, ClusterTypeIcon } from '../components/util';
+import { CLUSTER_ICON } from '../constants';
 import { useNodeTypes } from '../selectors';
 
 import { useFetchClusterListingQuery, useMergeClustersMutation } from '../services/clusters';
-import { asString, getClusterLink, listToggle } from "../util";
+import { asString, getClusterLink, listToggle, useListingPagination } from "../util";
 
 export default function ClusterIndex() {
   const [params, setParams] = useSearchParams();
+  const page = useListingPagination('clusters');
   const [query, setQuery] = useState(asString(params.get('q')) || '');
   const [merges, setMerges] = useState([] as string[]);
   const [postMerge, { isLoading: isUpdating }] = useMergeClustersMutation();
   const { data: listing, error } = useFetchClusterListingQuery({
+    ...page,
     q: params.get('q'),
     types: useNodeTypes(),
   });
@@ -43,10 +47,16 @@ export default function ClusterIndex() {
   return (
     <div>
       {listing === undefined && (
-        <h1>Entities in the StoryWeb database</h1>
+        <h1>
+          <Icon size={IconSize.LARGE} icon={CLUSTER_ICON} />{' '}
+          Entities in the StoryWeb database
+        </h1>
       )}
       {listing !== undefined && (
-        <h1><Numeric value={listing.total} /> entities in the StoryWeb database</h1>
+        <h1>
+          <Icon size={IconSize.LARGE} icon={CLUSTER_ICON} />{' '}
+          <Numeric value={listing.total} /> entities in the StoryWeb database
+        </h1>
       )}
 
       <section className="section">
@@ -66,39 +76,42 @@ export default function ClusterIndex() {
         <SectionLoading />
       )}
       {listing !== undefined && (
-        <HTMLTable condensed bordered className="wide">
-          <thead>
-            <tr>
-              <th>Label</th>
-              <th className="numeric">Articles</th>
-              <th style={{ width: "1%" }} className="numeric">
-                <Button small onClick={onMerge} disabled={merges.length < 2}>
-                  Merge
-                </Button>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {listing.results.map((cluster) => (
-              <tr key={cluster.id}>
-                <td>
-                  <ClusterTypeIcon type={cluster.type} size={14} />
-                  <Link to={getClusterLink(cluster)}>{cluster.label}</Link>
-                </td>
-                <td className="numeric">
-                  <Numeric value={cluster.articles} />
-                </td>
-                <td style={{ width: "1%" }} className="numeric">
-                  <Checkbox
-                    checked={merges.indexOf(cluster.id) !== -1}
-                    onClick={() => toggleMerge(cluster.id)}
-                    disabled={isUpdating}
-                  />
-                </td>
+        <>
+          <HTMLTable condensed bordered className="wide">
+            <thead>
+              <tr>
+                <th>Label</th>
+                <th className="numeric">Articles</th>
+                <th style={{ width: "1%" }} className="numeric">
+                  <Button small onClick={onMerge} disabled={merges.length < 2}>
+                    Merge
+                  </Button>
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </HTMLTable>
+            </thead>
+            <tbody>
+              {listing.results.map((cluster) => (
+                <tr key={cluster.id}>
+                  <td>
+                    <ClusterTypeIcon type={cluster.type} size={14} />
+                    <Link to={getClusterLink(cluster)}>{cluster.label}</Link>
+                  </td>
+                  <td className="numeric">
+                    <Numeric value={cluster.articles} />
+                  </td>
+                  <td style={{ width: "1%" }} className="numeric">
+                    <Checkbox
+                      checked={merges.indexOf(cluster.id) !== -1}
+                      onClick={() => toggleMerge(cluster.id)}
+                      disabled={isUpdating}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </HTMLTable>
+          <Pagination prefix='clusters' response={listing} />
+        </>
       )}
     </div>
   )

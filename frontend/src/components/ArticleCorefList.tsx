@@ -1,10 +1,7 @@
-import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useState } from "react";
 import { Menu, MenuItem } from '@blueprintjs/core';
 
-
 import { useFetchArticleListingQuery } from "../services/articles"
-import { IArticle } from "../types";
 import ArticleDrawer from "./ArticleDrawer";
 
 type ArticleCorefListProps = {
