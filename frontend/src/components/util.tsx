@@ -1,4 +1,4 @@
-import { Icon, NonIdealState, NonIdealStateIconSize, Spinner, SpinnerSize } from '@blueprintjs/core';
+import { Icon, NonIdealState, NonIdealStateIconSize, Spinner, SpinnerSize, Tag } from '@blueprintjs/core';
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { ReactNode } from 'react';
@@ -77,6 +77,19 @@ export function Numeric({ value }: NumericProps) {
   }
   const fmt = new Intl.NumberFormat('en-US');
   return <>{fmt.format(value)}</>;
+}
+
+type NumericTagProps = {
+  value?: number | null
+  className?: string
+}
+
+export function NumericTag({ value, className }: NumericTagProps) {
+  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat
+  const isLoading = value === undefined || value === null;
+  const fmt = new Intl.NumberFormat('en-US');
+  const displayValue = isLoading ? "…" : fmt.format(value);
+  return <Tag round className={className}>{displayValue}</Tag>;
 }
 
 

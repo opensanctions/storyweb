@@ -1,11 +1,14 @@
-import { Drawer, DrawerSize } from "@blueprintjs/core"
+import { Drawer, DrawerSize, Tab, Tabs } from "@blueprintjs/core"
 import { SyntheticEvent } from "react"
 import { ARTICLE_ICON } from "../constants"
 import { useFetchArticleQuery } from "../services/articles"
 import { useFetchClusterListingQuery } from "../services/clusters"
 import { IArticle } from "../types"
 import ArticleText from "./ArticleText"
-import { ErrorSection, SectionLoading } from "./util"
+import { ErrorSection, NumericTag, SectionLoading } from "./util"
+
+import styles from '../styles/Article.module.scss'
+import ArticleClusters from "./ArticleClusters"
 
 type ArticleDrawerProps = {
   articleId: string,
@@ -16,32 +19,53 @@ type ArticleDrawerProps = {
 
 export default function ArticleDrawer({ articleId, tags, isOpen, onClose }: ArticleDrawerProps) {
   const { data: article, error: articleError } = useFetchArticleQuery(articleId as string);
-  const { data: clusters, error: clustersError } = useFetchClusterListingQuery({
-    article: articleId,
-    limit: 1000
-  });
-  if (articleError !== undefined || clustersError !== undefined) {
-    return <ErrorSection title="Could not load the article" />
-  }
-  if (article === undefined || clusters === undefined) {
-    return <SectionLoading />
-  }
-  const anyTags = tags ? tags : []
+  const clustersQuery = { article: articleId, limit: 0 };
+  const { data: clusters } = useFetchClusterListingQuery(clustersQuery);
+  const realTags = tags ? tags : []
+  const realIsOpen = isOpen && articleId.trim().length > 1;
 
   return (
     <Drawer
-      size={DrawerSize.STANDARD}
-      isOpen={isOpen}
+      size={"40%"}
+      isOpen={realIsOpen}
       onClose={onClose}
       icon={ARTICLE_ICON}
-      // hasBackdrop
+      hasBackdrop={false}
       autoFocus
       enforceFocus
       title={article ? article.title : 'No article'}
     >
-      {article && (
-        <ArticleText text={article.text} tags={anyTags} />
-      )}
+      <div className={styles.articleDrawer}>
+        {(article === undefined) && (
+          <SectionLoading />
+        )}
+        {(articleError !== undefined) && (
+          <ErrorSection title="Could not load the article" />
+        )}
+        {article && (
+          <Tabs id="articleView" defaultSelectedTabId="text">
+            <Tab
+              id="text"
+              title="Text"
+              panel={
+                <ArticleText text={article.text} tags={realTags} />
+              }
+            />
+            <Tab
+              title={
+                <>
+                  Extracted entities
+                  <NumericTag value={clusters?.total} className="tab-tag" />
+                </>
+              }
+              panel={
+                <ArticleClusters article={article} />
+              }
+            />
+          </Tabs>
+        )}
+
+      </div>
     </Drawer>
   )
 }

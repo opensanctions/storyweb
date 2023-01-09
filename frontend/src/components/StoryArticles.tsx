@@ -4,7 +4,7 @@ import { useNodeTypes } from "../selectors";
 import { useFetchStoryPairsQuery } from "../services/stories";
 import { getClusterLink } from "../util";
 import PairLink from "./PairLink";
-import { ErrorSection, Numeric, SectionLoading, Spacer, ClusterType, ClusterTypeIcon } from "./util";
+import { ErrorSection, Numeric, SectionLoading, ClusterTypeIcon } from "./util";
 
 type StoryArticlesProps = {
   storyId: number,
@@ -31,7 +31,7 @@ export default function StoryArticles({ storyId }: StoryArticlesProps) {
           <th>From</th>
           <th>To</th>
           <th>Links</th>
-          <th className="numeric">Articles</th>
+          <th style={{ width: "1%" }} className="numeric">Articles</th>
         </tr>
       </thead>
       <tbody>

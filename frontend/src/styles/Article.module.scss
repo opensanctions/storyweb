@@ -1,5 +1,9 @@
 @import "./variables.scss";
 
+.articleDrawer {
+    margin: $spacer;
+    overflow-y: auto;
+}
 
 .articleText {
     // font-size: 1.3em;
