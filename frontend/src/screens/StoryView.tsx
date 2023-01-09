@@ -9,32 +9,46 @@ import StoryGraph from "../components/StoryGraph";
 import StoryPairs from "../components/StoryPairs";
 import StoryUpdateDialog from "../components/StoryUpdateDialog";
 import { ErrorSection, NumericTag, SectionLoading } from "../components/util";
-import { ARTICLE_ICON, LINKER_ICON, STORY_ICON } from "../constants";
+import { ARTICLE_ICON, ARTICLE_THRESHOLD, LINKER_ICON, LINKS_THRESHOLD, STORY_ICON } from "../constants";
+import { useNodeTypes } from "../selectors";
 import { useFetchArticleListingQuery } from "../services/articles";
-import { useFetchStoryQuery } from "../services/stories";
+import { useFetchStoryPairsQuery, useFetchStoryQuery } from "../services/stories";
 
 export default function StoryView() {
   const { storyId } = useParams();
+  const nodeTypes = useNodeTypes();
   const [showImport, setShowImport] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
+  const { data: links } = useFetchStoryPairsQuery({
+    storyId: storyId || '',
+    params: { types: nodeTypes, limit: 0, linked: true }
+  });
   const { data: story, isLoading, error } = useFetchStoryQuery(storyId as string);
-  const { data: articles } = useFetchArticleListingQuery({ story: storyId });
+  const { data: articles } = useFetchArticleListingQuery({ story: storyId, limit: 0 });
+
+  const hasArticles = (articles?.total || 0) >= ARTICLE_THRESHOLD;
+  const hasLinks = (links?.total || 0) >= LINKS_THRESHOLD;
+
+  const secondaryTab = hasLinks ? 'graph' : 'pairs';
+  const defaultTab = hasArticles ? secondaryTab : 'articles';
 
   if (error !== undefined) {
     return <ErrorSection title="Could not load the article" />
   }
-  if (story === undefined || isLoading) {
+  if (story === undefined || articles === undefined || links === undefined || isLoading) {
     return <SectionLoading />
   }
 
   return (
     <div>
       <ScreenHeading title={<><Icon icon={STORY_ICON} size={IconSize.LARGE} /> {story.title}</>}>
-        <AnchorButton intent={Intent.PRIMARY} icon={LINKER_ICON} href={`/stories/${story.id}/linker`}>
-          Build web
-        </AnchorButton>
-        <Button icon={ARTICLE_ICON} intent={Intent.PRIMARY} onClick={() => setShowImport(true)}>
+        {(hasArticles || hasLinks) && (
+          <AnchorButton intent={Intent.PRIMARY} icon={LINKER_ICON} href={`/stories/${story.id}/linker`}>
+            Build web
+          </AnchorButton>
+        )}
+        <Button icon={ARTICLE_ICON} intent={hasArticles ? Intent.NONE : Intent.PRIMARY} onClick={() => setShowImport(true)}>
           Add article
         </Button>
         <StoryArticleImportDialog storyId={story.id} isOpen={showImport} onClose={() => setShowImport(false)} />
@@ -47,23 +61,24 @@ export default function StoryView() {
         </Button>
         <StoryDeleteDialog isOpen={showDelete} onClose={() => setShowDelete(false)} story={story} />
       </ScreenHeading>
-      <Tabs id="storyView">
+      <Tabs id="storyView" defaultSelectedTabId={defaultTab} renderActiveTabPanelOnly>
         <Tab id="graph"
           title={
             <>
               Network graph
-              <NumericTag value={0} className="tab-tag" />
             </>
           }
+          disabled={!hasLinks}
           panel={<StoryGraph story={story} />}
         />
         <Tab id="pairs"
           title={
             <>
-              Co-occurring entities
-              <NumericTag value={0} className="tab-tag" />
+              Links
+              <NumericTag value={links?.total} className="tab-tag" />
             </>
           }
+          disabled={!hasArticles}
           panel={<StoryPairs story={story} />}
         />
         <Tab id="articles"

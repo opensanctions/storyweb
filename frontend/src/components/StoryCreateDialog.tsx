@@ -1,5 +1,6 @@
 import { Button, Classes, Dialog, FormGroup, InputGroup, TextArea } from "@blueprintjs/core";
 import { FormEvent, MouseEvent, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { STORY_ICON } from "../constants";
 import { useCreateStoryMutation } from "../services/stories";
 
@@ -11,6 +12,7 @@ type StoryCreateDialogProps = {
 export default function StoryCreateDialog({ isOpen, onClose }: StoryCreateDialogProps) {
   const [title, setTitle] = useState('');
   const [summary, setSummary] = useState('');
+  const navigate = useNavigate();
   const [createStory, { isLoading: isCreating }] = useCreateStoryMutation();
 
   const hasTitle = title.trim().length > 3;
@@ -18,9 +20,8 @@ export default function StoryCreateDialog({ isOpen, onClose }: StoryCreateDialog
   const onCreate = async (e: MouseEvent | FormEvent) => {
     e.preventDefault();
     if (hasTitle && !isCreating) {
-      await createStory({ title: title, summary: summary }).unwrap();
-      setTitle('')
-      onClose()
+      const story = await createStory({ title: title, summary: summary }).unwrap();
+      navigate(`/stories/${story.id}`);
     }
   }
 
@@ -39,7 +40,12 @@ export default function StoryCreateDialog({ isOpen, onClose }: StoryCreateDialog
             label="Summary"
             labelFor="text-input"
           >
-            <TextArea id="text-input" fill large placeholder="Short description" value={summary} onChange={(e) => setSummary(e.target.value)} />
+            <TextArea id="text-input" fill large
+              rows={5}
+              placeholder="Short description"
+              value={summary}
+              onChange={(e) => setSummary(e.target.value)}
+            />
           </FormGroup>
         </div>
         <div className={Classes.DIALOG_FOOTER}>

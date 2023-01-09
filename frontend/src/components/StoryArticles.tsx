@@ -1,9 +1,11 @@
 import { Button, HTMLTable } from "@blueprintjs/core";
 import { useState } from "react";
+import { ARTICLE_THRESHOLD } from "../constants";
 import { useFetchArticleListingQuery } from "../services/articles";
 import { useToggleStoryArticleMutation } from "../services/stories";
 import { IArticle, IStory } from "../types";
 import ArticleDrawer from "./ArticleDrawer";
+import StoryNomNom from "./StoryNomNom";
 import { ErrorSection, SectionLoading } from "./util";
 
 type StoryArticlesProps = {
@@ -11,7 +13,7 @@ type StoryArticlesProps = {
 }
 
 export default function StoryArticles({ story }: StoryArticlesProps) {
-  const [previewArticle, setPreviewArticle] = useState('')
+  const [previewArticle, setPreviewArticle] = useState('');
   const { data: articles, error, isLoading } = useFetchArticleListingQuery({ story: story.id });
   const [toggleStoryArticle] = useToggleStoryArticleMutation();
 
@@ -30,35 +32,40 @@ export default function StoryArticles({ story }: StoryArticlesProps) {
 
   return (
     <>
-      <HTMLTable condensed bordered className="wide">
-        <thead>
-          <tr>
-            <th>Title</th>
-            <th>Site</th>
-            <th>Remove</th>
-          </tr>
-        </thead>
-        <tbody>
-          {articles.results.map((article) => (
-            <tr key={article.id}>
-              <td>
-                <a onClick={() => setPreviewArticle(article.id)}>
-                  {article.title}
-                </a>
-              </td>
-              <td>{article.site}</td>
-              <td>
-                <Button
-                  onClick={() => onRemoveArticle(article)}
-                  icon="trash"
-                  minimal
-                  small
-                />
-              </td>
+      {(articles.total < ARTICLE_THRESHOLD) && (
+        <StoryNomNom story={story} />
+      )}
+      {articles.results.length > 0 && (
+        <HTMLTable condensed bordered className="wide">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Site</th>
+              <th style={{ width: '1%' }} className="numeric">Remove</th>
             </tr>
-          ))}
-        </tbody>
-      </HTMLTable>
+          </thead>
+          <tbody>
+            {articles.results.map((article) => (
+              <tr key={article.id}>
+                <td>
+                  <a onClick={() => setPreviewArticle(article.id)}>
+                    {article.title}
+                  </a>
+                </td>
+                <td>{article.site}</td>
+                <td className="numeric">
+                  <Button
+                    onClick={() => onRemoveArticle(article)}
+                    icon="trash"
+                    minimal
+                    small
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </HTMLTable>
+      )}
       <ArticleDrawer
         isOpen={previewArticle.length > 1}
         onClose={(e) => setPreviewArticle('')}

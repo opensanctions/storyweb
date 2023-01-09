@@ -5,7 +5,7 @@ import { useFetchStoryPairsQuery } from "../services/stories";
 import { IStory } from "../types";
 import { getClusterLink } from "../util";
 import PairLink from "./PairLink";
-import { ErrorSection, Numeric, SectionLoading, Spacer, ClusterType, ClusterTypeIcon } from "./util";
+import { ErrorSection, Numeric, SectionLoading, ClusterTypeIcon } from "./util";
 
 type StoryPairsProps = {
   story: IStory,

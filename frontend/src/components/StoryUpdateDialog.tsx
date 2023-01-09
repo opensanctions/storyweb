@@ -40,7 +40,12 @@ export default function StoryUpdateDialog({ story, isOpen, onClose }: StoryUpdat
             label="Summary"
             labelFor="text-input"
           >
-            <TextArea id="text-input" fill large placeholder="Short description" value={summary} onChange={(e) => setSummary(e.target.value)} />
+            <TextArea id="text-input" fill large
+              rows={5}
+              placeholder="Short description"
+              value={summary}
+              onChange={(e) => setSummary(e.target.value)}
+            />
           </FormGroup>
         </div>
         <div className={Classes.DIALOG_FOOTER}>
