@@ -1,6 +1,7 @@
 import { AnchorButton, Button, Icon, IconSize, Intent, Tab, Tabs } from "@blueprintjs/core";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
+import ScreenContent from "../components/ScreenContent";
 import ScreenHeading from "../components/ScreenHeading";
 import StoryArticleImportDialog from "../components/StoryArticleImportDialog";
 import StoryArticles from "../components/StoryArticles";
@@ -69,7 +70,11 @@ export default function StoryView() {
             </>
           }
           disabled={!hasLinks}
-          panel={<StoryGraph story={story} />}
+          panel={
+            <ScreenContent>
+              <StoryGraph story={story} />
+            </ScreenContent>
+          }
         />
         <Tab id="pairs"
           title={
@@ -79,7 +84,11 @@ export default function StoryView() {
             </>
           }
           disabled={!hasArticles}
-          panel={<StoryPairs story={story} />}
+          panel={
+            <ScreenContent>
+              <StoryPairs story={story} />
+            </ScreenContent>
+          }
         />
         <Tab id="articles"
           title={
@@ -88,7 +97,11 @@ export default function StoryView() {
               <NumericTag value={articles?.total} className="tab-tag" />
             </>
           }
-          panel={<StoryArticles story={story} />}
+          panel={
+            <ScreenContent>
+              <StoryArticles story={story} />
+            </ScreenContent>
+          }
         />
       </Tabs>
     </div >

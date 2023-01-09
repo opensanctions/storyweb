@@ -10,6 +10,7 @@ import ScreenHeading from "../components/ScreenHeading";
 import ClusterButtonGroup from "../components/ClusterButtonGroup";
 import { useFetchArticleListingQuery } from "../services/articles";
 import { useNodeTypes } from "../selectors";
+import ScreenContent from "../components/ScreenContent";
 
 export default function ClusterView() {
   const { clusterId } = useParams();
@@ -36,11 +37,11 @@ export default function ClusterView() {
       <ScreenHeading title={title}>
         <ClusterButtonGroup cluster={cluster} />
       </ScreenHeading>
-      <p>
+      {/* <p>
         <ClusterType type={cluster.type} /> <Spacer />
         Aliases:{' '}
         <SpacedList values={cluster.labels.map((l) => <ClusterLabel key={l} label={l} />)} />
-      </p>
+      </p> */}
       <Tabs id="clusterView">
         <Tab id="related"
           title={
@@ -49,7 +50,11 @@ export default function ClusterView() {
               <NumericTag value={related?.total} className="tab-tag" />
             </>
           }
-          panel={<RelatedListing cluster={cluster} />}
+          panel={
+            <ScreenContent>
+              <RelatedListing cluster={cluster} />
+            </ScreenContent>
+          }
         />
         <Tab id="similar"
           title={
@@ -59,7 +64,11 @@ export default function ClusterView() {
             </>
           }
           disabled={similar?.total === 0}
-          panel={<SimilarListing cluster={cluster} />}
+          panel={
+            <ScreenContent>
+              <SimilarListing cluster={cluster} />
+            </ScreenContent>
+          }
         />
         <Tab id="articles"
           title={
@@ -68,7 +77,11 @@ export default function ClusterView() {
               <NumericTag value={articles?.total} className="tab-tag" />
             </>
           }
-          panel={<ClusterArticles cluster={cluster} />}
+          panel={
+            <ScreenContent>
+              <ClusterArticles cluster={cluster} />
+            </ScreenContent>
+          }
         />
       </Tabs>
     </div>
