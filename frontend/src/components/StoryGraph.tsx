@@ -6,17 +6,18 @@ import "@react-sigma/core/lib/react-sigma.min.css";
 import { useFetchStoryGraphQuery } from "../services/stories";
 import { useLayoutForceAtlas2 } from "@react-sigma/layout-forceatlas2";
 import { useFetchOntologyQuery } from "../services/ontology";
+import { IStory } from "../types";
 
 export type StoryGraphProps = {
-  storyId: number
+  story: IStory
 }
 
-export const LoadGraph = ({ storyId }: StoryGraphProps) => {
+export const LoadGraph = ({ story }: StoryGraphProps) => {
   const loadGraph = useLoadGraph();
   const { data: ontology } = useFetchOntologyQuery();
   const { assign } = useLayoutForceAtlas2();
 
-  const { data: graphData } = useFetchStoryGraphQuery({ storyId });
+  const { data: graphData } = useFetchStoryGraphQuery({ storyId: story.id });
 
   useEffect(() => {
     if (graphData !== undefined && ontology !== undefined) {
@@ -58,13 +59,13 @@ const GraphEvents: React.FC = () => {
   return null;
 };
 
-export default function StoryGraph({ storyId }: StoryGraphProps) {
+export default function StoryGraph({ story }: StoryGraphProps) {
   return (
     <SigmaContainer style={{ height: "500px", width: "100%" }} settings={{
       zIndex: true,
       renderEdgeLabels: true
     }}>
-      <LoadGraph storyId={storyId} />
+      <LoadGraph story={story} />
       <GraphEvents />
       <ControlsContainer position={"bottom-right"}>
         <ZoomControl />

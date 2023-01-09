@@ -1,8 +1,8 @@
 import queryString from 'query-string';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-import { API_URL } from '../constants'
-import type { IArticle, IArticleDetails, IListingResponse } from '../types'
+import { API_URL } from '../constants';
+import type { IArticle, IArticleDetails, IListingResponse } from '../types';
 
 export const articlesApi = createApi({
   reducerPath: 'articlesApi',

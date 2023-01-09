@@ -1,14 +1,10 @@
 import { Button, HTMLTable } from "@blueprintjs/core";
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { useNodeTypes } from "../selectors";
 import { useFetchArticleListingQuery } from "../services/articles";
-import { useFetchStoryPairsQuery, useToggleStoryArticleMutation } from "../services/stories";
+import { useToggleStoryArticleMutation } from "../services/stories";
 import { IArticle, IStory } from "../types";
-import { getClusterLink } from "../util";
 import ArticleDrawer from "./ArticleDrawer";
-import PairLink from "./PairLink";
-import { ErrorSection, Numeric, SectionLoading, ClusterTypeIcon } from "./util";
+import { ErrorSection, SectionLoading } from "./util";
 
 type StoryArticlesProps = {
   story: IStory,

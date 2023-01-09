@@ -2,18 +2,19 @@ import { HTMLTable } from "@blueprintjs/core";
 import { Link } from "react-router-dom";
 import { useNodeTypes } from "../selectors";
 import { useFetchStoryPairsQuery } from "../services/stories";
+import { IStory } from "../types";
 import { getClusterLink } from "../util";
 import PairLink from "./PairLink";
 import { ErrorSection, Numeric, SectionLoading, Spacer, ClusterType, ClusterTypeIcon } from "./util";
 
 type StoryPairsProps = {
-  storyId: number,
+  story: IStory,
 }
 
-export default function StoryPairs({ storyId }: StoryPairsProps) {
+export default function StoryPairs({ story }: StoryPairsProps) {
   const nodeTypes = useNodeTypes();
   const { data: clusters, error: clustersError } = useFetchStoryPairsQuery({
-    storyId: storyId,
+    storyId: story.id,
     params: { types: nodeTypes }
   });
 

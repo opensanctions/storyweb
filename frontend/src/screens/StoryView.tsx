@@ -1,6 +1,5 @@
-import { AnchorButton, Button, ButtonGroup, HTMLTable, Icon, IconSize, Intent, Tab, Tabs } from "@blueprintjs/core";
+import { AnchorButton, Button, Icon, IconSize, Intent, Tab, Tabs } from "@blueprintjs/core";
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import ScreenHeading from "../components/ScreenHeading";
 import StoryArticleImportDialog from "../components/StoryArticleImportDialog";
@@ -12,8 +11,7 @@ import StoryUpdateDialog from "../components/StoryUpdateDialog";
 import { ErrorSection, NumericTag, SectionLoading } from "../components/util";
 import { ARTICLE_ICON, LINKER_ICON, STORY_ICON } from "../constants";
 import { useFetchArticleListingQuery } from "../services/articles";
-import { useFetchStoryQuery, useToggleStoryArticleMutation } from "../services/stories";
-import { IArticle } from "../types";
+import { useFetchStoryQuery } from "../services/stories";
 
 export default function StoryView() {
   const { storyId } = useParams();
@@ -57,7 +55,7 @@ export default function StoryView() {
               <NumericTag value={0} className="tab-tag" />
             </>
           }
-          panel={<StoryGraph storyId={story.id} />}
+          panel={<StoryGraph story={story} />}
         />
         <Tab id="pairs"
           title={
@@ -66,7 +64,7 @@ export default function StoryView() {
               <NumericTag value={0} className="tab-tag" />
             </>
           }
-          panel={<StoryPairs storyId={story.id} />}
+          panel={<StoryPairs story={story} />}
         />
         <Tab id="articles"
           title={
