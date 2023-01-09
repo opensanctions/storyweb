@@ -68,7 +68,7 @@ export default function ClusterIndex() {
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search entities..."
             />
-            <Button type="submit">Search</Button>
+            <Button icon="search" type="submit">Search</Button>
           </ControlGroup>
         </form>
       </section>

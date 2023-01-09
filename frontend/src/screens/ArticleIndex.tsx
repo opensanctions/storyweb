@@ -65,7 +65,7 @@ export default function ArticleIndex() {
                 <option key={s} value={s}>{s}</option>
               )}
             </HTMLSelect>
-            <Button type="submit">Search</Button>
+            <Button icon="search" type="submit">Search</Button>
           </ControlGroup>
         </form>
       </section>
