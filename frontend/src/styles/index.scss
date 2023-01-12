@@ -74,6 +74,11 @@ th.numeric {
 
 .tab-tag {
     margin-left: $spacer * 0.3;
+    // background-color: $gray3;
+    background-color: $blue2;
+}
+
+[aria-disabled=true] .tab-tag {
     background-color: $gray3;
 }
 
