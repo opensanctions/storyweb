@@ -4,6 +4,8 @@ StoryWeb is a project aimed to extract networks of entities from journalistic re
 
 https://storyweb.opensanctions.org
 
+StoryWeb consumes news articles as input data. Individual articles can be imported via the web interface, but there's also a possibility for bulk import using the [`articledata`](https://github.com/pudo/articledata) micro-format. One producer of `articledata` files is [`mediacrawl`](), which can be used to crawl news websites and harvest all of their articles.
+
 
 ## Install
 
