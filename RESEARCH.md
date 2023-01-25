@@ -20,3 +20,6 @@ Tips from Tobias:
     * Get confidence scores for classification?
 * Or: fuzzying out names for other names and see if it can disambiguate
 
+
+
+* https://github.com/microsoft/spacy-ann-linker
