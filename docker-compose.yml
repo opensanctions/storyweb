@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15
+    expose:
+      - "5432"
+    container_name: db
+    environment:
+      POSTGRES_USER: storyweb
+      POSTGRES_PASSWORD: storyweb
+      POSTGRES_DB: storyweb
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      # - "./schema.sql:/docker-entrypoint-initdb.d/storyweb-schema.sql"
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+  app:
+    build: .
+    image: ghcr.io/opensanctions/storyweb:main
+    command: bash -c 'while !</dev/tcp/db/5432; do sleep 2; done; storyweb init; uvicorn --host 0.0.0.0 --workers 3 storyweb.server:app'
+    ports:
+      - "0.0.0.0:8000:8000"
+    hostname: app
+    environment:
+      STORYWEB_DB_URL: postgresql://storyweb:storyweb@db/storyweb
+
+volumes:
+  db-data:

@@ -16,7 +16,8 @@ LABEL org.opencontainers.image.source https://github.com/opensanctions/storyweb
 RUN apt-get -qq -y update \
     && apt-get -qq -y upgrade \
     && apt-get -qq -y install locales ca-certificates tzdata curl python3-pip \
-    python3-icu python3-cryptography libicu-dev pkg-config \
+    python3-icu python3-cryptography libicu-dev pkg-config postgresql-client-common \
+    postgresql-client libpq-dev \
     && apt-get -qq -y autoremove \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
@@ -41,4 +42,4 @@ COPY . /storyweb
 RUN pip install --no-cache-dir -e /storyweb
 COPY --from=frontend /fe/build /storyweb/frontend/build
 
-CMD ["uvicorn", "storyweb.server:app"]
+CMD ["uvicorn", "--host", "0.0.0.0", "storyweb.server:app"]

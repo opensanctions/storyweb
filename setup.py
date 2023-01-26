@@ -22,7 +22,7 @@ setup(
     zip_safe=False,
     install_requires=[
         "sqlalchemy",
-        "psycopg2-binary",
+        "psycopg2",
         "pydantic",
         "pydantic_yaml",
         "articledata",
@@ -35,6 +35,7 @@ setup(
         "followthemoney",
         "languagecodes",
         "fasttext",
+        "uvicorn",
         "trafilatura",
         "charset-normalizer",
         "click >= 8.0.0, < 8.2.0",
