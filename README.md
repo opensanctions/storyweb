@@ -68,7 +68,7 @@ Commands:
   init        Initialize the database
 ```
 
-The import command listed here will accept any data file in the `articledata` format, which is emitted by the `mediacrawl` tool.
+The `import` command listed here will accept any data file in the `articledata` format, which is emitted by the `mediacrawl` tool.
 
 #### Running the backend API
 
@@ -170,3 +170,8 @@ SELECT ot.cluster, SUM(r.weight) FROM corefs r
 
 ## License and credits
 
+Thanks to [Heleen Emanuel](https://twitter.com/heleenemanuel) and [Tobias Sterbak](https://tobiassterbak.com/) for their advice on the design and implementation of StoryWeb. 
+
+This project receives financial support from the German Federal Ministry for Education and Research (Bundesministerium für Bildung und Forschung, BMBF) under the grant identifier `01IS22S42`. The full responsibility for the content of this publication remains with its authors.
+
+The software is licensed under the MIT license, see `LICENSE` in this repository.
