@@ -4,30 +4,35 @@ cluster_types:
     plural: "Things"
     color: "#9D3F9D"
     icon: "hat"
+    ftm: Thing
   - name: ENT
     label: "Entity"
     plural: "Entities"
     parent: ANY
     color: "#9D3F9D"
     icon: "people"
+    ftm: LegalEntity
   - name: LOC
     label: "Location"
     plural: "Locations"
     parent: ANY
     color: "#29a634"
     icon: "mountain"
+    ftm: Address
   - name: PER
     label: "Person"
     plural: "People"
     parent: ENT
     color: "#9d3f9d"
     icon: "person"
+    ftm: Person
   - name: ORG
     label: "Organization"
     plural: "Organizations"
     parent: ENT
     color: "#2965cc"
     icon: "office"
+    ftm: Organization
 link_types:
   - name: SAME
     label: "Same as"
@@ -53,12 +58,14 @@ link_types:
     phrase: "is an associate of"
     source_type: PER
     target_type: PER
+    ftm: Associate
   - name: FAMILY
     directed: false
     label: "Family"
     phrase: "is related to"
     source_type: PER
     target_type: PER
+    ftm: Family
   - name: ANTAGONIST
     directed: false
     label: "Antagonist"
@@ -71,24 +78,28 @@ link_types:
     phrase: "owns"
     source_type: ENT
     target_type: ORG
+    ftm: Ownership
   - name: MANAGER
     directed: true
     label: "Manager"
     phrase: "manages or directs"
     source_type: ENT
     target_type: ORG
+    ftm: Directorship
   - name: EMPLOYEE
     directed: true
     label: "Employer"
     phrase: "works for"
     source_type: PER
     target_type: ORG
+    ftm: Employment
   - name: MEMBER
     directed: true
     label: "Member"
     phrase: "is part of"
     source_type: PER
     target_type: ORG
+    ftm: Membership
   - name: BUSINESS
     directed: false
     label: "Business activity"
@@ -119,3 +130,4 @@ link_types:
     phrase: "is linked to"
     source_type: ANY
     target_type: ANY
+    ftm: UnknownLink

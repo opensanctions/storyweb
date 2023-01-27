@@ -13,6 +13,7 @@ class ClusterTypeModel(BaseModel):
     parent: Optional[str]
     color: str
     icon: str
+    ftm: str
 
 
 class LinkTypeModel(BaseModel):
@@ -22,6 +23,7 @@ class LinkTypeModel(BaseModel):
     phrase: str
     source_type: str
     target_type: str
+    ftm: Optional[str]
 
 
 class OntologyModel(YamlModel):
@@ -42,6 +44,7 @@ class ClusterType(object):
         self.plural = model.plural
         self.color = model.color
         self.icon = model.icon
+        self.ftm = model.ftm
 
     @property
     def parent(self) -> Optional["ClusterType"]:
@@ -76,6 +79,7 @@ class LinkType(object):
     def __init__(self, ontology: "Ontology", model: LinkTypeModel):
         self.ontology = ontology
         self.model = model
+        self.ftm = model.ftm
 
     @property
     def source_type(self) -> "ClusterType":

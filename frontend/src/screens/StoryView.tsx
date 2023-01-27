@@ -10,7 +10,7 @@ import StoryGraph from "../components/StoryGraph";
 import StoryPairs from "../components/StoryPairs";
 import StoryUpdateDialog from "../components/StoryUpdateDialog";
 import { ErrorSection, NumericTag, SectionLoading } from "../components/util";
-import { ARTICLE_ICON, ARTICLE_THRESHOLD, LINKER_ICON, LINKS_THRESHOLD, STORY_ICON } from "../constants";
+import { API_URL, ARTICLE_ICON, ARTICLE_THRESHOLD, LINKER_ICON, LINKS_THRESHOLD, STORY_ICON } from "../constants";
 import { useNodeTypes } from "../selectors";
 import { useFetchArticleListingQuery } from "../services/articles";
 import { useFetchStoryPairsQuery, useFetchStoryQuery } from "../services/stories";
@@ -58,6 +58,7 @@ export default function StoryView() {
           Edit
         </Button>
         <StoryUpdateDialog isOpen={showEdit} onClose={() => setShowEdit(false)} story={story} />
+        <AnchorButton icon="download" text="FtM" href={`${API_URL}/stories/${story.id}/ftm`} target="_blank" download />
         <Button intent={Intent.DANGER} icon="trash" onClick={() => setShowDelete(true)}>
           Delete
         </Button>

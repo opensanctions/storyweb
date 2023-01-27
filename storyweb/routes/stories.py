@@ -1,3 +1,4 @@
+from normality import slugify
 from typing import List, Optional
 from fastapi import APIRouter, Depends, Path, Query
 from fastapi.responses import PlainTextResponse
@@ -13,7 +14,7 @@ from storyweb.logic.stories import (
     toggle_story_article,
 )
 from storyweb.logic.clusters import list_story_pairs
-from storyweb.logic.graph import generate_graph_gexf
+from storyweb.logic.graph import generate_graph_gexf, generate_graph_ftm
 from storyweb.logic.links import story_merge
 from storyweb.parse import import_article_by_url
 from storyweb.routes.util import get_conn, get_listing
@@ -112,6 +113,23 @@ def story_gexf(
     return PlainTextResponse(content=text, media_type="text/xml")
 
 
+@router.get("/stories/{story_id}/ftm", response_class=PlainTextResponse)
+def story_ftm(
+    conn: Conn = Depends(get_conn),
+    story_id: int = Path(),
+):
+    story = fetch_story(conn, story_id)
+    if story is None:
+        raise HTTPException(404)
+    filename = slugify(story.title, sep="_")
+    text = generate_graph_ftm(conn, story_id=story_id)
+    return PlainTextResponse(
+        content=text,
+        media_type="application/json+ftm",
+        headers={"Content-Disposition": f"attachment; filename={filename}.ftm.json"},
+    )
+
+
 @router.post("/stories/{story_id}", response_model=Story)
 def story_update(
     data: StoryMutation, conn: Conn = Depends(get_conn), story_id: int = Path()
@@ -132,3 +150,13 @@ def story_delete(
         raise HTTPException(404)
     delete_story(conn, story_id)
     return None
+
+
+@router.get("/ftm", response_class=PlainTextResponse)
+def all_ftm(conn: Conn = Depends(get_conn)):
+    text = generate_graph_ftm(conn)
+    return PlainTextResponse(
+        content=text,
+        media_type="application/json+ftm",
+        headers={"Content-Disposition": f"attachment; filename=storyweb.ftm.json"},
+    )
