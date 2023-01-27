@@ -45,7 +45,7 @@ export default function StoryView() {
   return (
     <div>
       <ScreenHeading title={<><Icon icon={STORY_ICON} size={IconSize.LARGE} /> {story.title}</>}>
-        {(hasArticles || hasLinks) && (
+        {(hasArticles && hasLinks) && (
           <AnchorButton intent={Intent.PRIMARY} icon={LINKER_ICON} href={`/stories/${story.id}/linker`}>
             Build web
           </AnchorButton>
