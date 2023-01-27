@@ -82,6 +82,10 @@ th.numeric {
     background-color: $gray3;
 }
 
+.portal-z-top {
+    z-index: 9999;
+}
+
 h1 {
     clear: both;
     padding-top: $spacer;

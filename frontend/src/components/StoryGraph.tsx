@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Graph from "graphology";
 import { parse } from "graphology-gexf/browser";
 import { ControlsContainer, SigmaContainer, useLoadGraph, useRegisterEvents, ZoomControl } from "@react-sigma/core";
@@ -7,6 +7,7 @@ import { useFetchStoryGraphQuery } from "../services/stories";
 import { useLayoutForceAtlas2 } from "@react-sigma/layout-forceatlas2";
 import { useFetchOntologyQuery } from "../services/ontology";
 import { IStory } from "../types";
+import ClusterDrawer from "./ClusterDrawer";
 
 export type StoryGraphProps = {
   story: IStory
@@ -43,33 +44,46 @@ export const LoadGraph = ({ story }: StoryGraphProps) => {
   return null;
 };
 
-const GraphEvents: React.FC = () => {
+type GraphEventsProps = {
+  showCluster: (id: string) => void
+}
+
+function GraphEvents({ showCluster }: GraphEventsProps) {
   const registerEvents = useRegisterEvents();
 
   useEffect(() => {
     registerEvents({
-      clickNode: (event) => console.log("clickNode", event.event, event.node, event.preventSigmaDefault),
-      doubleClickNode: (event) => console.log("doubleClickNode", event.event, event.node, event.preventSigmaDefault),
-      clickEdge: (event) => console.log("clickEdge", event.event, event.edge, event.preventSigmaDefault),
-      doubleClickEdge: (event) => console.log("doubleClickEdge", event.event, event.edge, event.preventSigmaDefault),
-      wheel: (event) => event.preventSigmaDefault(),
+      clickNode: (event) => showCluster(event.node),
+      doubleClickNode: (event) => showCluster(event.node),
+      // clickEdge: (event) => console.log("clickEdge", event.event, event.edge, event.preventSigmaDefault),
+      // doubleClickEdge: (event) => console.log("doubleClickEdge", event.event, event.edge, event.preventSigmaDefault),
+      // wheel: (event) => event.preventSigmaDefault(),
     });
   }, [registerEvents]);
 
   return null;
-};
+}
 
 export default function StoryGraph({ story }: StoryGraphProps) {
+  const [showCluster, setShowCluster] = useState("");
+
   return (
-    <SigmaContainer style={{ height: "500px", width: "100%" }} settings={{
-      zIndex: true,
-      renderEdgeLabels: true
-    }}>
-      <LoadGraph story={story} />
-      <GraphEvents />
-      <ControlsContainer position={"bottom-right"}>
-        <ZoomControl />
-      </ControlsContainer>
-    </SigmaContainer>
+    <>
+      <ClusterDrawer
+        isOpen={showCluster.length > 0}
+        clusterId={showCluster}
+        onClose={(e) => setShowCluster("")}
+      />
+      <SigmaContainer style={{ height: "500px", width: "100%" }} settings={{
+        zIndex: true,
+        renderEdgeLabels: true
+      }}>
+        <LoadGraph story={story} />
+        <GraphEvents showCluster={setShowCluster} />
+        <ControlsContainer position={"bottom-right"}>
+          <ZoomControl />
+        </ControlsContainer>
+      </SigmaContainer>
+    </>
   );
 }
