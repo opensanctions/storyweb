@@ -59,7 +59,7 @@ function GraphEvents({ showCluster }: GraphEventsProps) {
       // doubleClickEdge: (event) => console.log("doubleClickEdge", event.event, event.edge, event.preventSigmaDefault),
       // wheel: (event) => event.preventSigmaDefault(),
     });
-  }, [registerEvents]);
+  }, [registerEvents, showCluster]);
 
   return null;
 }

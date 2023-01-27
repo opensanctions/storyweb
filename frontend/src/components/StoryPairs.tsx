@@ -1,9 +1,11 @@
 import { HTMLTable } from "@blueprintjs/core";
+import { MouseEvent, useState } from "react";
 import { Link } from "react-router-dom";
 import { useNodeTypes } from "../selectors";
 import { useFetchStoryPairsQuery } from "../services/stories";
-import { IStory } from "../types";
+import { IClusterBase, IStory } from "../types";
 import { getClusterLink, useListingPagination } from "../util";
+import ClusterDrawer from "./ClusterDrawer";
 import Pagination from "./Pagination";
 import PairLink from "./PairLink";
 import { ErrorSection, Numeric, SectionLoading, ClusterTypeIcon } from "./util";
@@ -14,6 +16,7 @@ type StoryPairsProps = {
 
 export default function StoryPairs({ story }: StoryPairsProps) {
   const nodeTypes = useNodeTypes();
+  const [showCluster, setShowCluster] = useState("");
   const page = useListingPagination('pairs');
   const { data: clusters, error: clustersError } = useFetchStoryPairsQuery({
     storyId: story.id,
@@ -25,6 +28,11 @@ export default function StoryPairs({ story }: StoryPairsProps) {
   }
   if (clusters === undefined) {
     return <SectionLoading />
+  }
+
+  const onPreview = (e: MouseEvent<HTMLAnchorElement>, cluster: IClusterBase) => {
+    setShowCluster(cluster.id);
+    e.preventDefault();
   }
 
   return (
@@ -43,11 +51,11 @@ export default function StoryPairs({ story }: StoryPairsProps) {
             <tr key={pair.left.id + pair.right.id}>
               <td>
                 <ClusterTypeIcon type={pair.left.type} size={14} />
-                <Link to={getClusterLink(pair.left)}>{pair.left.label}</Link>
+                <Link to={getClusterLink(pair.left)} onClick={(e) => onPreview(e, pair.left)}>{pair.left.label}</Link>
               </td>
               <td>
                 <ClusterTypeIcon type={pair.right.type} size={14} />
-                <Link to={getClusterLink(pair.right)}>{pair.right.label}</Link>
+                <Link to={getClusterLink(pair.right)} onClick={(e) => onPreview(e, pair.right)}>{pair.right.label}</Link>
               </td>
               <td>
                 <PairLink left={pair.left} right={pair.right} link_types={pair.link_types} />
@@ -60,6 +68,11 @@ export default function StoryPairs({ story }: StoryPairsProps) {
         </tbody>
       </HTMLTable>
       <Pagination prefix='pairs' response={clusters} />
+      <ClusterDrawer
+        isOpen={showCluster.length > 0}
+        clusterId={showCluster}
+        onClose={(e) => setShowCluster("")}
+      />
     </>
   )
 };

@@ -1,9 +1,7 @@
 import { Drawer, Tab, Tabs } from "@blueprintjs/core"
 import { SyntheticEvent } from "react"
-import { ARTICLE_ICON } from "../constants"
-import { useFetchArticleListingQuery, useFetchArticleQuery } from "../services/articles"
-import { useFetchClusterListingQuery, useFetchClusterQuery, useFetchRelatedClusterListingQuery, useFetchSimilarClusterListingQuery } from "../services/clusters"
-import ArticleText from "./ArticleText"
+import { useFetchArticleListingQuery } from "../services/articles"
+import { useFetchClusterQuery, useFetchRelatedClusterListingQuery, useFetchSimilarClusterListingQuery } from "../services/clusters"
 import { ErrorSection, NumericTag, SectionLoading } from "./util"
 
 import styles from '../styles/Cluster.module.scss'
@@ -22,7 +20,7 @@ type ClusterDrawerProps = {
 
 export default function ClusterDrawer({ clusterId, isOpen, onClose }: ClusterDrawerProps) {
   const nodeTypes = useNodeTypes();
-  const { data: cluster, error: clusterError } = useFetchClusterQuery(clusterId as string);
+  const { data: cluster, error: clusterError } = useFetchClusterQuery(clusterId);
   const relatedQuery = { clusterId: clusterId || '', params: { types: nodeTypes } };
   const { data: related } = useFetchRelatedClusterListingQuery(relatedQuery)
   const similarQuery = { clusterId: clusterId || '', params: {} };
