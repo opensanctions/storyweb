@@ -36,10 +36,10 @@ export default function StoryIndex() {
       <ScreenHeading title={<>Your StoryWebs</>}>
         <ButtonGroup>
           <Button intent={Intent.PRIMARY} onClick={onCreate} icon="add">New story...</Button>
-          <StoryCreateDialog isOpen={showCreate} onClose={onCloseCreate} />
           <AnchorButton icon="download" text="FtM" href={`${API_URL}/ftm`} target="_blank" download />
         </ButtonGroup>
       </ScreenHeading>
+      <StoryCreateDialog isOpen={showCreate} onClose={onCloseCreate} />
       <section className="section">
         <form onSubmit={onSubmit}>
           <ControlGroup fill>

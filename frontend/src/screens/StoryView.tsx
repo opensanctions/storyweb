@@ -1,4 +1,4 @@
-import { AnchorButton, Button, Icon, IconSize, Intent, Tab, Tabs } from "@blueprintjs/core";
+import { AnchorButton, Button, ButtonGroup, Icon, IconSize, Intent, Tab, Tabs } from "@blueprintjs/core";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import ScreenContent from "../components/ScreenContent";
@@ -45,23 +45,25 @@ export default function StoryView() {
   return (
     <div>
       <ScreenHeading title={<><Icon icon={STORY_ICON} size={IconSize.LARGE} /> {story.title}</>}>
-        {(hasArticles && hasLinks) && (
-          <AnchorButton intent={Intent.PRIMARY} icon={LINKER_ICON} href={`/stories/${story.id}/linker`}>
-            Build web
-          </AnchorButton>
-        )}
-        <Button icon={ARTICLE_ICON} intent={hasArticles ? Intent.NONE : Intent.PRIMARY} onClick={() => setShowImport(true)}>
-          Add article
-        </Button>
+        <ButtonGroup>
+          {(hasArticles && hasLinks) && (
+            <AnchorButton intent={Intent.PRIMARY} icon={LINKER_ICON} href={`/stories/${story.id}/linker`}>
+              Build web
+            </AnchorButton>
+          )}
+          <Button icon={ARTICLE_ICON} intent={hasArticles ? Intent.NONE : Intent.PRIMARY} onClick={() => setShowImport(true)}>
+            Add article
+          </Button>
+          <Button intent={Intent.NONE} icon="edit" onClick={() => setShowEdit(true)}>
+            Edit
+          </Button>
+          <AnchorButton icon="download" text="FtM" href={`${API_URL}/stories/${story.id}/ftm`} target="_blank" download />
+          <Button intent={Intent.DANGER} icon="trash" onClick={() => setShowDelete(true)}>
+            Delete
+          </Button>
+        </ButtonGroup>
         <StoryArticleImportDialog storyId={story.id} isOpen={showImport} onClose={() => setShowImport(false)} />
-        <Button intent={Intent.NONE} icon="edit" onClick={() => setShowEdit(true)}>
-          Edit
-        </Button>
         <StoryUpdateDialog isOpen={showEdit} onClose={() => setShowEdit(false)} story={story} />
-        <AnchorButton icon="download" text="FtM" href={`${API_URL}/stories/${story.id}/ftm`} target="_blank" download />
-        <Button intent={Intent.DANGER} icon="trash" onClick={() => setShowDelete(true)}>
-          Delete
-        </Button>
         <StoryDeleteDialog isOpen={showDelete} onClose={() => setShowDelete(false)} story={story} />
       </ScreenHeading>
       <Tabs id="storyView" defaultSelectedTabId={defaultTab} renderActiveTabPanelOnly>
