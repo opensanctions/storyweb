@@ -36,7 +36,21 @@ export default function StoryIndex() {
       <ScreenHeading title={<>Your StoryWebs</>}>
         <ButtonGroup>
           <Button intent={Intent.PRIMARY} onClick={onCreate} icon="add">New story...</Button>
-          <AnchorButton icon="download" text="FtM" href={`${API_URL}/ftm`} target="_blank" download />
+          <Popover2
+            placement="bottom-start"
+            popupKind={PopupKind.MENU}
+            minimal
+            content={
+              <Menu>
+                <MenuItem icon="download" text="Aleph" label="(FollowTheMoney)" href={`${API_URL}/ftm`} target="_blank" download />
+                <MenuItem icon="download" text="Gephi" label="(GEXF)" href={`${API_URL}/gexf`} target="_blank" download />
+              </Menu>
+            }
+          >
+            <Button intent={Intent.NONE} icon="download">
+              Export
+            </Button>
+          </Popover2>
         </ButtonGroup>
       </ScreenHeading>
       <StoryCreateDialog isOpen={showCreate} onClose={onCloseCreate} />

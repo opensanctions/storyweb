@@ -5,8 +5,7 @@ from starlette.exceptions import HTTPException
 from starlette.responses import Response
 from starlette.types import Scope
 
-from storyweb.ontology import OntologyModel, ontology
-from storyweb.routes import links, stories, articles, clusters
+from storyweb.routes import links, stories, articles, clusters, system
 
 
 app = FastAPI(
@@ -21,15 +20,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.include_router(system.router, prefix="/api/1")
 app.include_router(links.router, prefix="/api/1")
 app.include_router(stories.router, prefix="/api/1")
 app.include_router(articles.router, prefix="/api/1")
 app.include_router(clusters.router, prefix="/api/1")
-
-
-@app.get("/api/1/ontology", response_model=OntologyModel)
-def ontology_model() -> OntologyModel:
-    return ontology.model
 
 
 class SPAStaticFiles(StaticFiles):

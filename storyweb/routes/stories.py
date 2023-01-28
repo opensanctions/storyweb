@@ -109,8 +109,13 @@ def story_gexf(
     story = fetch_story(conn, story_id)
     if story is None:
         raise HTTPException(404)
+    filename = slugify(story.title, sep="_")
     text = generate_graph_gexf(conn, story=story_id)
-    return PlainTextResponse(content=text, media_type="text/xml")
+    return PlainTextResponse(
+        content=text,
+        media_type="text/xml",
+        headers={"Content-Disposition": f"attachment; filename={filename}.gexf"},
+    )
 
 
 @router.get("/stories/{story_id}/ftm", response_class=PlainTextResponse)
@@ -150,13 +155,3 @@ def story_delete(
         raise HTTPException(404)
     delete_story(conn, story_id)
     return None
-
-
-@router.get("/ftm", response_class=PlainTextResponse)
-def all_ftm(conn: Conn = Depends(get_conn)):
-    text = generate_graph_ftm(conn)
-    return PlainTextResponse(
-        content=text,
-        media_type="application/json+ftm",
-        headers={"Content-Disposition": f"attachment; filename=storyweb.ftm.json"},
-    )

@@ -1,4 +1,5 @@
-import { AnchorButton, Button, ButtonGroup, Icon, IconSize, Intent, Tab, Tabs } from "@blueprintjs/core";
+import { AnchorButton, Button, ButtonGroup, Icon, IconSize, Intent, Menu, MenuItem, Tab, Tabs } from "@blueprintjs/core";
+import { Classes, Popover2, PopupKind } from "@blueprintjs/popover2";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import ScreenContent from "../components/ScreenContent";
@@ -57,7 +58,21 @@ export default function StoryView() {
           <Button intent={Intent.NONE} icon="edit" onClick={() => setShowEdit(true)}>
             Edit
           </Button>
-          <AnchorButton icon="download" text="FtM" href={`${API_URL}/stories/${story.id}/ftm`} target="_blank" download />
+          <Popover2
+            placement="bottom-start"
+            popupKind={PopupKind.MENU}
+            minimal
+            content={
+              <Menu>
+                <MenuItem icon="download" text="Aleph" label="(FollowTheMoney)" href={`${API_URL}/stories/${story.id}/ftm`} target="_blank" download />
+                <MenuItem icon="download" text="Gephi" label="(GEXF)" href={`${API_URL}/stories/${story.id}/gexf`} target="_blank" download />
+              </Menu>
+            }
+          >
+            <Button intent={Intent.NONE} icon="download">
+              Export
+            </Button>
+          </Popover2>
           <Button intent={Intent.DANGER} icon="trash" onClick={() => setShowDelete(true)}>
             Delete
           </Button>
