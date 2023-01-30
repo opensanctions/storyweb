@@ -76,12 +76,22 @@ def link_predict(conn: Conn, anchor_id: str, other_id: str) -> LinkPrediction:
             type=link.type,
         )
 
+    # Heuristic: if one of the two clusters is known to be an observer on most of
+    # their links, assume they are overall an observer (e.g. a media organisation,
+    # or a journalist).
     anchor_observer = is_observer(conn, anchor.id)
     other_observer = is_observer(conn, other.id)
-    print("OBSERVER", anchor_observer, other_observer)
     if anchor_observer and not other_observer:
         return LinkPrediction(source=anchor, target=other, type=LinkType.OBSERVER)
     if other_observer and not anchor_observer:
         return LinkPrediction(source=other, target=anchor, type=LinkType.OBSERVER)
+
+    # Heuristic: locations have very limited connection types they can enter into.
+    if anchor.type == "LOC" and other.type == "LOC":
+        return LinkPrediction(source=anchor, target=other, type="WITHIN")
+    if anchor.type == "LOC":
+        return LinkPrediction(source=other, target=anchor, type="LOCATED")
+    if other.type == "LOC":
+        return LinkPrediction(source=anchor, target=other, type="LOCATED")
 
     return LinkPrediction(source=anchor, target=other, type=link_type)

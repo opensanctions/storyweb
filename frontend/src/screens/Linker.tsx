@@ -163,7 +163,7 @@ export default function Linker() {
               <Label>View articles that mention both:</Label>
               <ArticleCorefList
                 clusters={[source.id, target.id]}
-                tags={[prediction.source.labels, prediction.source.labels]}
+                tags={[prediction.source.labels, prediction.target.labels]}
               />
             </div>
           </div>
