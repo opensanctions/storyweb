@@ -27,7 +27,8 @@ RUN localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
     && dpkg-reconfigure -f noninteractive tzdata
 
 ENV LANG='en_US.UTF-8' \
-    TZ="UTC"
+    TZ="UTC" \
+    API_URL="/api/1"
 
 RUN pip install -U pip setuptools wheel
 RUN pip install spacy

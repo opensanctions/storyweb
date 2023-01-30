@@ -11,7 +11,7 @@ export const storiesApi = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: API_URL }),
   endpoints: (builder) => ({
     fetchStory: builder.query<IStory, string>({
-      query: (articleId) => `stories/${articleId}`,
+      query: (storyId) => `stories/${storyId}`,
       providesTags: ["Story"]
     }),
     fetchStoryListing: builder.query<IListingResponse<IStory>, any>({

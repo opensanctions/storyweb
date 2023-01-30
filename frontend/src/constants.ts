@@ -1,6 +1,6 @@
 
 export const SITE = 'StoryWeb';
-export const API_URL = '/api/1';
+export const API_URL = process.env.API_URL || 'http://localhost:8000/api/1';
 export const SPACER = " · ";
 export const STORY_ICON = "projects";
 export const ARTICLE_ICON = "document";

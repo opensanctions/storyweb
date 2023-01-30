@@ -110,7 +110,7 @@ def story_gexf(
     if story is None:
         raise HTTPException(404)
     filename = slugify(story.title, sep="_")
-    text = generate_graph_gexf(conn, story=story_id)
+    text = generate_graph_gexf(conn, story_id=story_id)
     return PlainTextResponse(
         content=text,
         media_type="text/xml",

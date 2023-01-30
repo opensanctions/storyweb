@@ -1,5 +1,5 @@
 import { AnchorButton, Button, ButtonGroup, Icon, IconSize, Intent, Menu, MenuItem, Tab, Tabs } from "@blueprintjs/core";
-import { Classes, Popover2, PopupKind } from "@blueprintjs/popover2";
+import { Popover2, PopupKind } from "@blueprintjs/popover2";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import ScreenContent from "../components/ScreenContent";
@@ -23,12 +23,12 @@ export default function StoryView() {
   const [showImport, setShowImport] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
+  const { data: story, isLoading, error } = useFetchStoryQuery(storyId as string);
+  const { data: articles } = useFetchArticleListingQuery({ story: storyId, limit: 0 });
   const { data: links } = useFetchStoryPairsQuery({
     storyId: storyId || '',
     params: { types: nodeTypes, limit: 0, linked: true }
   });
-  const { data: story, isLoading, error } = useFetchStoryQuery(storyId as string);
-  const { data: articles } = useFetchArticleListingQuery({ story: storyId, limit: 0 });
 
   const hasArticles = (articles?.total || 0) >= ARTICLE_THRESHOLD;
   const hasLinks = (links?.total || 0) >= LINKS_THRESHOLD;
@@ -37,7 +37,7 @@ export default function StoryView() {
   const defaultTab = hasArticles ? secondaryTab : 'articles';
 
   if (error !== undefined) {
-    return <ErrorSection title="Could not load the article" />
+    return <ErrorSection title="Could not load the story." />
   }
   if (story === undefined || articles === undefined || links === undefined || isLoading) {
     return <SectionLoading />

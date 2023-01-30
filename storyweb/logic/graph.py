@@ -14,7 +14,7 @@ from storyweb.ontology import ontology, LinkType
 
 def query_links(
     conn: Conn,
-    story: Optional[int] = None,
+    story_id: Optional[int] = None,
     link_types: List[str] = list(ontology.link_types.keys()),
 ) -> Generator[Row, None, None]:
     link_t = link_table.alias("l")
@@ -33,15 +33,15 @@ def query_links(
         target_t.c.cluster_type.label("target_type"),
     )
 
-    if story is not None:
+    if story_id is not None:
         sa_source_t = story_article_table.alias("src_sa")
         sa_target_t = story_article_table.alias("tgt_sa")
         lstmt = lstmt.join(source_t, link_t.c.source_cluster == source_t.c.cluster)
         lstmt = lstmt.join(sa_source_t, sa_source_t.c.article == source_t.c.article)
-        lstmt = lstmt.filter(sa_source_t.c.story == story)
+        lstmt = lstmt.filter(sa_source_t.c.story == story_id)
         lstmt = lstmt.join(target_t, link_t.c.target_cluster == target_t.c.cluster)
         lstmt = lstmt.join(sa_target_t, sa_target_t.c.article == target_t.c.article)
-        lstmt = lstmt.filter(sa_target_t.c.story == story)
+        lstmt = lstmt.filter(sa_target_t.c.story == story_id)
         # lstmt = lstmt.filter(
         #     or_(
         #         sa_target_t.c.story == story,
@@ -60,7 +60,7 @@ def query_links(
 
 def generate_graph(
     conn: Conn,
-    story: Optional[int] = None,
+    story_id: Optional[int] = None,
     link_types: List[str] = list(ontology.link_types.keys()),
 ) -> DiGraph:
     for skip in (LinkType.SAME, LinkType.UNRELATED):
@@ -68,7 +68,7 @@ def generate_graph(
             link_types.remove(skip)
 
     graph = DiGraph()
-    for row in query_links(conn, story=story, link_types=link_types):
+    for row in query_links(conn, story_id=story_id, link_types=link_types):
         source_id = row["source_id"]
         target_id = row["target_id"]
         if not graph.has_node(source_id):
@@ -93,10 +93,10 @@ def generate_graph(
 
 def generate_graph_gexf(
     conn: Conn,
-    story: Optional[int] = None,
+    story_id: Optional[int] = None,
     link_types: List[str] = list(ontology.link_types.keys()),
 ) -> str:
-    graph = generate_graph(conn, story=story, link_types=link_types)
+    graph = generate_graph(conn, story_id=story_id, link_types=link_types)
     return "\n".join(generate_gexf(graph))
 
 
@@ -114,7 +114,7 @@ def _make_ent(row: Row, prefix: str) -> EntityProxy:
     return ent
 
 
-def generate_graph_ftm(conn: Conn, story: Optional[int] = None) -> str:
+def generate_graph_ftm(conn: Conn, story_id: Optional[int] = None) -> str:
     link_types = list(ontology.link_types.keys())
     for skip in (LinkType.SAME, LinkType.UNRELATED):
         if skip in link_types:
@@ -128,7 +128,7 @@ def generate_graph_ftm(conn: Conn, story: Optional[int] = None) -> str:
         else:
             entities[e.id] = e
 
-    for row in query_links(conn, story=story, link_types=link_types):
+    for row in query_links(conn, story_id=story_id, link_types=link_types):
         if row["link_type"] == "LOCATED" and row["target_type"] == "LOC":
             for label in (row["target_label"], row["target_alias"]):
                 code = countrynames.to_code(label)
