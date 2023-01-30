@@ -24,6 +24,7 @@ class LinkTypeModel(BaseModel):
     source_type: str
     target_type: str
     ftm: Optional[str]
+    weight: int
 
 
 class OntologyModel(YamlModel):
@@ -51,6 +52,14 @@ class ClusterType(object):
         if self.model.parent is None:
             return None
         return self.ontology.get_cluster_type(self.model.parent)
+
+    def is_a(self, name: str) -> bool:
+        if name == self.name:
+            return True
+        parent = self.parent
+        if parent is None:
+            return False
+        return parent.is_a(name)
 
     def pick(self, names: List[str]) -> str:
         """Given a set of categories, pick the most descriptive one."""
@@ -80,6 +89,7 @@ class LinkType(object):
         self.ontology = ontology
         self.model = model
         self.ftm = model.ftm
+        self.weight = model.weight
 
     @property
     def source_type(self) -> "ClusterType":

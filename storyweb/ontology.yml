@@ -40,18 +40,21 @@ link_types:
     phrase: "is the same as"
     source_type: ANY
     target_type: ANY
+    weight: 100
   - name: OBSERVER
     directed: true
     label: "Observer"
     phrase: "writes about"
     source_type: ENT
     target_type: ANY
+    weight: 20
   - name: UNRELATED
     directed: false
     label: "Unrelated"
     phrase: "has nothing to do with"
     source_type: ANY
     target_type: ANY
+    weight: 0
   - name: ASSOCIATE
     directed: false
     label: "Associate"
@@ -59,6 +62,7 @@ link_types:
     source_type: PER
     target_type: PER
     ftm: Associate
+    weight: 30
   - name: FAMILY
     directed: false
     label: "Family"
@@ -66,12 +70,14 @@ link_types:
     source_type: PER
     target_type: PER
     ftm: Family
+    weight: 40
   - name: ANTAGONIST
     directed: false
     label: "Antagonist"
     phrase: "is in conflict with"
     source_type: ENT
     target_type: ENT
+    weight: 50
   - name: OWNER
     directed: true
     label: "Owner"
@@ -79,6 +85,7 @@ link_types:
     source_type: ENT
     target_type: ORG
     ftm: Ownership
+    weight: 40
   - name: MANAGER
     directed: true
     label: "Manager"
@@ -86,6 +93,7 @@ link_types:
     source_type: ENT
     target_type: ORG
     ftm: Directorship
+    weight: 40
   - name: EMPLOYEE
     directed: true
     label: "Employer"
@@ -93,6 +101,7 @@ link_types:
     source_type: PER
     target_type: ORG
     ftm: Employment
+    weight: 40
   - name: MEMBER
     directed: true
     label: "Member"
@@ -100,30 +109,35 @@ link_types:
     source_type: PER
     target_type: ORG
     ftm: Membership
+    weight: 40
   - name: BUSINESS
     directed: false
     label: "Business activity"
     phrase: "does business with"
     source_type: ENT
     target_type: ENT
+    weight: 30
   - name: LOCATED
     directed: true
     label: "Located"
     phrase: "is located in"
     source_type: ENT
     target_type: LOC
+    weight: 20
   - name: WITHIN
     directed: true
     label: "Within"
     phrase: "is located in"
     source_type: LOC
     target_type: LOC
+    weight: 20
   - name: INDIRECT
     directed: false
     label: "Indirect link"
     phrase: "is indirectly linked to"
     source_type: ANY
     target_type: ANY
+    weight: 5
   - name: OTHER
     directed: false
     label: "Other link"
@@ -131,3 +145,4 @@ link_types:
     source_type: ANY
     target_type: ANY
     ftm: UnknownLink
+    weight: 7

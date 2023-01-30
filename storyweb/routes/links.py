@@ -13,11 +13,13 @@ from storyweb.logic.links import (
     list_links,
     untag_article,
 )
+from storyweb.logic.predict import link_predict
 from storyweb.routes.util import get_conn, get_listing
 from storyweb.models import (
     ClusterDetails,
     Link,
     LinkBase,
+    LinkPrediction,
     Listing,
     ListingResponse,
     MergeRequest,
@@ -48,6 +50,15 @@ def links_save(
     #   * pick a relationship type
     result = create_link(conn, link.source, link.target, link.type)
     return result
+
+
+@router.get("/links/_predict", response_model=LinkPrediction)
+def link_predict_(
+    conn: Conn = Depends(get_conn),
+    anchor: str = Query(),
+    other: str = Query(),
+):
+    return link_predict(conn, anchor, other)
 
 
 @router.post("/links/_merge", response_model=ClusterDetails)

@@ -124,6 +124,12 @@ class Link(LinkBase):
     timestamp: datetime
 
 
+class LinkPrediction(BaseModel):
+    source: ClusterDetails
+    target: ClusterDetails
+    type: str
+
+
 class MergeRequest(BaseModel):
     anchor: str
     other: List[str]

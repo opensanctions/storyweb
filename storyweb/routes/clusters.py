@@ -1,50 +1,22 @@
-from typing import Generator, List, Optional
+from typing import List, Optional
 from fastapi import APIRouter, Depends, Path, Query
 from fastapi.exceptions import HTTPException
-from fastapi.middleware.cors import CORSMiddleware
 
-from storyweb.ontology import OntologyModel, ontology
-from storyweb.db import engine, Conn
-from storyweb.logic.articles import fetch_article, list_articles, list_sites
+from storyweb.db import Conn
 from storyweb.logic.clusters import (
     fetch_cluster,
     list_clusters,
     list_related,
     list_similar,
-    merge_cluster,
-    explode_cluster,
-    untag_article,
 )
-from storyweb.logic.links import (
-    create_link,
-    list_links,
-    untag_article,
-)
-from storyweb.logic.stories import (
-    list_stories,
-    fetch_story,
-    create_story,
-    toggle_story_article,
-)
-from storyweb.routes import links, stories, articles
 from storyweb.routes.util import get_conn, get_listing
 from storyweb.models import (
-    Article,
-    ArticleDetails,
-    StoryArticleToggle,
-    Story,
     Cluster,
     ClusterDetails,
-    Link,
-    LinkBase,
     Listing,
     ListingResponse,
-    MergeRequest,
-    ExplodeRequest,
-    UntagRequest,
     RelatedCluster,
     SimilarCluster,
-    Site,
 )
 
 router = APIRouter()
