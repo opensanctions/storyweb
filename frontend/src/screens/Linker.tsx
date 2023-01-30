@@ -2,11 +2,10 @@ import { ILink } from '../types';
 import { FormEvent, useEffect, useState } from 'react';
 import { getClusterLink } from '..//util';
 import { Button, HotkeyConfig, HotkeysTarget2, Label, Radio, RadioGroup } from '@blueprintjs/core';
-import { useFetchClusterQuery } from '../services/clusters';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { SectionLoading, ClusterTypeIcon } from '../components/util';
 import { useFetchOntologyQuery } from '../services/ontology';
-import { useFetchLinksQuery, useSaveLinkMutation } from '../services/links';
+import { useFetchPredictionQuery, useSaveLinkMutation } from '../services/links';
 import ArticleCorefList from '../components/ArticleCorefList';
 import StoryLinkerBanner from '../components/StoryLinkerBanner';
 
@@ -33,27 +32,29 @@ export default function Linker() {
     target: otherId,
     type: 'UNRELATED'
   } as ILink);
-  const { data: anchor, isLoading: anchorLoading } = useFetchClusterQuery(anchorId || '');
-  const { data: other, isLoading: otherLoading } = useFetchClusterQuery(otherId || '');
-  const linkParams = { cluster: [anchorId, otherId], limit: 1 }
-  const { data: linksListing } = useFetchLinksQuery(linkParams);
+  const { data: prediction, isLoading: isPredicting } = useFetchPredictionQuery({
+    anchor: anchorId || '',
+    other: otherId || ''
+  })
+  // const { data: anchor, isLoading: anchorLoading } = useFetchClusterQuery(anchorId || '');
+  // const { data: other, isLoading: otherLoading } = useFetchClusterQuery(otherId || '');
+  // const linkParams = { cluster: [anchorId, otherId], limit: 1 }
+  // const { data: linksListing } = useFetchLinksQuery(linkParams);
   const [saveLink, { isLoading: isSaving }] = useSaveLinkMutation()
 
   useEffect(() => {
-    if (linksListing !== undefined && linksListing.results.length) {
-      const existingLink = linksListing.results[0];
-      setLink((l) => ({ ...l, source: existingLink.source_cluster, target: existingLink.target_cluster, type: existingLink.type }))
+    if (prediction !== undefined) {
+      setLink((l) => ({ ...l, source: prediction.source.id, target: prediction.target.id, type: prediction.type }))
     }
-  }, [linksListing]);
+  }, [prediction]);
 
-  if (anchor === undefined || other === undefined || linksListing === undefined ||
-    anchorLoading || otherLoading || ontology === undefined || isSaving) {
+  if (prediction === undefined || isPredicting || ontology === undefined || isSaving) {
     return <SectionLoading />
   }
 
   const linkType = ontology.link_types.find((lt) => lt.name === link.type) || ontology.link_types[0]
-  const source = link.source === anchorId ? anchor : other;
-  const target = link.target === anchorId ? anchor : other;
+  const source = link.source === prediction.source.id ? prediction.source : prediction.target;
+  const target = link.target === prediction.target.id ? prediction.target : prediction.source;
   const canFlip = canHaveLink(ontology, target, source, link.type);
 
   const save = async function () {
@@ -162,7 +163,7 @@ export default function Linker() {
               <Label>View articles that mention both:</Label>
               <ArticleCorefList
                 clusters={[source.id, target.id]}
-                tags={[anchor.labels, other.labels]}
+                tags={[prediction.source.labels, prediction.source.labels]}
               />
             </div>
           </div>

@@ -85,6 +85,11 @@ export interface IUntagArticle {
   article: string
 }
 
+export interface ILinkPredict {
+  anchor: string
+  other: string
+}
+
 export interface ISite {
   site: string
   articles: number
@@ -99,6 +104,14 @@ export interface ILink {
   user?: string
   timestamp?: string
 }
+
+
+export interface ILinkPrediction {
+  source: IClusterDetails
+  target: IClusterDetails
+  type: string
+}
+
 
 export interface ILinkType {
   name: string

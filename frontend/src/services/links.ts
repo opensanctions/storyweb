@@ -2,7 +2,7 @@ import queryString from 'query-string';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 
 import { API_URL } from '../constants'
-import { IClusterDetails, ILink, IListingResponse, IUntagArticle } from '../types'
+import { IClusterDetails, ILink, ILinkPredict, ILinkPrediction, IListingResponse, IUntagArticle } from '../types'
 
 
 export const linksApi = createApi({
@@ -17,6 +17,13 @@ export const linksApi = createApi({
         'query': params
       }),
       providesTags: ['Link'],
+    }),
+    fetchPrediction: builder.query<ILinkPrediction, ILinkPredict>({
+      query: (params) => queryString.stringifyUrl({
+        'url': `links/_predict`,
+        'query': { ...params }
+      }),
+      providesTags: ['Cluster', 'Link'],
     }),
     saveLink: builder.mutation<ILink, Partial<ILink>>({
       query(link) {
@@ -53,6 +60,7 @@ export const linksApi = createApi({
 
 export const {
   useSaveLinkMutation,
+  useFetchPredictionQuery,
   useExplodeClusterMutation,
   useUntagArticleMutation,
   useFetchLinksQuery,
