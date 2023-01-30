@@ -1,10 +1,41 @@
-```sql
-SELECT ARRAY_AGG(DISTINCT t.text), MAX(t.category), t.key, COUNT(DISTINCT t.ref_id) FROM tag t LEFT JOIN ref r ON r.id = t.ref_id WHERE r.site = 'occrp' AND t.category = 'PERSON' GROUP BY t.key ORDER BY COUNT(DISTINCT t.ref_id) DESC;
-```
+### Basic co-occurrence
+
+Persons that show up in this source, key-merged:
 
 ```sql
-SELECT ARRAY_AGG(DISTINCT t.text), MAX(t.category), t.key, COUNT(DISTINCT t.ref_id) FROM tag t LEFT JOIN ref r ON r.id = t.ref_id LEFT JOIN tag o ON o.ref_id = r.id WHERE r.site = 'occrp' AND o.key <> t.key AND t.category IN ('PERSON', 'ORG') AND o.key = 'person:eliza-hannon-ronalds' GROUP BY t.key ORDER BY COUNT(DISTINCT t.ref_id) DESC;
+SELECT ARRAY_AGG(DISTINCT t.text), MAX(t.category), t.key, COUNT(DISTINCT t.ref_id)
+	FROM tag t
+		LEFT JOIN ref r ON r.id = t.ref_id
+	WHERE r.site = 'occrp' AND t.category = 'PERSON'
+	GROUP BY t.key
+	ORDER BY COUNT(DISTINCT t.ref_id) DESC;
 ```
+
+By tag key:
+
+```sql
+SELECT MAX(x.label), SUM(x.count)
+	FROM tag t LEFT JOIN tag x ON x.article = t.article AND x.fingerprint <> t.fingerprint
+	WHERE t.fingerprint = 'putin-vladimir'
+	GROUP BY x.fingerprint
+	ORDER BY SUM(x.count) DESC;
+```
+
+Entities that show up alongside this person:
+
+```sql
+SELECT ARRAY_AGG(DISTINCT t.text), MAX(t.category), t.key, COUNT(DISTINCT t.ref_id)
+	FROM tag t
+		LEFT JOIN ref r ON r.id = t.ref_id
+		LEFT JOIN tag o ON o.ref_id = r.id
+	WHERE r.site = 'occrp' AND o.key <> t.key AND t.category IN ('PERSON', 'ORG') AND o.key = 'person:eliza-hannon-ronalds'
+	GROUP BY t.key
+	ORDER BY COUNT(DISTINCT t.ref_id) DESC;
+```
+
+### Compute connected components inside of SQL
+
+This would speed up generating cluster IDs by traversing SAME_AS edges signficantly:
 
 ```sql
 WITH RECURSIVE connected(node) AS (
@@ -52,6 +83,10 @@ SELECT l.source AS source, l.target AS target
 SELECT *
 FROM connected;
 ```
+
+### Compute TF/IDF on co-occurrence
+
+Inverse document scores have been loaded into the `fingerprint_idf` table during import:
 
 ```sql
 SELECT x.fingerprint, SUM(x.frequency * idf.frequency)
@@ -127,4 +162,71 @@ SELECT ot.article, ARRAY_AGG(DISTINCT oi.label), COUNT(oi.id)
 	GROUP BY ot.article
 	ORDER BY COUNT(oi.id) DESC;
 ```
-	
+
+Co-occurrence-based overlap:
+
+```sql
+SELECT lt.article, ot.article, ARRAY_AGG(DISTINCT oi.label), COUNT(oi.id) FROM tag lt
+	JOIN tag li ON lt.article = li.article AND lt.fingerprint <> li.fingerprint
+	JOIN tag oi ON oi.fingerprint = li.fingerprint AND oi.article <> li.article
+	JOIN tag ot ON oi.article = ot.article AND ot.fingerprint = lt.fingerprint
+	WHERE lt.fingerprint = 'joseph-kabila'
+		AND lt.article = '952b219a70f0d2b77c599ea29194afaa371cd6ca'
+		--- or use cluster ID :) 
+		AND ot.article IS NOT NULL
+	GROUP BY lt.article, ot.article
+	ORDER BY COUNT(oi.id) DESC;
+```
+
+Super slow for big clusters:
+
+```sql
+SELECT ot.article, ARRAY_AGG(DISTINCT oi.label), COUNT(oi.id)
+	FROM tag lt
+	JOIN tag li ON lt.article = li.article AND lt.fingerprint <> li.fingerprint
+	JOIN tag oi ON oi.fingerprint = li.fingerprint AND oi.article <> li.article
+	JOIN tag ot ON oi.article = ot.article AND ot.fingerprint = lt.fingerprint
+	WHERE lt.cluster = 'fd92409b09f910d3a943820621cd56d90e3faacc'
+	GROUP BY ot.article
+	ORDER BY COUNT(oi.id) DESC;
+```
+
+```sql
+SELECT ot.article, ARRAY_AGG(DISTINCT oi.label), COUNT(oi.id)
+	FROM tag lt
+	JOIN tag li ON lt.article = li.article
+	JOIN tag oi ON oi.fingerprint = li.fingerprint
+	JOIN tag ot ON oi.article = ot.article AND ot.fingerprint = lt.fingerprint
+	WHERE
+		lt.cluster = 'fd92409b09f910d3a943820621cd56d90e3faacc'
+		AND lt.fingerprint <> li.fingerprint
+		AND oi.article <> li.article
+	GROUP BY ot.article
+	ORDER BY COUNT(oi.id) DESC;
+```
+
+CTE for improved performance:
+
+```sql
+WITH corefs AS (
+	SELECT li.fingerprint AS fingerprint, SUM(li.frequency * idf.frequency) AS weight
+		FROM tag lt
+		JOIN tag li ON lt.article = li.article
+		JOIN fingerprint_idf idf ON idf.fingerprint = li.fingerprint
+		WHERE
+			lt.cluster = 'fd92409b09f910d3a943820621cd56d90e3faacc'
+			AND lt.fingerprint <> li.fingerprint
+		GROUP BY li.fingerprint
+		ORDER BY AVG(li.frequency) DESC
+),
+fps AS (
+	SELECT DISTINCT t.fingerprint AS fp FROM tag t WHERE t.cluster = 'fd92409b09f910d3a943820621cd56d90e3faacc'
+)
+SELECT ot.cluster, SUM(r.weight) FROM corefs r
+	JOIN tag oi ON oi.fingerprint = r.fingerprint
+	JOIN tag ot ON oi.article = ot.article
+	JOIN fps f ON ot.fingerprint = f.fp
+		WHERE ot.cluster <> 'fd92409b09f910d3a943820621cd56d90e3faacc'
+	GROUP BY ot.cluster
+	ORDER BY SUM(r.weight * (oi.frequency * f.frequency)) DESC;
+```
