@@ -1,7 +1,7 @@
 import { ILink } from '../types';
 import { FormEvent, useEffect, useState } from 'react';
 import { getClusterLink } from '..//util';
-import { Button, HotkeyConfig, HotkeysTarget2, Label, RadioGroup } from '@blueprintjs/core';
+import { Button, HotkeyConfig, HotkeysTarget2, Label, Radio, RadioGroup } from '@blueprintjs/core';
 import { useFetchClusterQuery } from '../services/clusters';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { SectionLoading, ClusterTypeIcon } from '../components/util';
@@ -52,9 +52,6 @@ export default function Linker() {
   }
 
   const linkType = ontology.link_types.find((lt) => lt.name === link.type) || ontology.link_types[0]
-  const linkOptions = ontology.link_types
-    .filter((lt) => canHaveBidi(ontology, anchor, other, lt.name))
-    .map(l => ({ value: l.name, label: l.label }));
   const source = link.source === anchorId ? anchor : other;
   const target = link.target === anchorId ? anchor : other;
   const canFlip = canHaveLink(ontology, target, source, link.type);
@@ -77,8 +74,6 @@ export default function Linker() {
     } else {
       setLink({ ...link, type: type })
     }
-
-
   }
 
   const onSubmit = async function (event: FormEvent<HTMLFormElement>) {
@@ -154,8 +149,10 @@ export default function Linker() {
                   name="type"
                   onChange={onChangeType}
                   selectedValue={link.type}
-                  options={linkOptions}
                 >
+                  {ontology.link_types.map((lt) => (
+                    <Radio label={lt.label} value={lt.name} disabled={!canHaveBidi(ontology, source, target, lt.name)} />
+                  ))}
                 </RadioGroup>
                 <Button type="submit">Save</Button>
                 <Button onClick={onFlip} disabled={!canFlip}>Flip direction</Button>
