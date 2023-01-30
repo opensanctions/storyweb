@@ -11,6 +11,7 @@ import ArticleCorefList from '../components/ArticleCorefList';
 import StoryLinkerBanner from '../components/StoryLinkerBanner';
 
 import styles from '../styles/Linker.module.scss';
+import { canHaveBidi, canHaveLink } from '../logic';
 
 
 export default function Linker() {
@@ -51,9 +52,12 @@ export default function Linker() {
   }
 
   const linkType = ontology.link_types.find((lt) => lt.name === link.type) || ontology.link_types[0]
-  const linkOptions = ontology.link_types.map(l => ({ value: l.name, label: l.label }));
+  const linkOptions = ontology.link_types
+    .filter((lt) => canHaveBidi(ontology, anchor, other, lt.name))
+    .map(l => ({ value: l.name, label: l.label }));
   const source = link.source === anchorId ? anchor : other;
   const target = link.target === anchorId ? anchor : other;
+  const canFlip = canHaveLink(ontology, target, source, link.type);
 
   const save = async function () {
     const saved = await saveLink(link).unwrap();
@@ -67,17 +71,29 @@ export default function Linker() {
     }
   }
 
+  const changeType = (type: string) => {
+    if (!canHaveLink(ontology, source, target, type)) {
+      setLink({ ...link, source: target.id, target: source.id, type: type })
+    } else {
+      setLink({ ...link, type: type })
+    }
+
+
+  }
+
   const onSubmit = async function (event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     await save()
   }
 
   const onFlip = function () {
-    setLink({ ...link, source: link.target, target: link.source })
+    if (canFlip) {
+      setLink({ ...link, source: link.target, target: link.source })
+    }
   }
 
   const onChangeType = (event: FormEvent<HTMLInputElement>) => {
-    setLink({ ...link, type: event.currentTarget.value })
+    changeType(event.currentTarget.value);
   }
 
   const loomHotkeys: HotkeyConfig[] = [
@@ -87,7 +103,7 @@ export default function Linker() {
       global: true,
       label: "Same",
       onKeyDown: async () => {
-        setLink({ ...link, type: 'SAME' });
+        changeType('SAME');
         await save()
       },
     },
@@ -97,7 +113,7 @@ export default function Linker() {
       global: true,
       label: "Unrelated",
       onKeyDown: async () => {
-        setLink({ ...link, type: 'UNRELATED' });
+        changeType('UNRELATED');
         await save()
       },
     },
@@ -142,7 +158,7 @@ export default function Linker() {
                 >
                 </RadioGroup>
                 <Button type="submit">Save</Button>
-                <Button onClick={onFlip}>Flip direction</Button>
+                <Button onClick={onFlip} disabled={!canFlip}>Flip direction</Button>
               </form>
             </div>
             <div className="page-column">
