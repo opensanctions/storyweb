@@ -58,7 +58,7 @@ export default function StoryPairs({ story }: StoryPairsProps) {
                 <Link to={getClusterLink(pair.right)} onClick={(e) => onPreview(e, pair.right)}>{pair.right.label}</Link>
               </td>
               <td>
-                <PairLink left={pair.left} right={pair.right} link_types={pair.link_types} />
+                <PairLink left={pair.left} right={pair.right} link_types={pair.link_types} story={story.id} />
               </td>
               <td className="numeric">
                 <Numeric value={pair.articles} />
