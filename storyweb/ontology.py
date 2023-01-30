@@ -84,6 +84,7 @@ class ClusterType(object):
 class LinkType(object):
     SAME = "SAME"
     UNRELATED = "UNRELATED"
+    OBSERVER = "OBSERVER"
 
     def __init__(self, ontology: "Ontology", model: LinkTypeModel):
         self.ontology = ontology

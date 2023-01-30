@@ -230,3 +230,21 @@ SELECT ot.cluster, SUM(r.weight) FROM corefs r
 	GROUP BY ot.cluster
 	ORDER BY SUM(r.weight * (oi.frequency * f.frequency)) DESC;
 ```
+
+
+## Sentences that are links
+
+```sql
+SELECT sent.text AS sentence, src.label AS src_label, tgt.label AS tgt_label, l.type AS link_type
+	FROM link l
+	LEFT JOIN tag src ON l.source_cluster = src.cluster
+	LEFT JOIN tag tgt ON l.target_cluster = tgt.cluster
+	LEFT JOIN tag_sentence src_sent ON src_sent.tag = src.id
+	LEFT JOIN tag_sentence tgt_sent ON tgt_sent.tag = tgt.id
+	LEFT JOIN sentence sent ON src_sent.article = sent.article AND src_sent.sentence = sent.sequence
+	WHERE
+		l.type NOT IN ('SAME', 'UNRELATED', 'LOCATED', 'OBSERVER')
+		AND src_sent.article = tgt_sent.article
+		AND src_sent.sentence = tgt_sent.sentence
+		;
+```

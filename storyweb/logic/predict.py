@@ -1,10 +1,31 @@
 from typing import List
+from sqlalchemy.sql import select, delete, update, and_, or_, func, distinct
 
-from storyweb.db import Conn
+from storyweb.db import Conn, link_table, tag_table
 from storyweb.logic.clusters import fetch_cluster
 from storyweb.logic.links import get_links
 from storyweb.ontology import ontology, LinkType
 from storyweb.models import LinkPrediction, ClusterBase, Link
+
+
+def is_observer(conn: Conn, id: str) -> bool:
+    stmt = select(
+        link_table.c.type.label("type"),
+        func.count(func.distinct(link_table.c.target_cluster)).label("targets"),
+    )
+    stmt = stmt.where(link_table.c.source_cluster == id)
+    stmt = stmt.where(~link_table.c.type.in_((LinkType.SAME, LinkType.UNRELATED)))
+    # stmt = stmt.filter(tag_table.c.cluster == id)
+    stmt = stmt.group_by(link_table.c.type)
+    observer = 0.0
+    total = 0.0
+    for row in conn.execute(stmt):
+        if row["type"] == LinkType.OBSERVER:
+            observer = row["targets"]
+        total += row["targets"]
+    if total == 0.0:
+        return False
+    return (observer / total) >= 0.5
 
 
 def pick_cluster(id: str, *clusters: ClusterBase) -> ClusterBase:
@@ -41,9 +62,9 @@ def link_predict(conn: Conn, anchor_id: str, other_id: str) -> LinkPrediction:
     for link in get_links(conn, anchor_id, other_id):
         if link.type == LinkType.UNRELATED:
             continue
-        source = pick_cluster(link.source_cluster, anchor, other)
-        target = pick_cluster(link.target_cluster, anchor, other)
-        if not can_have_link(source, target, link.type):
+        link_source = pick_cluster(link.source_cluster, anchor, other)
+        link_target = pick_cluster(link.target_cluster, anchor, other)
+        if not can_have_link(link_source, link_target, link.type):
             continue
         existing_links.append(link)
     if len(existing_links) > 0:
@@ -54,5 +75,13 @@ def link_predict(conn: Conn, anchor_id: str, other_id: str) -> LinkPrediction:
             target=pick_cluster(link.target_cluster, anchor, other),
             type=link.type,
         )
+
+    anchor_observer = is_observer(conn, anchor.id)
+    other_observer = is_observer(conn, other.id)
+    print("OBSERVER", anchor_observer, other_observer)
+    if anchor_observer and not other_observer:
+        return LinkPrediction(source=anchor, target=other, type=LinkType.OBSERVER)
+    if other_observer and not anchor_observer:
+        return LinkPrediction(source=other, target=anchor, type=LinkType.OBSERVER)
 
     return LinkPrediction(source=anchor, target=other, type=link_type)
