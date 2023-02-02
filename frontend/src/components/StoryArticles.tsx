@@ -1,6 +1,6 @@
 import { Button, HTMLTable } from "@blueprintjs/core";
-import { MouseEvent, useState } from "react";
-import { Link } from "react-router-dom";
+import { MouseEvent } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { ARTICLE_THRESHOLD } from "../constants";
 import { useFetchArticleListingQuery } from "../services/articles";
 import { useToggleStoryArticleMutation } from "../services/stories";
@@ -16,7 +16,8 @@ type StoryArticlesProps = {
 }
 
 export default function StoryArticles({ story }: StoryArticlesProps) {
-  const [previewArticle, setPreviewArticle] = useState<string | undefined>();
+  const [params, setParams] = useSearchParams();
+  const articleId = params.get('article') || undefined;
   const page = useListingPagination('pairs');
   const { data: articles, error, isLoading } = useFetchArticleListingQuery({ ...page, story: story.id });
   const [toggleStoryArticle] = useToggleStoryArticleMutation();
@@ -32,6 +33,11 @@ export default function StoryArticles({ story }: StoryArticlesProps) {
     if (story !== undefined) {
       await toggleStoryArticle({ story: story.id, article: article.id }).unwrap()
     }
+  }
+
+  const setPreviewArticle = (articleId?: string) => {
+    const paramsObj = Object.fromEntries(params.entries());
+    setParams({ ...paramsObj, article: articleId || '' });
   }
 
   const onPreviewArticle = (event: MouseEvent<HTMLAnchorElement>, article: IArticle) => {
@@ -83,7 +89,7 @@ export default function StoryArticles({ story }: StoryArticlesProps) {
       )}
       <ArticleDrawer
         onClose={(e) => setPreviewArticle(undefined)}
-        articleId={previewArticle}
+        articleId={articleId}
         tags={[]}
       />
     </>

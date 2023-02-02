@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { Tabs, Tab, IconSize } from "@blueprintjs/core";
 
 import RelatedListing from "../components/RelatedListing";
@@ -14,6 +14,7 @@ import ScreenContent from "../components/ScreenContent";
 
 export default function ClusterView() {
   const { clusterId } = useParams();
+  const [params, setParams] = useSearchParams();
   const nodeTypes = useNodeTypes();
   const { data: cluster, isLoading, error } = useFetchClusterQuery(clusterId as string);
   const relatedQuery = { clusterId: clusterId || '', params: { types: nodeTypes } };
@@ -28,6 +29,14 @@ export default function ClusterView() {
   if (cluster === undefined || isLoading) {
     return <SectionLoading />
   }
+
+  const activeTab = params.get('view') || 'related';
+
+  const setView = (view: string) => {
+    const paramsObj = Object.fromEntries(params.entries());
+    setParams({ ...paramsObj, view });
+  }
+
   const title = <>
     <ClusterTypeIcon type={cluster.type} size={IconSize.LARGE} />
     <ClusterLabel label={cluster.label} />
@@ -37,12 +46,7 @@ export default function ClusterView() {
       <ScreenHeading title={title}>
         <ClusterButtonGroup cluster={cluster} />
       </ScreenHeading>
-      {/* <p>
-        <ClusterType type={cluster.type} /> <Spacer />
-        Aliases:{' '}
-        <SpacedList values={cluster.labels.map((l) => <ClusterLabel key={l} label={l} />)} />
-      </p> */}
-      <Tabs id="clusterView">
+      <Tabs id="clusterView" selectedTabId={activeTab} onChange={(tab) => setView(tab.toString())}>
         <Tab id="related"
           title={
             <>
