@@ -1,5 +1,5 @@
 import { Drawer, Tab, Tabs } from "@blueprintjs/core"
-import { SyntheticEvent } from "react"
+import { SyntheticEvent, useEffect, useState } from "react"
 import { useFetchArticleListingQuery } from "../services/articles"
 import { useFetchClusterQuery, useFetchRelatedClusterListingQuery, useFetchSimilarClusterListingQuery } from "../services/clusters"
 import { ErrorSection, NumericTag, SectionLoading } from "./util"
@@ -11,14 +11,14 @@ import RelatedListing from "./RelatedListing"
 import SimilarListing from "./SimilarListing"
 import ClusterArticles from "./ClusterArticles"
 
-type ClusterDrawerProps = {
+type ClusterDrawerInnerProps = {
   clusterId: string,
-  tags?: string[][]
   isOpen: boolean,
   onClose: (event: SyntheticEvent<HTMLElement>) => void
+  onClosed: (node: HTMLElement) => void
 }
 
-export default function ClusterDrawer({ clusterId, isOpen, onClose }: ClusterDrawerProps) {
+function ClusterDrawerInner({ clusterId, isOpen, onClose }: ClusterDrawerInnerProps) {
   const nodeTypes = useNodeTypes();
   const { data: cluster, error: clusterError } = useFetchClusterQuery(clusterId);
   const relatedQuery = { clusterId: clusterId || '', params: { types: nodeTypes } };
@@ -92,4 +92,39 @@ export default function ClusterDrawer({ clusterId, isOpen, onClose }: ClusterDra
       </div>
     </Drawer >
   )
+}
+
+
+
+type ClusterDrawerProps = {
+  clusterId?: string,
+  onClose: (event: SyntheticEvent<HTMLElement>) => void
+}
+
+export default function ClusterDrawer({ clusterId, onClose }: ClusterDrawerProps) {
+  const isOpen = !!clusterId;
+  const [activeClusterId, setActiveClusterId] = useState<string | undefined>(clusterId);
+
+  useEffect(() => {
+    if (!!clusterId && clusterId != activeClusterId) {
+      setActiveClusterId(clusterId);
+    }
+  })
+
+  const onClosed = () => {
+    setActiveClusterId(undefined);
+  }
+
+  if (activeClusterId === undefined) {
+    return null;
+  }
+
+  return (
+    <ClusterDrawerInner
+      clusterId={activeClusterId}
+      onClose={onClose}
+      onClosed={onClosed}
+      isOpen={isOpen}
+    />
+  );
 }

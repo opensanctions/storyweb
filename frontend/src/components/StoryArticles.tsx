@@ -15,7 +15,7 @@ type StoryArticlesProps = {
 }
 
 export default function StoryArticles({ story }: StoryArticlesProps) {
-  const [previewArticle, setPreviewArticle] = useState('');
+  const [previewArticle, setPreviewArticle] = useState<string | undefined>();
   const page = useListingPagination('pairs');
   const { data: articles, error, isLoading } = useFetchArticleListingQuery({ ...page, story: story.id });
   const [toggleStoryArticle] = useToggleStoryArticleMutation();
@@ -73,8 +73,7 @@ export default function StoryArticles({ story }: StoryArticlesProps) {
         </>
       )}
       <ArticleDrawer
-        isOpen={previewArticle.length > 1}
-        onClose={(e) => setPreviewArticle('')}
+        onClose={(e) => setPreviewArticle(undefined)}
         articleId={previewArticle}
         tags={[]}
       />

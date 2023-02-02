@@ -20,7 +20,7 @@ export default function ClusterArticles({ cluster }: ClusterArticlesProps) {
   const { data: listing, isLoading } = useFetchArticleListingQuery(query);
   const [params, setParams] = useSearchParams();
   const [untagArticleMutation, { isLoading: isUntagging }] = useUntagArticleMutation();
-  const articleId = params.get('article') || '';
+  const articleId = params.get('article') || undefined;
 
   if (listing === undefined || isLoading || isUntagging) {
     return <SectionLoading />
@@ -31,9 +31,9 @@ export default function ClusterArticles({ cluster }: ClusterArticlesProps) {
     setArticle(articleId);
   }
 
-  const setArticle = (articleId: string) => {
+  const setArticle = (articleId?: string) => {
     const paramsObj = Object.fromEntries(params.entries());
-    setParams({ ...paramsObj, article: articleId });
+    setParams({ ...paramsObj, article: articleId || '' });
   }
 
   const untagArticle = async (article: IArticle) => {
@@ -76,9 +76,8 @@ export default function ClusterArticles({ cluster }: ClusterArticlesProps) {
       </HTMLTable>
       <Pagination prefix='articles' response={listing} />
       <ArticleDrawer
-        isOpen={articleId !== null && articleId.length > 1}
-        onClose={(e) => setArticle('')}
-        articleId={articleId || ''}
+        onClose={(e) => setArticle(undefined)}
+        articleId={articleId}
         tags={[[cluster.label, ...cluster.labels]]}
       />
     </>

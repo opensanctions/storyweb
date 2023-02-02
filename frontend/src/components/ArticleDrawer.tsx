@@ -1,5 +1,5 @@
 import { Drawer, Tab, Tabs } from "@blueprintjs/core"
-import { SyntheticEvent } from "react"
+import { SyntheticEvent, useEffect, useState } from "react"
 import { ARTICLE_ICON } from "../constants"
 import { useFetchArticleQuery } from "../services/articles"
 import { useFetchClusterListingQuery } from "../services/clusters"
@@ -9,15 +9,16 @@ import { ErrorSection, NumericTag, SectionLoading } from "./util"
 import styles from '../styles/Article.module.scss'
 import ArticleClusters from "./ArticleClusters"
 
-type ArticleDrawerProps = {
+type ArticleDrawerInnerProps = {
   articleId: string,
   tags?: string[][]
   isOpen: boolean,
   onClose: (event: SyntheticEvent<HTMLElement>) => void
+  onClosed: (node: HTMLElement) => void
 }
 
-export default function ArticleDrawer({ articleId, tags, isOpen, onClose }: ArticleDrawerProps) {
-  const { data: article, error: articleError } = useFetchArticleQuery(articleId as string);
+export function ArticleDrawerInner({ articleId, tags, isOpen, onClose, onClosed }: ArticleDrawerInnerProps) {
+  const { data: article, error: articleError } = useFetchArticleQuery(articleId);
   const clustersQuery = { article: articleId, limit: 0 };
   const { data: clusters } = useFetchClusterListingQuery(clustersQuery);
   const realTags = tags ? tags : []
@@ -28,6 +29,7 @@ export default function ArticleDrawer({ articleId, tags, isOpen, onClose }: Arti
       size={"40%"}
       isOpen={realIsOpen}
       onClose={onClose}
+      onClosed={onClosed}
       icon={ARTICLE_ICON}
       hasBackdrop={false}
       autoFocus
@@ -45,12 +47,15 @@ export default function ArticleDrawer({ articleId, tags, isOpen, onClose }: Arti
           <Tabs id="articleView" defaultSelectedTabId="text">
             <Tab
               id="text"
+              key="text"
               title="Text"
               panel={
                 <ArticleText text={article.text} tags={realTags} />
               }
             />
             <Tab
+              id="entities"
+              key="entities"
               title={
                 <>
                   Extracted entities
@@ -67,4 +72,39 @@ export default function ArticleDrawer({ articleId, tags, isOpen, onClose }: Arti
       </div>
     </Drawer>
   )
+}
+
+type ArticleDrawerProps = {
+  articleId?: string,
+  tags?: string[][]
+  onClose: (event: SyntheticEvent<HTMLElement>) => void
+}
+
+export default function ArticleDrawer({ articleId, tags, onClose }: ArticleDrawerProps) {
+  const isOpen = !!articleId;
+  const [activeArticleId, setActiveArticleId] = useState<string | undefined>(articleId);
+
+  useEffect(() => {
+    if (!!articleId && articleId != activeArticleId) {
+      setActiveArticleId(articleId);
+    }
+  })
+
+  const onClosed = () => {
+    setActiveArticleId(undefined);
+  }
+
+  if (activeArticleId === undefined) {
+    return null;
+  }
+
+  return (
+    <ArticleDrawerInner
+      articleId={activeArticleId}
+      onClose={onClose}
+      onClosed={onClosed}
+      isOpen={isOpen}
+      tags={tags}
+    />
+  );
 }

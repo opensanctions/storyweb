@@ -16,7 +16,7 @@ type StoryPairsProps = {
 
 export default function StoryPairs({ story }: StoryPairsProps) {
   const nodeTypes = useNodeTypes();
-  const [showCluster, setShowCluster] = useState("");
+  const [showCluster, setShowCluster] = useState<string | undefined>();
   const page = useListingPagination('pairs');
   const { data: clusters, error: clustersError } = useFetchStoryPairsQuery({
     storyId: story.id,
@@ -69,9 +69,8 @@ export default function StoryPairs({ story }: StoryPairsProps) {
       </HTMLTable>
       <Pagination prefix='pairs' response={clusters} />
       <ClusterDrawer
-        isOpen={showCluster.length > 0}
         clusterId={showCluster}
-        onClose={(e) => setShowCluster("")}
+        onClose={(e) => setShowCluster(undefined)}
       />
     </>
   )

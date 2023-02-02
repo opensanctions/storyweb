@@ -65,14 +65,13 @@ function GraphEvents({ showCluster }: GraphEventsProps) {
 }
 
 export default function StoryGraph({ story }: StoryGraphProps) {
-  const [showCluster, setShowCluster] = useState("");
+  const [showCluster, setShowCluster] = useState<string | undefined>();
 
   return (
     <>
       <ClusterDrawer
-        isOpen={showCluster.length > 0}
         clusterId={showCluster}
-        onClose={(e) => setShowCluster("")}
+        onClose={(e) => setShowCluster(undefined)}
       />
       <SigmaContainer style={{ height: "500px", width: "100%" }} settings={{
         zIndex: true,
