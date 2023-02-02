@@ -3,7 +3,7 @@ import { Tabs, Tab, IconSize } from "@blueprintjs/core";
 
 import RelatedListing from "../components/RelatedListing";
 import SimilarListing from "../components/SimilarListing";
-import { ErrorSection, SectionLoading, SpacedList, Spacer, ClusterType, ClusterLabel, ClusterTypeIcon, NumericTag } from "../components/util";
+import { ErrorSection, SectionLoading, ClusterLabel, ClusterTypeIcon, NumericTag } from "../components/util";
 import { useFetchClusterQuery, useFetchSimilarClusterListingQuery, useFetchRelatedClusterListingQuery } from "../services/clusters";
 import ClusterArticles from "../components/ClusterArticles";
 import ScreenHeading from "../components/ScreenHeading";

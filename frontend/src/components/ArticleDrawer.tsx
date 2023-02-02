@@ -17,7 +17,7 @@ type ArticleDrawerInnerProps = {
   onClosed: (node: HTMLElement) => void
 }
 
-export function ArticleDrawerInner({ articleId, tags, isOpen, onClose, onClosed }: ArticleDrawerInnerProps) {
+function ArticleDrawerInner({ articleId, tags, isOpen, onClose, onClosed }: ArticleDrawerInnerProps) {
   const { data: article, error: articleError } = useFetchArticleQuery(articleId);
   const clustersQuery = { article: articleId, limit: 0 };
   const { data: clusters } = useFetchClusterListingQuery(clustersQuery);
@@ -85,10 +85,10 @@ export default function ArticleDrawer({ articleId, tags, onClose }: ArticleDrawe
   const [activeArticleId, setActiveArticleId] = useState<string | undefined>(articleId);
 
   useEffect(() => {
-    if (!!articleId && articleId != activeArticleId) {
+    if (!!articleId && articleId !== activeArticleId) {
       setActiveArticleId(articleId);
     }
-  })
+  }, [articleId, activeArticleId])
 
   const onClosed = () => {
     setActiveArticleId(undefined);

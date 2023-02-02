@@ -106,10 +106,10 @@ export default function ClusterDrawer({ clusterId, onClose }: ClusterDrawerProps
   const [activeClusterId, setActiveClusterId] = useState<string | undefined>(clusterId);
 
   useEffect(() => {
-    if (!!clusterId && clusterId != activeClusterId) {
+    if (!!clusterId && clusterId !== activeClusterId) {
       setActiveClusterId(clusterId);
     }
-  })
+  }, [clusterId, activeClusterId])
 
   const onClosed = () => {
     setActiveClusterId(undefined);

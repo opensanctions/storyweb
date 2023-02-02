@@ -1,4 +1,4 @@
-import { ControlGroup, Classes, Intent, Button, NonIdealState, Card, Elevation, ButtonGroup, AnchorButton, Menu, MenuItem } from '@blueprintjs/core';
+import { ControlGroup, Classes, Intent, Button, NonIdealState, Card, Elevation, ButtonGroup, Menu, MenuItem } from '@blueprintjs/core';
 import classnames from "classnames";
 import { FormEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -12,7 +12,7 @@ import { asString } from "../util";
 
 import styles from '../styles/Story.module.scss';
 import { API_URL } from '../constants';
-import { Classes as P2Classes, Popover2, PopupKind } from '@blueprintjs/popover2';
+import { Popover2, PopupKind } from '@blueprintjs/popover2';
 
 export default function StoryIndex() {
   const [params, setParams] = useSearchParams();

@@ -1,8 +1,9 @@
 import { ControlGroup, Classes, HTMLSelect, HTMLTable, Button, IconSize, Icon } from '@blueprintjs/core';
 import classnames from "classnames";
-import { FormEvent, useState } from 'react';
+import { FormEvent, MouseEvent, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSearchParams } from "react-router-dom";
+import ArticleDrawer from '../components/ArticleDrawer';
 import ArticleStoryEditor from '../components/ArticleStoryEditor';
 import Pagination from '../components/Pagination';
 import { Numeric, SectionLoading } from '../components/util';
@@ -10,6 +11,7 @@ import { ARTICLE_ICON } from '../constants';
 
 import { useFetchArticleListingQuery } from "../services/articles"
 import { useFetchSitesQuery } from '../services/sites';
+import { IArticle } from '../types';
 import { asString, useListingPagination } from "../util";
 
 export default function ArticleIndex() {
@@ -25,10 +27,21 @@ export default function ArticleIndex() {
     sort: 'tags:desc'
   });
   const sites = sitesResponse === undefined ? [] : sitesResponse.results.map(s => s.site);
+  const articleId = params.get('article') || undefined;
 
   const onSubmit = function (e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setParams({ site: site, q: query });
+  }
+
+  const setArticle = (articleId: string | undefined) => {
+    const paramsObj = Object.fromEntries(params.entries());
+    setParams({ ...paramsObj, article: articleId || '' });
+  }
+
+  const onClickArticle = (event: MouseEvent<HTMLAnchorElement>, article: IArticle) => {
+    event.preventDefault();
+    setArticle(article.id)
   }
 
   return (
@@ -87,7 +100,12 @@ export default function ArticleIndex() {
               {listing.results.map((article) => (
                 <tr key={article.id}>
                   <td>
-                    <Link to={article.id}>{article.title}</Link>
+                    <Link
+                      onClick={(e) => onClickArticle(e, article)}
+                      to={`/articles?article=${article.id}`}
+                    >
+                      {article.title}
+                    </Link>
                   </td>
                   <td>
                     {article.site}
@@ -103,6 +121,11 @@ export default function ArticleIndex() {
             </tbody>
           </HTMLTable>
           <Pagination prefix='articles' response={listing} />
+          <ArticleDrawer
+            onClose={() => setArticle(undefined)}
+            articleId={articleId}
+            tags={[]}
+          />
         </>
       )}
     </div >

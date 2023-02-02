@@ -56,7 +56,7 @@ export default function ClusterArticles({ cluster }: ClusterArticlesProps) {
               <td>
                 <Link
                   onClick={(e) => showArticle(e, article.id)}
-                  to={`/articles/${article.id}`}
+                  to={`/articles?article=${article.id}`}
                 >
                   {article.title}
                 </Link>

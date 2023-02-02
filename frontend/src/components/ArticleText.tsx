@@ -42,6 +42,6 @@ export default function ArticleText({ text, tags }: ArticleTextProps) {
   const paraHtml = paragraphs.join('</p><p>')
 
   return (
-    <p className={classnames('bp4-running-text', styles.articleText)} dangerouslySetInnerHTML={{ __html: `<p>${paraHtml}</p>` }} />
+    <div className={classnames('bp4-running-text', styles.articleText)} dangerouslySetInnerHTML={{ __html: `<p>${paraHtml}</p>` }} />
   )
 }

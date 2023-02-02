@@ -1,7 +1,7 @@
 import { AnchorButton, Button, ButtonGroup, Icon, IconSize, Intent, Menu, MenuItem, Tab, Tabs } from "@blueprintjs/core";
 import { Popover2, PopupKind } from "@blueprintjs/popover2";
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import ScreenContent from "../components/ScreenContent";
 import ScreenHeading from "../components/ScreenHeading";
 import StoryArticleImportDialog from "../components/StoryArticleImportDialog";
@@ -23,6 +23,7 @@ export default function StoryView() {
   const [showImport, setShowImport] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
+  const [params, setParams] = useSearchParams();
   const { data: story, isLoading, error } = useFetchStoryQuery(storyId as string);
   const { data: articles } = useFetchArticleListingQuery({ story: storyId, limit: 0 });
   const { data: links } = useFetchStoryPairsQuery({
@@ -35,12 +36,18 @@ export default function StoryView() {
 
   const secondaryTab = hasLinks ? 'graph' : 'pairs';
   const defaultTab = hasArticles ? secondaryTab : 'articles';
+  const activeTab = params.get('view') || defaultTab;
 
   if (error !== undefined) {
     return <ErrorSection title="Could not load the story." />
   }
   if (story === undefined || articles === undefined || links === undefined || isLoading) {
     return <SectionLoading />
+  }
+
+  const setView = (view: string) => {
+    const paramsObj = Object.fromEntries(params.entries());
+    setParams({ ...paramsObj, view });
   }
 
   return (
@@ -81,7 +88,7 @@ export default function StoryView() {
         <StoryUpdateDialog isOpen={showEdit} onClose={() => setShowEdit(false)} story={story} />
         <StoryDeleteDialog isOpen={showDelete} onClose={() => setShowDelete(false)} story={story} />
       </ScreenHeading>
-      <Tabs id="storyView" defaultSelectedTabId={defaultTab} renderActiveTabPanelOnly>
+      <Tabs id="storyView" renderActiveTabPanelOnly selectedTabId={activeTab} onChange={(e) => setView(e.toString())}>
         <Tab id="graph"
           title={
             <>

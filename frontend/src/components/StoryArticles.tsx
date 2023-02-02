@@ -1,5 +1,6 @@
 import { Button, HTMLTable } from "@blueprintjs/core";
-import { useState } from "react";
+import { MouseEvent, useState } from "react";
+import { Link } from "react-router-dom";
 import { ARTICLE_THRESHOLD } from "../constants";
 import { useFetchArticleListingQuery } from "../services/articles";
 import { useToggleStoryArticleMutation } from "../services/stories";
@@ -33,6 +34,11 @@ export default function StoryArticles({ story }: StoryArticlesProps) {
     }
   }
 
+  const onPreviewArticle = (event: MouseEvent<HTMLAnchorElement>, article: IArticle) => {
+    event.preventDefault();
+    setPreviewArticle(article.id)
+  }
+
   return (
     <>
       {(articles.total < ARTICLE_THRESHOLD) && (
@@ -52,9 +58,12 @@ export default function StoryArticles({ story }: StoryArticlesProps) {
               {articles.results.map((article) => (
                 <tr key={article.id}>
                   <td>
-                    <a onClick={() => setPreviewArticle(article.id)}>
+                    <Link
+                      to={`/articles?article=${article.id}`}
+                      onClick={(e) => onPreviewArticle(e, article)}
+                    >
                       {article.title}
-                    </a>
+                    </Link>
                   </td>
                   <td>{article.site}</td>
                   <td className="numeric">
