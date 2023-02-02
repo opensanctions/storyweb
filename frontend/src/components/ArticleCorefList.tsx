@@ -4,6 +4,7 @@ import { Menu, MenuItem } from '@blueprintjs/core';
 import { useFetchArticleListingQuery } from "../services/articles"
 import ArticleDrawer from "./ArticleDrawer";
 import { IArticle } from "../types";
+import { ARTICLE_ICON } from "../constants";
 
 type ArticleCorefListProps = {
   clusters: string[]
@@ -28,6 +29,7 @@ export default function ArticleCorefList({ clusters, tags }: ArticleCorefListPro
       <Menu>
         {data.results.map((a) => (
           <MenuItem
+            icon={ARTICLE_ICON}
             key={a.id}
             onClick={(e) => onClick(e, a)}
             text={a.title} active={a.id === articleId} />

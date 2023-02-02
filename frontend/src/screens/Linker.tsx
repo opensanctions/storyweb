@@ -1,16 +1,17 @@
 import { ILink } from '../types';
 import { FormEvent, useEffect, useState } from 'react';
 import { getClusterLink } from '..//util';
-import { Button, HotkeyConfig, HotkeysTarget2, Label, Radio, RadioGroup } from '@blueprintjs/core';
+import { Button, Card, Elevation, HotkeyConfig, HotkeysTarget2, Label, Radio, RadioGroup } from '@blueprintjs/core';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { SectionLoading, ClusterTypeIcon } from '../components/util';
 import { useFetchOntologyQuery } from '../services/ontology';
 import { useFetchPredictionQuery, useSaveLinkMutation } from '../services/links';
 import ArticleCorefList from '../components/ArticleCorefList';
 import StoryLinkerBanner from '../components/StoryLinkerBanner';
+import { canHaveBidi, canHaveLink } from '../logic';
 
 import styles from '../styles/Linker.module.scss';
-import { canHaveBidi, canHaveLink } from '../logic';
+
 
 
 export default function Linker() {
@@ -55,6 +56,7 @@ export default function Linker() {
   const linkType = ontology.link_types.find((lt) => lt.name === link.type) || ontology.link_types[0]
   const source = link.source === prediction.source.id ? prediction.source : prediction.target;
   const target = link.target === prediction.target.id ? prediction.target : prediction.source;
+  const linkOptions = ontology.link_types.filter((lt) => canHaveBidi(ontology, source, target, lt.name));
   const canFlip = canHaveLink(ontology, target, source, link.type);
 
   const save = async function () {
@@ -129,44 +131,51 @@ export default function Linker() {
           {!!storyId && (
             <StoryLinkerBanner storyId={storyId} />
           )}
-          <h3 className={styles.phrase}>
-            <strong>
-              <ClusterTypeIcon type={source.type} size={14} />
-              <Link to={getClusterLink(source)}>{source.label}</Link>
-            </strong>
-            {' '}
-            {linkType.phrase}
-            {' '}
-            <strong>
-              <ClusterTypeIcon type={target.type} size={14} />
-              <Link to={getClusterLink(target)}>{target.label}</Link>
-            </strong>
-          </h3>
-          <div className="page-column-area">
-            <div className="page-column">
-              <form onSubmit={onSubmit}>
-                <RadioGroup
-                  label="Select link type:"
-                  name="type"
-                  onChange={onChangeType}
-                  selectedValue={link.type}
-                >
-                  {ontology.link_types.map((lt) => (
-                    <Radio label={lt.label} value={lt.name} disabled={!canHaveBidi(ontology, source, target, lt.name)} />
-                  ))}
-                </RadioGroup>
-                <Button type="submit">Save</Button>
-                <Button onClick={onFlip} disabled={!canFlip}>Flip direction</Button>
-              </form>
-            </div>
-            <div className="page-column">
-              <Label>View articles that mention both:</Label>
-              <ArticleCorefList
-                clusters={[source.id, target.id]}
-                tags={[prediction.source.labels, prediction.target.labels]}
-              />
-            </div>
-          </div>
+          <Card elevation={Elevation.TWO}>
+            <>
+              <Label>Please pick the <strong>type of the relationship</strong> between {source.label} and {target.label}:</Label>
+              <Card elevation={Elevation.THREE} className={styles.phrase}>
+                <strong>
+                  <ClusterTypeIcon type={source.type} size={14} />
+                  <Link to={getClusterLink(source)}>{source.label}</Link>
+                </strong>
+                {' '}
+                <span className={styles.phraseSpan}>
+                  {linkType.phrase}
+                </span>
+                {' '}
+                <strong>
+                  <ClusterTypeIcon type={target.type} size={14} />
+                  <Link to={getClusterLink(target)}>{target.label}</Link>
+                </strong>
+              </Card>
+              <div className="page-column-area">
+                <div className="page-column">
+                  <form onSubmit={onSubmit}>
+                    <RadioGroup
+                      label="Select link type:"
+                      name="type"
+                      onChange={onChangeType}
+                      selectedValue={link.type}
+                    >
+                      {linkOptions.map((lt) => (
+                        <Radio label={lt.label} value={lt.name} />
+                      ))}
+                    </RadioGroup>
+                    <Button type="submit">Save</Button>
+                    <Button onClick={onFlip} disabled={!canFlip}>Flip direction</Button>
+                  </form>
+                </div>
+                <div className="page-column-wide">
+                  <Label>Research the relationship using articles that mention both:</Label>
+                  <ArticleCorefList
+                    clusters={[source.id, target.id]}
+                    tags={[prediction.source.labels, prediction.target.labels]}
+                  />
+                </div>
+              </div>
+            </>
+          </Card>
         </>
       </HotkeysTarget2>
     </div>

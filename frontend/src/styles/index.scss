@@ -59,8 +59,9 @@ th.numeric {
     padding-right: 2 * $spacer
 }
 
-.page-column-full {
+.page-column-wide {
     width: 100%;
+    padding-right: 2 * $spacer
 }
 
 .bp4-navbar-heading a,

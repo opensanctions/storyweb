@@ -5,17 +5,27 @@
 //     overflow-y: scroll;
 // }
 
+.banner {
+    margin-bottom: $spacer;
+}
+
 .phrase {
     text-align: center;
+    font-size: 1.4em;
     // background-color: $light-gray2;
-    background-color: white;
-    padding-top: $spacer;
-    padding-bottom: $spacer;
-    border-radius: $spacer;
+    // background-color: white;
+    // padding-top: $spacer;
+    margin-bottom: $spacer * 2;
+    // border-radius: $spacer;
 
     :global {
         .bp4-icon {
             vertical-align: middle;
         }
     }
+}
+
+.phraseSpan {
+    // text-decoration: underline;
+    // font-weight: bold;
 }
