@@ -1,3 +1,7 @@
+<p align="center">
+  <img width="460" height="300" src="https://storyweb.opensanctions.org/scribble.png">
+</p>
+
 # StoryWeb
 
 StoryWeb is a project aimed to extract networks of entities from journalistic reporting. The idea is to reverse engineer stories into structured graphs of the persons and companies involved, and to capture the relationships between them.
