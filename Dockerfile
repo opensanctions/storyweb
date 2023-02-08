@@ -6,7 +6,7 @@ COPY frontend /fe
 RUN npm install
 RUN npm run build
 
-FROM ubuntu:22.04
+FROM ubuntu:23.04
 ENV DEBIAN_FRONTEND noninteractive
 
 LABEL org.opencontainers.image.title "StoryWeb"
