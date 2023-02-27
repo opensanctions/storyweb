@@ -10,6 +10,10 @@ https://storyweb.opensanctions.org
 
 StoryWeb consumes news articles as input data. Individual articles can be imported via the web interface, but there's also a possibility for bulk import using the [`articledata`](https://github.com/pudo/articledata) micro-format. One producer of `articledata` files is [`mediacrawl`](https://github.com/opensanctions/mediacrawl), which can be used to crawl news websites and harvest all of their articles.
 
+<p align="center">
+  <img src="https://assets.opensanctions.org/images/articles/storyweb/story-graph.png">
+</p>
+
 ## Installation
 
 Storyweb can be run as a Python web application from a developer's machine, or via a docker container. We recommend using docker for any production deployment and as a quick means to get the application running if you don't intend to change its code.
