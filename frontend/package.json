@@ -10,7 +10,7 @@
     "@react-sigma/layout-circular": "^3.2.0",
     "@react-sigma/layout-core": "^3.1.0",
     "@react-sigma/layout-force": "^3.2.0",
-    "@react-sigma/layout-forceatlas2": "^3.2.0",
+    "@react-sigma/layout-forceatlas2": "^3.3.0",
     "@reduxjs/toolkit": "^1.9.3",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.4.3",
