@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@blueprintjs/core": "^4.15.1",
+    "@blueprintjs/core": "^4.19.0",
     "@blueprintjs/popover2": "^1.13.3",
     "@blueprintjs/select": "^4.9.3",
     "@react-sigma/core": "^3.2.0",
