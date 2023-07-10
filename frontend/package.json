@@ -20,7 +20,7 @@
     "@types/react-redux": "^7.1.25",
     "@types/react-router-dom": "^5.3.3",
     "graphology": "^0.25.1",
-    "graphology-gexf": "^0.10.3",
+    "graphology-gexf": "^0.11.0",
     "graphology-types": "^0.24.7",
     "lodash": "^4.17.21",
     "query-string": "^8.1.0",
